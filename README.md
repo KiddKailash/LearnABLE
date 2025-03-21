@@ -19,8 +19,8 @@
 
 **LearnAble** is an inclusive learning platform built to:
 
-- Tailor educational content to individual students with varied learning needs, in alignment with [Universal Design for Learning (UDL)](https://udlguidelines.cast.org/).
-- Reduce administrative overhead for teachers by automating documentation and reporting required by the [NCCD](https://www.nccd.edu.au/resources-and-tools/tools/roles/teachers-13).
+- Tailor educational content for students with varied learning needs, in alignment with [UDL Guidelines](https://udlguidelines.cast.org/).
+- Reduce overhead for teachers by automating documentation and reporting required by the [NCCD](https://www.nccd.edu.au/resources-and-tools/tools/roles/teachers-13).
 - Adhere to Version 9 of the [Australian Curriculum](https://v9.australiancurriculum.edu.au/) 
 - Adhere to [Australian Privacy Principles](https://www.oaic.gov.au/privacy/australian-privacy-principles)
 
