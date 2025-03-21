@@ -121,15 +121,15 @@ frontend/
 ├── src/
 │   ├── assets/             # Images, fonts, etc.
 │   ├── components/         # Reusable UI components
-│   ├── pages/              # Route-level components (views)
 │   ├── hooks/              # Custom React hooks
+│   ├── pages/              # Route-level components (views)
 │   ├── services/           # API handlers (fetch/axios logic)
-│   ├── styles/             # Global styles, variables
 │   ├── App.jsx             # Main App component
 │   ├── main.jsx            # Vite entry point
 │   └── router.jsx          # React Router config (if used)
 ├── .env                    # Environment variables
-├── index.html              # Entry HTML template
+├── index.html              # Website entry point
+├── README.md               # You are here !
 ├── vite.config.js          # Vite configuration
 └── package.json            # Project metadata & scripts
 ```
