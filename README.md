@@ -66,11 +66,12 @@ Classrooms are filled with students who have diverse litiracy, preferred learnin
 ---
 
 ## Project Structure
-
+```bash
 .
 ├── README.md # You are here !
 ├── frontend/
 └── backend/
+```
 
 ### Frontend
 
