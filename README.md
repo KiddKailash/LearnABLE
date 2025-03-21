@@ -21,8 +21,8 @@
 
 - Tailor educational content for students with varied learning needs, in alignment with [UDL Guidelines](https://udlguidelines.cast.org/).
 - Reduce overhead for teachers by automating documentation and reporting required by the [NCCD](https://www.nccd.edu.au/resources-and-tools/tools/roles/teachers-13).
-- Adhere to Version 9 of the [Australian Curriculum](https://v9.australiancurriculum.edu.au/) 
-- Adhere to [Australian Privacy Principles](https://www.oaic.gov.au/privacy/australian-privacy-principles)
+- Adhere to Version 9 of the [Australian Curriculum](https://v9.australiancurriculum.edu.au/).
+- Adhere to [Australian Privacy Principles](https://www.oaic.gov.au/privacy/australian-privacy-principles).
 
 ### The Core Challenge
 
@@ -60,9 +60,9 @@ Classrooms are filled with students who have diverse litiracy, preferred learnin
 | **Back-end Development**  | Django + LangChain (LLM)                                 |
 | **Database**              | PostgreSQL                                               |
 | **Security & Compliance** | Encryption, RBAC                                         |
-| **Deployment**            | TBD (Front(Netlify, Vercel), Back(DigitalOcean, Render)) |
+| **Deployment**            | TBD (Netlify, Vercel | DigitalOcean, Render) |
 
-> **Note**: The AI integration uses LangChain and LLMs to tailor content based on student reading levels, disabilities, and learning preferences.
+> **Note**: The AI integration uses LangChain for centralisation of third party API calls.
 
 ---
 
@@ -104,7 +104,7 @@ To run the project locally, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/<your-team>/LearnAble.git
+git clone https://github.com/shivammtrivedi/LearnABLE
 cd LearnAble
 ```
 
