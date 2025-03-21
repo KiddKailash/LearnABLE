@@ -19,9 +19,10 @@
 
 **LearnAble** is an inclusive learning platform built to:
 
-- Deliver persoanlly tailored content to students with varied learning needs, in alignment with [Universal Design for Learning (UDL)](https://udlguidelines.cast.org/).
-- Reduce administrative overhead for teachers by automating NCCD (Nationally Consistent Collection of Data) documentation and reporting.
-- Ensuring compliance with Version 9 of the Australian Curriculum and relevant data privacy/security legislation.
+- Tailor educational content to individual students with varied learning needs, in alignment with [Universal Design for Learning (UDL)](https://udlguidelines.cast.org/).
+- Reduce administrative overhead for teachers by automating documentation and reporting required by the [NCCD](https://www.nccd.edu.au/resources-and-tools/tools/roles/teachers-13).
+- Adhere to Version 9 of the [Australian Curriculum](https://v9.australiancurriculum.edu.au/) 
+- Adhere to [Australian Privacy Principles](https://www.oaic.gov.au/privacy/australian-privacy-principles)
 
 ### The Core Challenge
 
@@ -87,7 +88,6 @@ Classrooms are filled with students who have diverse litiracy, preferred learnin
 - **Folder:** `backend/`
 - **Core Tech:** Django, Python, PostgreSQL
 - **Key Responsibilities:**
-
   - Authentication (role-based: teacher vs. student)
   - Securely storing and retrieving student data
   - Providing AI-driven recommendations (via [LangChain](https://github.com/hwchase17/langchain) or integrated LLMs)
@@ -113,8 +113,13 @@ Run the following commands in your terminal:
 
 ```bash
 cd frontend
+
+# Install NPM (if necessary)
+brew install npm
+
 # Install dependencies using NPM
 npm install
+
 # Run the development server
 npm run dev
 ```
@@ -122,15 +127,22 @@ npm run dev
 ### 3. Install Backend Dependencies
 ```bash
 cd ../backend
+
+# Install poetry (if necessary)
+pip install poetry
+
 # Install dependencies using Poetry
 poetry install
+
 # Activate the virtual environment
 source $(poetry env info --path)/bin/activate
+
 # Run the development server
 python manage.py runserver
 ```
 
-Once both are running, visit [http://localhost:5173](http://localhost:5173) to see the frontend. The backend will be at [http://localhost:8000](http://localhost:8000) by default.
+The frontend will be at [http://localhost:5173](http://localhost:5173) by default. 
+The backend will be at [http://localhost:8000](http://localhost:8000) by default.
 
 ## License
-This project is in active development. License terms may be provided later, or you can contact the project maintainers for more information.
+This project is in active development. License terms may be provided later.
