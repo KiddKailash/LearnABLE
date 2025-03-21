@@ -99,13 +99,13 @@ Consistent and clear documentation, including both DocStrings and inline comment
 
 ## Available Scripts
 
-- **Start the app (dev mode):**
+**Start the app (dev mode):**
 
 ```bash
   npm run dev
 ```
 
-- **Build for production:**
+**Build for production:**
 
 ```bash
 npm run build
@@ -169,6 +169,5 @@ VITE_FEATURE_FLAG_AI=true
 
 - This project uses [Vite’s official React plugin](https://github.com/vitejs/vite-plugin-react).
 - API endpoints should be defined in the `services/` folder and consumed through hooks or components.
-- 
 
 ---
