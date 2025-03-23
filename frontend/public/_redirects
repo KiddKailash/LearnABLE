@@ -1,0 +1,6 @@
+# This file configures redirect rules for single-page applications (SPAs).
+# The rule below ensures that any request to a path that does not match a physical file
+# is redirected to /index.html with a 200 status code. This allows the client-side
+# routing to handle the navigation.
+  
+/*    /index.html   200

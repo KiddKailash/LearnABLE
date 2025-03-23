@@ -1,3 +1,9 @@
-# https://www.robotstxt.org/robotstxt.html
+# This file provides crawling instructions to web robots (e.g., search engine bots).
+# The following directives apply to all user-agents:
+# - "User-agent: *" specifies that the rules apply to every bot.
+# - "Disallow:" with no value means no directories or pages are restricted from being crawled.
+#
+# For more information, visit: https://www.robotstxt.org/robotstxt.html
+
 User-agent: *
 Disallow:
