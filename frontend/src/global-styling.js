@@ -78,7 +78,8 @@ export const getTheme = (mode = "light") => {
       palette: {
         ...themeOptions.palette,
         background: {
-          paper: "#f5f5f5", // $qg-global-primary-lightest
+          paper: "#ffffff", // $qg-global-primary-lightest
+          default: "#f5f5f5", // $qg-white
         },
         text: {
           primary: "#212529", // $qg-dark-grey-darker
