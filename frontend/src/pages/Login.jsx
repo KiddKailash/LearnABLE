@@ -34,6 +34,21 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Login details:", { email, password });
+    // validate the user's login credentials
+    fetch("http://127.0.0.1:8000/api/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.success) {
+        console.log("Login successful"); // user successfully logged in
+      } else {
+        console.log("The username or password you've entered is incorrect."); //error in login
+      }
+    })
+    .catch((error) => console.error("Error with user logining in:", error));
   };
 
   return (
