@@ -13,7 +13,7 @@ function App() {
 
   return (
     <div>
-      <h1>Welcome to My App</h1>
+      <h1>Welcome to My App Budyyboy</h1>
       {data ? (
         <div>
           <h2>Data from API:</h2>
