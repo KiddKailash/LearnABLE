@@ -37,11 +37,32 @@ const Login = () => {
    *
    * @param {React.FormEvent<HTMLFormElement>} e - The form submission event.
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login details:", { email, password });
-    // Display a snackbar notification upon submission
-    showSnackbar("Login details submitted!", "success");
+  
+    try {
+      const response = await fetch("http://localhost:8000/teachers/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        localStorage.setItem("access_token", data.access);
+        showSnackbar("Login successful!", "success");
+        console.log("Token:", data.access);
+        // Optionally redirect or fetch user data
+      } else {
+        showSnackbar(data.message || "Login failed", "error");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      showSnackbar("Something went wrong", "error");
+    }
   };
 
   return (

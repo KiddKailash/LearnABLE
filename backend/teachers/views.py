@@ -3,6 +3,8 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Teacher
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import check_password
+from rest_framework_simplejwt.tokens import RefreshToken
 
 @csrf_exempt  # Disable CSRF for testing (only for development!)
 def register_teacher(request):
@@ -29,3 +31,34 @@ def register_teacher(request):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
+@csrf_exempt
+def login_teacher(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            email = data.get("email")
+            password = data.get("password")
+
+            try:
+                teacher = Teacher.objects.get(email=email)
+            except Teacher.DoesNotExist:
+                return JsonResponse({"message": "Invalid email or password"}, status=401)
+
+            if not check_password(password, teacher.password):
+                return JsonResponse({"message": "Invalid email or password"}, status=401)
+
+            # Generate tokens
+            refresh = RefreshToken.for_user(teacher)
+            return JsonResponse({
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "name": teacher.name,
+                "email": teacher.email
+            })
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
