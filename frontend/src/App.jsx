@@ -11,6 +11,10 @@ import { Routes, Route } from "react-router-dom";
 
 // Webpages
 import Login from "./pages/Login";
+import PageNotFound from "./pages/PageNotFound";
+
+// Components
+import ProtectRoute from "./components/ProtectRoutes";
 
 /**
  * App component that initializes application routing and performs data fetching.
@@ -19,29 +23,63 @@ import Login from "./pages/Login";
  * @returns {JSX.Element} The rendered application component.
  */
 function App() {
+  // Define an array of page objects, each with a route path and the component to render.
+  // The "*" path acts as a catch-all route for undefined URLs.
+  const pages = [
+    { path: "*", component: <PageNotFound /> },
+    { path: "/", component: <Login /> },
+    // Add additional page objects here as needed.
+  ];
+
+  // Define an array of paths that are public.
+  // Any path not included in this list (and not the catch-all "*") will be considered protected.
+  const publicPaths = ["/", "/login"];
+
+  // Local state to store fetched data from the backend (if needed).
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    try {
-      // Fetch data from the backend if needed
-      fetch("http://127.0.0.1:8000/api/")
-        .then((response) => response.json())
-        .then((data) => setData(data))
-        .catch((error) => console.error("Error fetching data:", error));
-    } catch (error) {
-      console.log("Error fetching data", error);
-    } finally {
-      console.log("Data fetched:", data);
-    }
-  }, []);
+    // Fetch data from the backend API when the component mounts.
+    fetch("http://127.0.0.1:8000/api/")
+      .then((response) => response.json())
+      .then((data) => {
+        // Log and store the fetched data.
+        console.log("Data fetched:", data);
+        setData(data);
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+  }, []); // Empty dependency array ensures this runs once on mount.
+
+  // Log the current state of data. This is optional and for debugging purposes.
+  data ? console.log("Fetched Data:", data) : console.log("Data not fetched");
 
   return (
-    <>
-      <Routes>
-        {/* Define routes for the application */}
-        <Route path="/" element={<Login />} />
-      </Routes>
-    </>
+    // Define the routes for the application
+    <Routes>
+      {pages.map((page, i) => {
+        // Determine if the route is public.
+        // A route is considered public if its path is in publicPaths or if it's the catch-all "*".
+        const isPublic = publicPaths.includes(page.path) || page.path === "*";
+
+        // For each page object, create a Route element.
+        // If the route is protected, wrap the component in ProtectRoute to enforce authentication.
+        return (
+          <Route
+            key={i}
+            path={page.path}
+            element={
+              isPublic ? (
+                // Render public component directly.
+                page.component
+              ) : (
+                // Render protected component wrapped with ProtectRoute.
+                <ProtectRoute>{page.component}</ProtectRoute>
+              )
+            }
+          />
+        );
+      })}
+    </Routes>
   );
 }
 
