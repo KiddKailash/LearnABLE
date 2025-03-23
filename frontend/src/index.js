@@ -17,6 +17,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
 import reportWebVitals from "./tests/reportWebVitals";
 import { SnackbarProvider } from "./contexts/SnackbarContext";
+import { UserProvider } from "./services/UserContext";
 
 // MUI Theme Provider, CSS Baseline and a component which switches the theme
 import { ThemeProvider, CssBaseline } from "@mui/material";
@@ -44,14 +45,15 @@ const Root = () => {
 
   return (
     <Router>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <SnackbarProvider>
-          {/* Include the ThemeSwitcher to toggle between modes */}
-          <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
-          <App />
-        </SnackbarProvider>
-      </ThemeProvider>
+      <UserProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <SnackbarProvider>
+            <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
+            <App />
+          </SnackbarProvider>
+        </ThemeProvider>
+      </UserProvider>
     </Router>
   );
 };
