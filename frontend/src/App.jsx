@@ -12,6 +12,7 @@ import { Routes, Route } from "react-router-dom";
 // Webpages
 import Login from "./pages/Login";
 import PageNotFound from "./pages/PageNotFound";
+import Register from "./pages/Register";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
@@ -28,12 +29,14 @@ function App() {
   const pages = [
     { path: "*", component: <PageNotFound /> },
     { path: "/", component: <Login /> },
+    { path: "/register", component: <Register /> }
+    
     // Add additional page objects here as needed.
   ];
 
   // Define an array of paths that are public.
   // Any path not included in this list (and not the catch-all "*") will be considered protected.
-  const publicPaths = ["/", "/login"];
+  const publicPaths = ["/", "/login", "/register"];
 
   // Local state to store fetched data from the backend (if needed).
   const [data, setData] = useState(null);

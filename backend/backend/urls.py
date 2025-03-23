@@ -1,7 +1,8 @@
 # backend/urls.py
 from django.http import HttpResponse
-from django.urls import path
+from django.urls import path, include
 from . import views
+
 
 # Define a simple view for the root URL
 def home(request):
@@ -13,4 +14,5 @@ def api_view(request):
 urlpatterns = [
     path('api/', views.api_view, name='api_view'),
     path('', home, name='home'),  # Root URL
+    path("", include("teachers.urls"))
 ]

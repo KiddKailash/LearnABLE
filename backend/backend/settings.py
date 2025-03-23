@@ -82,9 +82,9 @@ DATABASES = {
 	'default': {
     #'ENGINE': 'django.db.backends.sqlite3',
     'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'data_base_name',
-    'USER': 'username',
-    'PASSWORD': 'password',
+    'NAME': 'LearnABLE',
+    'USER': 'postgres',
+    'PASSWORD': 'new_password',
     'HOST': 'localhost',
     'PORT': '5432',
     }
