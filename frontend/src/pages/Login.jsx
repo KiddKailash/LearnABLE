@@ -8,6 +8,8 @@
  */
 
 import React, { useState, useContext } from "react";
+import { Link } from "react-router-dom";
+
 // MUI imports
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
@@ -15,9 +17,10 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
-// Snackbar context
+
+// Context(s)
 import { SnackbarContext } from "../contexts/SnackbarContext";
-import { Link } from "react-router-dom";
+
 /**
  * Login component that renders a teacher login portal form.
  *
@@ -102,7 +105,7 @@ const Login = () => {
           <Button fullWidth type="submit" variant="contained" color="primary">
             Login
           </Button>
-          <Link to="/Register" style={{ textDecoration: 'none'}}>
+          <Link to="/register" style={{ textDecoration: 'none'}}>
           <Button variant="contained" color="secondary" sx={{ width: '100%', height: 40}}>
             Create Account
           </Button>
