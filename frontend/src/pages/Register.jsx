@@ -1,10 +1,15 @@
 import React, { useState, useContext } from "react";
+import { Link } from "react-router-dom";
+
+// MUI
 import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+
+// Contexts
 import { SnackbarContext } from "../contexts/SnackbarContext";
 
 /**
@@ -101,6 +106,11 @@ const Register = () => {
           <Button fullWidth type="submit" variant="contained" color="primary">
             Register
           </Button>
+          <Link to="/login" style={{ textDecoration: 'none'}}>
+          <Button variant="contained" color="secondary" sx={{ width: '100%', height: 40}}>
+            Login
+          </Button>
+          </Link>
         </Stack>
       </Paper>
     </Container>
