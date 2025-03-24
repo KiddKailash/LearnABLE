@@ -50,10 +50,10 @@ const Layout = () => {
 
   return (
     <Box
-      fullWidth
       sx={{
         display: "flex",
         height: "100vh", // fill viewport height
+        width: "100%", // fill viewport width
         bgcolor: "background.default",
         p: 1,
       }}
