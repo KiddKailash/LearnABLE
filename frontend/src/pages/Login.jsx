@@ -17,7 +17,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 // Snackbar context
 import { SnackbarContext } from "../contexts/SnackbarContext";
-
+import { Link } from "react-router-dom";
 /**
  * Login component that renders a teacher login portal form.
  *
@@ -102,10 +102,17 @@ const Login = () => {
           <Button fullWidth type="submit" variant="contained" color="primary">
             Login
           </Button>
+          <Link to="/Register" style={{ textDecoration: 'none'}}>
+          <Button variant="contained" color="secondary" sx={{ width: '100%', height: 40}}>
+            Create Account
+          </Button>
+          </Link>
         </Stack>
       </Paper>
     </Container>
   );
 };
+
+
 
 export default Login;

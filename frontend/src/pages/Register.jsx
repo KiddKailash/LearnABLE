@@ -7,11 +7,29 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import { SnackbarContext } from "../contexts/SnackbarContext";
 
+/**
+ * @fileoverview This file handles the user registration/signup process.
+ * Handles the form submission, sending a POST request to the backend API (given the user's email/password).
+ * SnackbarContext is used to display error & success messages to the user.
+ * @module Register
+ */
+
+/**
+ * This function renders the teacher/user registration form.
+ * @returns JSX element that represents the registration form
+ */
+
 const Register = () => {
   const [name, setName] = useState(""); // New state for name
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { showSnackbar } = useContext(SnackbarContext);
+
+
+  /**
+   * This function handles the form submission, sending the user registration to the backend API.
+   * @param {*} { preventDefault } e 
+   */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
