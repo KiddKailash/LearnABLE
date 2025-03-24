@@ -11,7 +11,7 @@
  * @module index
  */
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
@@ -22,7 +22,6 @@ import { UserProvider } from "./services/UserContext";
 // MUI Theme Provider, CSS Baseline and a component which switches the theme
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { getTheme } from "./global-styling";
-import ThemeSwitcher from "./components/ThemeSwitcher";
 
 /**
  * Root component that sets up the global theme and routing for the application.
