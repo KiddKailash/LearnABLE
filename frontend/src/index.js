@@ -31,17 +31,11 @@ import ThemeSwitcher from "./components/ThemeSwitcher";
  * @returns {JSX.Element} The Root component wrapped with ThemeProvider and Router.
  */
 const Root = () => {
-  const [mode, setMode] = useState("light");
+  // Set colour scheme mode to light/dark
+  const mode = "light";
 
   // Memoize theme to avoid unnecessary recalculations on re-renders
   const theme = useMemo(() => getTheme(mode), [mode]);
-
-  /**
-   * Toggles the theme mode between light and dark.
-   */
-  const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
-  };
 
   return (
     <Router>
@@ -49,7 +43,6 @@ const Root = () => {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <SnackbarProvider>
-            <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
             <App />
           </SnackbarProvider>
         </ThemeProvider>
