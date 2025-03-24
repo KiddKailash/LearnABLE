@@ -6,7 +6,7 @@
  * Layout:
  *    [Primary Sidebar] | [Main content area fills leftover space + can scroll]
  *
- * @module Dashboard
+ * @module Layout
  */
 
 import React from "react";
@@ -28,7 +28,7 @@ import Container from "@mui/material/Container";
  * @component
  * @returns {JSX.Element} The rendered Dashboard layout component.
  */
-const Dashboard = () => {
+const Layout = () => {
   const location = useLocation();
 
   /**
@@ -97,4 +97,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Layout;

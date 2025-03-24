@@ -16,7 +16,7 @@ import Register from "./pages/Register";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
-import Dashboard from "./components/Dashboard";
+import Layout from "./components/Layout";
 
 /**
  * App component that initializes application routing and performs data fetching.
@@ -63,7 +63,7 @@ function App() {
     <Routes>
       {/* Define the root route and render the Dashboard component.
         The Dashboard component will render the appropriate page based on the current route. */}
-      <Route path="/" element={<Dashboard />}>
+      <Route path="/" element={<Layout />}>
         {pages.map((page, i) => {
           // Determine if the route is public.
           // A route is considered public if its path is in publicPaths or if it's the catch-all "*".
