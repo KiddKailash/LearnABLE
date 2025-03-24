@@ -1,4 +1,5 @@
 # backend/urls.py
+from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, include
 from . import views
@@ -14,5 +15,6 @@ def api_view(request):
 urlpatterns = [
     path('api/', views.api_view, name='api_view'),
     path('', home, name='home'),  # Root URL
-    path("", include("teachers.urls"))
+    path("", include("teachers.urls")),
+    path('admin/', admin.site.urls)
 ]
