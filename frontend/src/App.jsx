@@ -16,6 +16,7 @@ import Register from "./pages/Register";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
+import Dashboard from "./components/Dashboard";
 
 /**
  * App component that initializes application routing and performs data fetching.
@@ -29,8 +30,9 @@ function App() {
   const pages = [
     { path: "*", component: <PageNotFound /> },
     { path: "/", component: <Login /> },
-    { path: "/register", component: <Register /> }
-    
+    { path: "/login", component: <Login /> },
+    { path: "/register", component: <Register /> },
+
     // Add additional page objects here as needed.
   ];
 
@@ -59,29 +61,33 @@ function App() {
   return (
     // Define the routes for the application
     <Routes>
-      {pages.map((page, i) => {
-        // Determine if the route is public.
-        // A route is considered public if its path is in publicPaths or if it's the catch-all "*".
-        const isPublic = publicPaths.includes(page.path) || page.path === "*";
+      {/* Define the root route and render the Dashboard component.
+        The Dashboard component will render the appropriate page based on the current route. */}
+      <Route path="/" element={<Dashboard />}>
+        {pages.map((page, i) => {
+          // Determine if the route is public.
+          // A route is considered public if its path is in publicPaths or if it's the catch-all "*".
+          const isPublic = publicPaths.includes(page.path) || page.path === "*";
 
-        // For each page object, create a Route element.
-        // If the route is protected, wrap the component in ProtectRoute to enforce authentication.
-        return (
-          <Route
-            key={i}
-            path={page.path}
-            element={
-              isPublic ? (
-                // Render public component directly.
-                page.component
-              ) : (
-                // Render protected component wrapped with ProtectRoute.
-                <ProtectRoute>{page.component}</ProtectRoute>
-              )
-            }
-          />
-        );
-      })}
+          // For each page object, create a Route element.
+          // If the route is protected, wrap the component in ProtectRoute to enforce authentication.
+          return (
+            <Route
+              key={i}
+              path={page.path}
+              element={
+                isPublic ? (
+                  // Render public component directly.
+                  page.component
+                ) : (
+                  // Render protected component wrapped with ProtectRoute.
+                  <ProtectRoute>{page.component}</ProtectRoute>
+                )
+              }
+            />
+          );
+        })}
+      </Route>
     </Routes>
   );
 }
