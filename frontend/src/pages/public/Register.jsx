@@ -10,7 +10,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
 // Contexts
-import { SnackbarContext } from "../contexts/SnackbarContext";
+import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 /**
  * @fileoverview This file handles the user registration/signup process.

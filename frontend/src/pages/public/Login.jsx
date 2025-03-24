@@ -19,7 +19,7 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
 // Context(s)
-import { SnackbarContext } from "../contexts/SnackbarContext";
+import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 /**
  * Login component that renders a teacher login portal form.
