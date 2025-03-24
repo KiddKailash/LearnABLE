@@ -1,0 +1,100 @@
+/**
+ * @file Dashboard.jsx
+ * @description Layout component that renders the primary sidebar (if applicable) alongside
+ * the main content area. The main content area displays the active route's content via Outlet.
+ *
+ * Layout:
+ *    [Primary Sidebar] | [Main content area fills leftover space + can scroll]
+ *
+ * @module Dashboard
+ */
+
+import React from "react";
+import { Outlet, useLocation } from "react-router-dom";
+
+// Components
+import Sidebar from "./Sidebar";
+
+// MUI Components
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+
+/**
+ * Dashboard component that provides the main layout for the application.
+ *
+ * It conditionally renders the primary sidebar based on the current route. For example,
+ * the sidebar is hidden on login, registration, home, or catch-all routes.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered Dashboard layout component.
+ */
+const Dashboard = () => {
+  const location = useLocation();
+
+  /**
+   * Determines if the sidebar should be hidden based on the current path.
+   *
+   * The sidebar is not displayed on the following routes:
+   * - /login
+   * - /register
+   * - /
+   * - *
+   *
+   * @type {boolean}
+   */
+  const doNotDisplaySidebar =
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname === "/" ||
+    location.pathname === "*";
+
+  return (
+    <Box
+      fullWidth
+      sx={{
+        display: "flex",
+        height: "100vh", // fill viewport height
+        bgcolor: "background.default",
+        p: 1,
+      }}
+    >
+      {/* PRIMARY SIDEBAR */}
+      {!doNotDisplaySidebar && (
+        <Box
+          sx={{
+            flexShrink: 0,
+            overflow: "auto",
+          }}
+        >
+          <Sidebar />
+        </Box>
+      )}
+
+      {/* Outer box that holds secondary sidebar + main content */}
+      <Box
+        sx={{
+          bgcolor: "background.paper",
+          borderRadius: 5,
+          display: "flex",
+          flexGrow: 1, // let this box expand to fill leftover space
+        }}
+      >
+        {/* MAIN CONTENT AREA */}
+        <Container
+          sx={{
+            flexGrow: 1, // again, fill remaining horizontal space
+            overflowY: "auto", // scroll if content is too tall
+            display: "flex", // we use a flex container to position the <Container>
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          {/* Renders whatever route/page is active */}
+          <Outlet />
+        </Container>
+      </Box>
+    </Box>
+  );
+};
+
+export default Dashboard;
