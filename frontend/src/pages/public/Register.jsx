@@ -1,9 +1,9 @@
 import React, { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // MUI
 import Container from "@mui/material/Container";
-import Paper from "@mui/material/Paper";
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -30,10 +30,11 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const { showSnackbar } = useContext(SnackbarContext);
 
+  const navigate = useNavigate();
 
   /**
    * This function handles the form submission, sending the user registration to the backend API.
-   * @param {*} { preventDefault } e 
+   * @param {*} { preventDefault } e
    */
 
   const handleSubmit = async (e) => {
@@ -63,8 +64,8 @@ const Register = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper
+    <Container maxWidth="sm" sx={{p:12}}>
+      <Box
         elevation={1}
         component="form"
         noValidate
@@ -73,11 +74,28 @@ const Register = () => {
           padding: theme.spacing(4),
           marginTop: theme.spacing(4),
           bgcolor: theme.palette.background.paper,
+          borderRadius: theme.shape.border,
+          boxShadow: theme.shadows[22],
+          border: `1px solid ${theme.palette.divider}`,
+          textAlign: "center",
         })}
       >
         <Stack direction="column" spacing={1.5}>
-          <Typography variant="h4" align="center" gutterBottom>
+          <Typography variant="h4" align="center">
             Register Teacher
+          </Typography>
+          <Typography variant="subtitle1" align="center" color="text.secondary" gutterBottom>
+            Already have an account? {""}
+            <Link
+              color="primary"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/login");
+              }}
+              sx={{ textDecoration: "none" }}
+            >
+              Login
+            </Link>
           </Typography>
           <TextField
             fullWidth
@@ -106,13 +124,8 @@ const Register = () => {
           <Button fullWidth type="submit" variant="contained" color="primary">
             Register
           </Button>
-          <Link to="/login" style={{ textDecoration: 'none'}}>
-          <Button variant="contained" color="secondary" sx={{ width: '100%', height: 40}}>
-            Login
-          </Button>
-          </Link>
         </Stack>
-      </Paper>
+      </Box>
     </Container>
   );
 };
