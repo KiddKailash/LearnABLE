@@ -8,15 +8,15 @@
  */
 
 import React, { useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // MUI imports
 import Container from "@mui/material/Container";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
 
 // Context(s)
 import { SnackbarContext } from "../../contexts/SnackbarContext";
@@ -34,6 +34,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const { showSnackbar } = useContext(SnackbarContext);
 
+  const navigate = useNavigate();
+
   /**
    * Handles form submission by preventing the default action, logging the login details,
    * and displaying a snackbar notification.
@@ -42,7 +44,7 @@ const Login = () => {
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       const response = await fetch("http://localhost:8000/teachers/login/", {
         method: "POST",
@@ -51,9 +53,9 @@ const Login = () => {
         },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         localStorage.setItem("access_token", data.access);
         showSnackbar("Login successful!", "success");
@@ -69,9 +71,8 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Paper
-        elevation={1}
+    <Container maxWidth="sm" sx={{p:12}}>
+      <Box
         component="form"
         noValidate
         onSubmit={handleSubmit}
@@ -80,11 +81,26 @@ const Login = () => {
           padding: theme.spacing(4),
           marginTop: theme.spacing(4),
           bgcolor: theme.palette.background.paper,
+          boxShadow: theme.shadows[22],
+          borderRadius: theme.shape.border,
+          border: `1px solid ${theme.palette.divider}`,
         })}
       >
         <Stack direction="column" spacing={1.5}>
           <Typography variant="h4" align="center" gutterBottom>
             Teacher Login Portal
+          </Typography>
+          <Typography variant="subtitle1" align="center" color="text.secondary">
+            Don't have an account? {""}
+            <Link
+              color="primary"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/register");
+              }}
+            >
+              Sign Up
+            </Link>
           </Typography>
           <TextField
             fullWidth
@@ -105,17 +121,10 @@ const Login = () => {
           <Button fullWidth type="submit" variant="contained" color="primary">
             Login
           </Button>
-          <Link to="/register" style={{ textDecoration: 'none'}}>
-          <Button variant="contained" color="secondary" sx={{ width: '100%', height: 40}}>
-            Create Account
-          </Button>
-          </Link>
         </Stack>
-      </Paper>
+      </Box>
     </Container>
   );
 };
-
-
 
 export default Login;

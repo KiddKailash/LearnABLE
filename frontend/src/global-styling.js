@@ -69,6 +69,9 @@ export const getTheme = (mode = "light") => {
         fontWeight: 600,
       },
     },
+    shape: {
+      border: 3,
+    }
   };
 
   // LIGHT MODE specific customisations
