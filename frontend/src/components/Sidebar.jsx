@@ -107,7 +107,7 @@ const Sidebar = () => {
           display: "flex",
           alignItems: "center",
           mb: 1,
-          pl: collapsed ? 0 : 1,
+          pl: collapsed ? 0 : 1.5,
           justifyContent: collapsed ? "center" : "flex-start",
         }}
       >
