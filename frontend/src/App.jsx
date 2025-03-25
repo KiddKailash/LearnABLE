@@ -104,8 +104,7 @@ function App() {
                   page.component
                 ) : (
                   // Render protected component wrapped with ProtectRoute.
-                  // <ProtectRoute>{page.component}</ProtectRoute>
-                  page.component
+                  <ProtectRoute>{page.component}</ProtectRoute>
                 )
               }
             />
