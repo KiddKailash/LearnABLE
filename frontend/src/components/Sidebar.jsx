@@ -9,8 +9,11 @@
  * @module Sidebar
  */
 
-import React from "react";
+import React, { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+
+// Contexts
+import UserContext from "../services/UserContext";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -77,6 +80,13 @@ const Sidebar = () => {
 
   // Track whether the sidebar is collapsed
   const [collapsed, setCollapsed] = React.useState(false);
+
+  const { logout } = useContext(UserContext);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  }
 
   /**
    * Determines if a given navigation path is active.
@@ -198,7 +208,7 @@ const Sidebar = () => {
               <ListItemButton
                 onClick={() =>
                   isLogout
-                    ? console.log("Logout logic here")
+                    ? handleLogout()
                     : navigate(`/${text.toLowerCase()}`)
                 }
                 sx={{

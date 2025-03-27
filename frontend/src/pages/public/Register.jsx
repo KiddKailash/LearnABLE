@@ -9,62 +9,32 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
-// Contexts
+// Context
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-
-/**
- * @fileoverview This file handles the user registration/signup process.
- * Handles the form submission, sending a POST request to the backend API (given the user's email/password).
- * SnackbarContext is used to display error & success messages to the user.
- * @module Register
- */
-
-/**
- * This function renders the teacher/user registration form.
- * @returns JSX element that represents the registration form
- */
+import UserContext from "../../services/UserContext";
 
 const Register = () => {
-  const [name, setName] = useState(""); // New state for name
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { showSnackbar } = useContext(SnackbarContext);
-
+  const { registerTeacher } = useContext(UserContext);
   const navigate = useNavigate();
-
-  /**
-   * This function handles the form submission, sending the user registration to the backend API.
-   * @param {*} { preventDefault } e
-   */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/teachers/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        showSnackbar("Teacher registered successfully!", "success");
-        console.log("Success:", data);
-      } else {
-        showSnackbar(data.message || "Error registering teacher", "error");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      showSnackbar("Something went wrong!", "error");
+    const result = await registerTeacher(name, email, password);
+    if (result.success) {
+      showSnackbar("Teacher registered successfully!", "success");
+      // Optionally auto-login or redirect to login
+      navigate("/login");
+    } else {
+      showSnackbar(result.message || "Error registering teacher", "error");
     }
   };
 
   return (
-    <Container maxWidth="sm" sx={{p:12}}>
+    <Container maxWidth="sm" sx={{ p: 12 }}>
       <Box
         elevation={1}
         component="form"
@@ -85,14 +55,14 @@ const Register = () => {
             Register Teacher
           </Typography>
           <Typography variant="subtitle1" align="center" color="text.secondary" gutterBottom>
-            Already have an account? {""}
+            Already have an account?{" "}
             <Link
               color="primary"
               onClick={(e) => {
                 e.preventDefault();
                 navigate("/login");
               }}
-              sx={{ textDecoration: "none" }}
+              style={{ textDecoration: "none" }}
             >
               Login
             </Link>
