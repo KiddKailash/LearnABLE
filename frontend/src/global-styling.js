@@ -99,6 +99,10 @@ export const getTheme = (mode = "light") => {
       ...themeOptions,
       palette: {
         ...themeOptions.palette,
+        background: {
+          paper: "#1F1F1F", // $qg-global-primary-lightest
+          default: "#121212", // $qg-white
+        },
       },
     };
   }
