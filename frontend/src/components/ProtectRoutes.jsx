@@ -2,29 +2,20 @@ import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import UserContext from "../services/UserContext";
-
-// MUI Component Imports
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
-/**
- * A wrapper for protected routes that redirects to the login page if not authenticated.
- *
- * @param {Object} props - Component props.
- * @param {React.ReactNode} props.children - The component to render if authenticated.
- * @returns {React.ReactNode} - The rendered component or a redirect.
- */
 const ProtectRoute = ({ children }) => {
   const { isLoggedIn, authLoading } = useContext(UserContext);
 
+  // Wait until we finish checking login status
   if (authLoading) {
-    // Show a loading spinner or placeholder while checking authentication
     return (
       <Box
         sx={{
           display: "flex",
           height: "100%",
-          width: '100%',
+          width: "100%",
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -34,6 +25,7 @@ const ProtectRoute = ({ children }) => {
     );
   }
 
+  // If we are not logged in, redirect
   if (!isLoggedIn) {
     return <Navigate to="/login?mode=login" replace />;
   }
