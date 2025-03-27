@@ -13,6 +13,7 @@
  */
 
 import React, { createContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Creates a UserContext with default values.
@@ -27,9 +28,9 @@ import React, { createContext, useState, useEffect } from "react";
  *  - refreshToken: async function placeholder for refreshing tokens
  */
 const UserContext = createContext({
-  user: null,           // Basic teacher info from the server
-  isLoggedIn: false,    // Whether user is authenticated
-  authLoading: true,    // While checking if user is auto-logged in
+  user: null, // Basic teacher info from the server
+  isLoggedIn: false, // Whether user is authenticated
+  authLoading: true, // While checking if user is auto-logged in
   login: async () => {},
   logout: () => {},
   registerTeacher: async () => {},
@@ -50,6 +51,8 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   /**
    * Logs in a teacher.
@@ -116,6 +119,7 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem("user_email");
     setUser(null);
     setIsLoggedIn(false);
+    navigate("/login");
   };
 
   /**
