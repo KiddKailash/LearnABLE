@@ -81,7 +81,7 @@ const Sidebar = () => {
   // Track whether the sidebar is collapsed
   const [collapsed, setCollapsed] = React.useState(false);
 
-  const { logout } = useContext(UserContext);
+  const { user, logout } = useContext(UserContext);
 
   const handleLogout = async () => {
     await logout();
@@ -157,18 +157,12 @@ const Sidebar = () => {
                   mb: 1,
                   borderRadius: 2,
                   // Highlight styling for designated items (e.g., AI Assistant)
-                  bgcolor: highlight && !collapsed ? "#3D5CFF" : "transparent",
-                  color: highlight && !collapsed ? "#fff" : "inherit",
-                  "&:hover": {
-                    bgcolor:
-                      highlight && !collapsed ? "#2f47cc" : "action.hover",
-                  },
                   justifyContent: collapsed ? "center" : "flex-start",
                 }}
               >
                 <ListItemIcon
                   sx={{
-                    color: highlight && !collapsed ? "#fff" : "inherit",
+                    color: "text.primary",
                     minWidth: collapsed ? "auto" : "40px",
                   }}
                 >
@@ -176,7 +170,7 @@ const Sidebar = () => {
                 </ListItemIcon>
 
                 {/* Show text only when sidebar is expanded */}
-                {!collapsed && <ListItemText primary={text} />}
+                {!collapsed && <ListItemText primary={text} sx={{color: 'text.secondary'}}/>}
               </ListItemButton>
             </Tooltip>
           );
@@ -193,7 +187,7 @@ const Sidebar = () => {
             variant="caption"
             sx={{ color: "gray", fontWeight: "bold", px: 2 }}
           >
-            SETTINGS
+            {user?.name}
           </Typography>
         )}
         <List>
