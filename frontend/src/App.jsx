@@ -23,7 +23,7 @@ import Calendar from "./pages/private/Calendar";
 import Message from "./pages/private/Message";
 import Storage from "./pages/private/Storage";
 import Students from "./pages/private/Students";
-import Dashboard from "./pages/private/Dashboard";
+import Dashboard from "./pages/private/Dashboard/Dashboard";
 import Settings from "./pages/private/Settings";
 
 // Components
