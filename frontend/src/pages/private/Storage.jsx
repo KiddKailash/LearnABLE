@@ -7,7 +7,11 @@ import PageWrapper from "../../components/PageWrapper";
 import Typography from "@mui/material/Typography";
 
 const Storage = () => {
-  return (<PageWrapper><Typography variant="h1">Storage</Typography></PageWrapper>);
+  return (
+    <PageWrapper>
+      <Typography variant="h1">Storage</Typography>
+    </PageWrapper>
+  );
 };
 
 export default Storage;
