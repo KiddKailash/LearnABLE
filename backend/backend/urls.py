@@ -16,5 +16,7 @@ urlpatterns = [
     path('api/', views.api_view, name='api_view'),
     path('', home, name='home'),  # Root URL
     path("", include("teachers.urls")),
+    path("", include("students.urls")),
+    path("", include("subjects.urls")),
     path('admin/', admin.site.urls)
 ]

@@ -1,5 +1,4 @@
 import React from "react";
-
 // Components
 import ThemeSwitcher from "../../../components/ThemeSwitcher";
 
@@ -11,7 +10,7 @@ import Box from "@mui/material/Box";
 // MUI Icons
 import SearchIcon from "@mui/icons-material/Search";
 
-const DashboardAppBar = () => {
+const DashboardAppBar = ({ mode, toggleTheme }) => {
   return (
     <AppBar
       position="static"
@@ -47,10 +46,12 @@ const DashboardAppBar = () => {
             flex: 1,
           }}
         />
-        <ThemeSwitcher />
+
+        {/* Now we pass mode & toggleTheme into ThemeSwitcher */}
+        <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
       </Box>
 
-      {/* Right Side Icons or Profile */}
+      {/* Right side icons or profile */}
       <Box sx={{ flexGrow: 1 }} />
       {/* Add user avatar or other icons here */}
     </AppBar>
