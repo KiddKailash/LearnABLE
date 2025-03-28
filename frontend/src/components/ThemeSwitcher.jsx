@@ -25,7 +25,7 @@ import WbSunnyRoundedIcon from '@mui/icons-material/WbSunnyRounded';
  */
 const ThemeSwitcher = ({ mode, toggleTheme }) => {
   return (
-    <Box sx={{ display: "flex", justifyContent: "flex-start", p: 2 }}>
+    <Box sx={{ display: "flex", justifyContent: "flex-start"}}>
       <IconButton onClick={toggleTheme} color="primary">
         {mode === "light" ? <DarkModeRoundedIcon /> : <WbSunnyRoundedIcon />}
       </IconButton>
