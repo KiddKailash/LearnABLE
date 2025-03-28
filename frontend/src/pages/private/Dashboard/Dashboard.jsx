@@ -8,6 +8,7 @@ import PageWrapper from "../../../components/PageWrapper";
 
 // MUI Components
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 // Custom Components
 import DashboardAppBar from "./DashboardAppBar";
@@ -17,7 +18,6 @@ import WeeklySchedule from "./WeeklySchedule";
 
 // Dummy Data
 import { statsData, upcomingEventsData, weeklyScheduleData } from "./dummyData";
-import { Typography } from "@mui/material";
 
 const Dashboard = () => {
   const { user } = useContext(UserContext);
@@ -28,7 +28,7 @@ const Dashboard = () => {
       <DashboardAppBar />
 
       {/* Main Content */}
-      <Box fullWidth>
+      <Box sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>
           Welcome, {user.name.split(" ")[0]}
         </Typography>
