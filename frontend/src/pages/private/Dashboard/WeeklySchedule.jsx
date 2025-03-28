@@ -1,5 +1,11 @@
 import React from "react";
-import { Card, CardContent, Typography, Grid, Box } from "@mui/material";
+
+// MUI
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid2";
+import Box from "@mui/material/Box";
 
 const hours = [
   "09:00",
@@ -25,9 +31,9 @@ const WeeklySchedule = ({ scheduleData }) => {
 
         {/* Days Row */}
         <Grid container sx={{ mb: 1 }}>
-          <Grid item xs={2} />
+          <Grid size={2} />
           {scheduleData.map((day) => (
-            <Grid item xs key={day.day}>
+            <Grid xs key={day.day}>
               <Typography variant="subtitle2" align="center">
                 {day.day}
               </Typography>

@@ -1,14 +1,14 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Box,
-  Link,
-} from "@mui/material";
+
+// MUI Components
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
 
 const UpcomingEvents = ({ events }) => {
   return (
