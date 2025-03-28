@@ -135,7 +135,7 @@ pip install poetry
 poetry install
 
 # Activate the virtual environment
-source $(poetry env info --path)/bin/activate
+echo 'source $(poetry env info --path)/bin/activate' > .envrc
 
 # Run the development server
 python manage.py runserver

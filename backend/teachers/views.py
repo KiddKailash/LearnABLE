@@ -8,6 +8,16 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 @csrf_exempt  # Disable CSRF for testing (only for development!)
 def register_teacher(request):
+    """
+    Registers a new teacher by saving their name, email, and hashed password to the database.
+
+    Args:
+        request (HttpRequest): A POST request with JSON data containing 'name', 'email', and 'password'.
+
+    Returns:
+        JsonResponse: A success message with teacher ID (201) if registration succeeds,
+                      or an error message (400 or 500) on failure.
+    """
     if request.method == "POST":
         try:
             # Parse the JSON data from request
@@ -34,6 +44,16 @@ def register_teacher(request):
 
 @csrf_exempt
 def login_teacher(request):
+    """
+    Authenticates a teacher using email and password, and returns JWT tokens on success.
+
+    Args:
+        request (HttpRequest): A POST request with JSON data containing 'email' and 'password'.
+
+    Returns:
+        JsonResponse: A response containing access and refresh tokens along with teacher info (200),
+                      or an error message (401 or 500).
+    """
     if request.method == "POST":
         try:
             data = json.loads(request.body)
