@@ -30,7 +30,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <Box fullWidth>
         <Typography variant="h4" gutterBottom>
-          Welcome, {user.name.split(" ")[0]}
+          Welcome, {user.first_name}
         </Typography>
         {/* Stats Row */}
         <StatsCards stats={statsData} />

@@ -81,11 +81,11 @@ export const UserProvider = ({ children }) => {
         localStorage.setItem("access_token", data.access);
         localStorage.setItem("refresh_token", data.refresh);
         // Also store user info in localStorage for auto-login
-        localStorage.setItem("user_name", data.name);
+        localStorage.setItem("user_name", data.first_name);
         localStorage.setItem("user_email", data.email);
         // Update state
         setUser({
-          name: data.name,
+          first_name: data.first_name,
           email: data.email,
         });
 
@@ -128,17 +128,17 @@ export const UserProvider = ({ children }) => {
    * Sends a POST request to /teachers/register/ with name, email, and password.
    * On success, returns the server response containing a message and teacher_id.
    *
-   * @param {string} name - Teacher's name.
+   * @param {string} first_name - Teacher's name.
    * @param {string} email - Teacher's email.
    * @param {string} password - Teacher's password.
    * @returns {Promise<Object>} Result object with success status and message/data.
    */
-  const registerTeacher = async (name, email, password) => {
+  const registerTeacher = async (first_name, email, password) => {
     try {
       const response = await fetch("http://localhost:8000/teachers/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ first_name, email, password }),
       });
       const data = await response.json();
 
@@ -187,7 +187,7 @@ export const UserProvider = ({ children }) => {
 
       // If there is a name/email, set them in state
       if (storedName && storedEmail) {
-        setUser({ name: storedName, email: storedEmail });
+        setUser({ first_name: storedName, email: storedEmail });
       } else {
         // If you had a /teachers/profile/ route, you'd fetch it here
       }
