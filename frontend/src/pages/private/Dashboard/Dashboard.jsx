@@ -14,24 +14,25 @@ import Typography from "@mui/material/Typography";
 import DashboardAppBar from "./DashboardAppBar";
 import StatsCards from "./StatsCards";
 import UpcomingEvents from "./UpcomingEvents";
-import WeeklySchedule from "./WeeklySchedule";
+// import WeeklySchedule from "./WeeklySchedule"; // Uncomment if needed
 
 // Dummy Data
-import { statsData, upcomingEventsData, weeklyScheduleData } from "./dummyData";
+import { statsData, upcomingEventsData /*, weeklyScheduleData*/ } from "./dummyData";
 
-const Dashboard = () => {
+const Dashboard = ({ mode, toggleTheme }) => {
   const { user } = useContext(UserContext);
 
   return (
     <PageWrapper>
-      {/* Top AppBar with Search */}
-      <DashboardAppBar />
+      {/* Top AppBar with Search and ThemeSwitcher */}
+      <DashboardAppBar mode={mode} toggleTheme={toggleTheme} />
 
       {/* Main Content */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>
           Welcome, {user.name.split(" ")[0]}
         </Typography>
+        
         {/* Stats Row */}
         <StatsCards stats={statsData} />
 
