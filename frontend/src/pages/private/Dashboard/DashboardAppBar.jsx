@@ -1,5 +1,8 @@
 import React from "react";
 
+// Components
+import ThemeSwitcher from "../../../components/ThemeSwitcher";
+
 // MUI
 import AppBar from "@mui/material/AppBar";
 import InputBase from "@mui/material/InputBase";
@@ -13,11 +16,8 @@ const DashboardAppBar = () => {
     <AppBar
       position="static"
       color="inherit"
-      elevation={1}
       sx={(theme) => ({ borderRadius: theme.shape.border, boxShadow: 0 })}
     >
-      {/* Example: a menu icon on the left */}
-
       {/* Search Box */}
       <Box
         fullWidth
@@ -28,16 +28,26 @@ const DashboardAppBar = () => {
           width: "100%",
           display: "flex",
           alignItems: "center",
-          p: 2,
         })}
       >
-        <SearchIcon color="action" />
+        <SearchIcon
+          color="action"
+          sx={{
+            "&:hover": {
+              color: "primary.main",
+            },
+          }}
+        />
         <InputBase
           fullWidth
           placeholder="Search here..."
           inputProps={{ "aria-label": "search" }}
-          sx={{ ml: 1, flex: 1 }}
+          sx={{
+            ml: 1,
+            flex: 1,
+          }}
         />
+        <ThemeSwitcher />
       </Box>
 
       {/* Right Side Icons or Profile */}

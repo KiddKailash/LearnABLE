@@ -7,7 +7,6 @@ import UserContext from "../../../services/UserContext";
 import PageWrapper from "../../../components/PageWrapper";
 
 // MUI Components
-import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 
 // Custom Components
@@ -24,14 +23,14 @@ const Dashboard = () => {
   const { user } = useContext(UserContext);
 
   return (
-    <PageWrapper sx={{ flexGrow: 1, mt: 1 }}>
+    <PageWrapper>
       {/* Top AppBar with Search */}
       <DashboardAppBar />
 
       {/* Main Content */}
-      <Box fullWidth sx={{ mt: 4 }}>
+      <Box fullWidth>
         <Typography variant="h4" gutterBottom>
-          Welcome, {user.name}
+          Welcome, {user.name.split(" ")[0]}
         </Typography>
         {/* Stats Row */}
         <StatsCards stats={statsData} />
@@ -39,8 +38,8 @@ const Dashboard = () => {
         {/* Upcoming Events */}
         <UpcomingEvents events={upcomingEventsData} />
 
-        {/* Weekly Schedule
-        <WeeklySchedule scheduleData={weeklyScheduleData} /> */}
+        {/* Weekly Schedule */}
+        {/* <WeeklySchedule scheduleData={weeklyScheduleData} /> */}
       </Box>
     </PageWrapper>
   );
