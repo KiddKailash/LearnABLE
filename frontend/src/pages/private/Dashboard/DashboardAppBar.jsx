@@ -7,10 +7,14 @@ import AppBar from "@mui/material/AppBar";
 import InputBase from "@mui/material/InputBase";
 import Box from "@mui/material/Box";
 
+
 // MUI Icons
 import SearchIcon from "@mui/icons-material/Search";
 
+
 const DashboardAppBar = ({ mode, toggleTheme }) => {
+
+
   return (
     <AppBar
       position="static"
@@ -46,16 +50,27 @@ const DashboardAppBar = ({ mode, toggleTheme }) => {
             flex: 1,
           }}
         />
+        
 
         {/* Now we pass mode & toggleTheme into ThemeSwitcher */}
         <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
       </Box>
+      
 
       {/* Right side icons or profile */}
       <Box sx={{ flexGrow: 1 }} />
       {/* Add user avatar or other icons here */}
+      
     </AppBar>
   );
 };
 
+
+
 export default DashboardAppBar;
+
+
+
+
+
+
