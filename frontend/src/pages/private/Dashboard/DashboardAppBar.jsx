@@ -1,16 +1,22 @@
 import React from "react";
 // Components
 import ThemeSwitcher from "../../../components/ThemeSwitcher";
+import Notifications from "../../../components/Notifications.jsx";
+
 
 // MUI
 import AppBar from "@mui/material/AppBar";
 import InputBase from "@mui/material/InputBase";
 import Box from "@mui/material/Box";
 
+
 // MUI Icons
 import SearchIcon from "@mui/icons-material/Search";
 
+
 const DashboardAppBar = ({ mode, toggleTheme }) => {
+
+
   return (
     <AppBar
       position="static"
@@ -27,6 +33,7 @@ const DashboardAppBar = ({ mode, toggleTheme }) => {
           width: "100%",
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between", //!added
         })}
       >
         <SearchIcon
@@ -47,15 +54,29 @@ const DashboardAppBar = ({ mode, toggleTheme }) => {
           }}
         />
 
-        {/* Now we pass mode & toggleTheme into ThemeSwitcher */}
-        <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
+        {/*top right components */}
+        <Box sx ={{display: "flex", alignItems:"center"}}>
+          <Notifications />
+          {/* Now we pass mode & toggleTheme into ThemeSwitcher */}
+          <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
+          </Box>
       </Box>
+      
 
       {/* Right side icons or profile */}
       <Box sx={{ flexGrow: 1 }} />
       {/* Add user avatar or other icons here */}
+      
     </AppBar>
   );
 };
 
+
+
 export default DashboardAppBar;
+
+
+
+
+
+

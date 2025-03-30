@@ -13,11 +13,12 @@ import Typography from "@mui/material/Typography";
 // Custom Components
 import DashboardAppBar from "./DashboardAppBar";
 import StatsCards from "./StatsCards";
-import UpcomingEvents from "./UpcomingEvents";
+import UpcomingEvents from "./DashboardCards";
 // import WeeklySchedule from "./WeeklySchedule"; // Uncomment if needed
 
 // Dummy Data
 import { statsData, upcomingEventsData /*, weeklyScheduleData*/ } from "./dummyData";
+import DashboardCards from "./DashboardCards";
 
 const Dashboard = ({ mode, toggleTheme }) => {
   const { user } = useContext(UserContext);
@@ -37,10 +38,12 @@ const Dashboard = ({ mode, toggleTheme }) => {
         <StatsCards stats={statsData} />
 
         {/* Upcoming Events */}
-        <UpcomingEvents events={upcomingEventsData} />
+        {/*<UpcomingEvents events={upcomingEventsData} />*/}
 
         {/* Weekly Schedule */}
         {/* <WeeklySchedule scheduleData={weeklyScheduleData} /> */}
+
+        <DashboardCards />
       </Box>
     </PageWrapper>
   );
