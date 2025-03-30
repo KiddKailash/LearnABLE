@@ -69,13 +69,13 @@ const DashboardCards = () => {
           {/* card image */}
           <CardMedia
             component="img"
-            height="250"
+            height = "250"
             image={card.image}
-            alt={card.title}
+            alt = {card.title}
             onError={(e) => {
               e.target.src = card.altImage;
             }}
-            sx={{ objectFit: "cover" }}
+            sx= {{ objectFit: "cover" }}
           />
           
           {/* card content */}
@@ -91,18 +91,18 @@ const DashboardCards = () => {
             
             <Typography 
               variant="body1" 
-              color="text.secondary" 
+              color ="text.secondary" 
               sx={{ 
                 mb: 2,
-                minHeight: "60px" // Ensure consistent height for descriptions
+                minHeight: "60px" //consistent height (for descriptions)
               }}
             >
               {card.description}
             </Typography>
              {/* view button links */}
-            <Link to={card.link} style={{ textDecoration: "none" }}>
+            <Link to = {card.link} style={{ textDecoration: "none" }}>
               <Button 
-                variant="outlined" 
+                variant = "outlined" 
                 color="primary"
                 sx={{ 
                   textTransform: "none",

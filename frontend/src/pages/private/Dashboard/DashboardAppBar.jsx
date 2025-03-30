@@ -1,6 +1,8 @@
 import React from "react";
 // Components
 import ThemeSwitcher from "../../../components/ThemeSwitcher";
+import Notifications from "../../../components/Notifications.jsx";
+
 
 // MUI
 import AppBar from "@mui/material/AppBar";
@@ -31,6 +33,7 @@ const DashboardAppBar = ({ mode, toggleTheme }) => {
           width: "100%",
           display: "flex",
           alignItems: "center",
+          justifyContent: "space-between", //!added
         })}
       >
         <SearchIcon
@@ -50,10 +53,13 @@ const DashboardAppBar = ({ mode, toggleTheme }) => {
             flex: 1,
           }}
         />
-        
 
-        {/* Now we pass mode & toggleTheme into ThemeSwitcher */}
-        <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
+        {/*top right components */}
+        <Box sx ={{display: "flex", alignItems:"center"}}>
+          <Notifications />
+          {/* Now we pass mode & toggleTheme into ThemeSwitcher */}
+          <ThemeSwitcher mode={mode} toggleTheme={toggleTheme} />
+          </Box>
       </Box>
       
 
