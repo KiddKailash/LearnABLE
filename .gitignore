@@ -34,6 +34,9 @@ yarn-error.log*
 *.pyc
 ./backend/*/__pycache__
 
-# Ignore all migrations except __init__.py
-*/migrations/*
-!*/migrations/__init__.py
+# Ignore all migration files in any app
+**./backend/*/migrations/*.py
+
+# But do NOT ignore __init__.py
+!**./backend/*/migrations/__init__.py
+
