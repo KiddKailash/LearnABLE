@@ -7,5 +7,13 @@ urlpatterns = [
     path("teachers/", include("teachers.urls")),
     path("classes/", include("classes.urls")),
     path("subjects/", include("subjects.urls")),
-    path("students/", include("students.urls")),  # Include the backend app's URLs
+    path("students/", include("students.urls")),
+    path("assessments/", include("assessments.urls")),
+    path("attendancesessions/", include("attendancesessions.urls")),
+    path("classes/", include("classes.urls")),
+    path("classstudents/", include("classstudents.urls")),
+    path("learnmaterial/", include("learnmaterial.urls")),
+    path("studentattendance/", include("studentattendance.urls")),
+    path("studentgrades/", include("studentgrades.urls")), 
+    path("nccdreports/", include("nccdreports.urls")),    
 ]

@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 const Storage = () => {
   return (
     <PageWrapper>
-      <Typography variant="h1">Storage</Typography>
+      <Typography variant="h1">Message</Typography>
     </PageWrapper>
   );
 };

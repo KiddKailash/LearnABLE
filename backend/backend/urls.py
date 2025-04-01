@@ -17,6 +17,13 @@ urlpatterns = [
     path('', home, name='home'),  # Root URL
     path("", include("teachers.urls")),
     path("", include("students.urls")),
-    path("", include("subjects.urls")),
+    path("", include("assessments.urls")),
+    path("", include("attendancesessions.urls")),
+    path("", include("classes.urls")),
+    path("", include("classstudents.urls")),
+    path("", include("learningmaterial.urls")),
+    path("", include("studentattendance.urls")),
+    path("", include("studentgrades.urls")),
+    path("", include("nccdreports.urls")),
     path('admin/', admin.site.urls)
 ]

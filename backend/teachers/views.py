@@ -1,6 +1,9 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.core.files.storage import default_storage
 from .models import Teacher
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -70,3 +73,18 @@ def login_teacher(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
+@api_view(["POST"])
+def upload_profile_pic(request):
+    email = request.data.get("email")
+    file = request.FILES.get("profile_pic")
+
+    if not email or not file:
+        return Response({"error": "Email and profile picture are required."}, status=400)
+
+    try:
+        teacher = Teacher.objects.get(email=email)
+        teacher.profile_pic = file
+        teacher.save()
+        return Response({"message": "Profile picture updated successfully!", "profile_pic": teacher.profile_pic.url})
+    except Teacher.DoesNotExist:
+        return Response({"error": "Teacher not found."}, status=404)
