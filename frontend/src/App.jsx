@@ -57,22 +57,6 @@ function App({ mode, toggleTheme }) {
   // Define an array of paths that are public.
   const publicPaths = ["/", "/login", "/register"];
 
-  // Local state to store fetched data (if needed).
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    // Fetch data from the backend API when the component mounts.
-    fetch("http://127.0.0.1:8000/api/")
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Data fetched:", data);
-        setData(data);
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-  }, []);
-
-  data ? console.log("Fetched Data:", data) : console.log("Data not fetched");
-
   return (
     <Routes>
       <Route path="/" element={<Layout />}>

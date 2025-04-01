@@ -25,7 +25,6 @@ const DashboardAppBar = ({ mode, toggleTheme }) => {
     >
       {/* Search Box */}
       <Box
-        fullWidth
         sx={(theme) => ({
           position: "relative",
           borderRadius: theme.shape.border,
