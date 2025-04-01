@@ -33,3 +33,7 @@ yarn-error.log*
 **/__pycache__/
 *.pyc
 ./backend/*/__pycache__
+
+# Ignore all migrations except __init__.py
+*/migrations/*
+!*/migrations/__init__.py
