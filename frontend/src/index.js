@@ -26,7 +26,7 @@ import { getTheme } from "./global-styling";
 
 const Root = () => {
   // Create a piece of state for theme mode
-  const [mode, setMode] = useState("dark");
+  const [mode, setMode] = useState("light");
 
   // Function to toggle the theme
   const toggleTheme = () => {
@@ -42,10 +42,6 @@ const Root = () => {
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <SnackbarProvider>
-            {/*
-              Pass mode and toggleTheme into <App />, so child components can
-              render <ThemeSwitcher /> and actually toggle the theme.
-            */}
             <App mode={mode} toggleTheme={toggleTheme} />
           </SnackbarProvider>
         </ThemeProvider>
