@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Local Imports
 import PageWrapper from "../../components/PageWrapper";
@@ -18,6 +18,7 @@ import {
   ListItemText,
   ListItemButton,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -38,7 +39,11 @@ const AIAssistant = () => {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const MAX_MESSAGES_PER_CHAT = 10; // Define maximum messages per chat
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const fileInputRef = useRef(null);
 
   // Load chat sessions from localStorage
   useEffect(() => {
@@ -76,8 +81,20 @@ const AIAssistant = () => {
     }
   }, [chatSessions]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      handleSend(file);
+    }
+  };
+
+  const handleFileClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleSend = async (file = null) => {
+    // If no file and no text input, return
+    if (!input.trim() && !file) return;
 
     // Create new session if none exists
     if (!currentSessionId) {
@@ -89,39 +106,12 @@ const AIAssistant = () => {
       };
       setCurrentSessionId(newSession.id);
       setChatSessions(prev => [newSession, ...prev]);
-      
-      // Create the first message after creating new session
-      const newMessage = {
-        type: "user",
-        content: input,
-        timestamp: new Date().toISOString(),
-      };
-      
-      const aiResponse = {
-        type: "ai",
-        content: "This is a placeholder AI response.",
-        timestamp: new Date().toISOString(),
-      };
-
-      const initialMessages = [newMessage, aiResponse];
-      newSession.messages = initialMessages;
-      
-      setMessages(initialMessages);
-      setInput("");
-      setLastResponse(aiResponse);
-      
-      // Update sessions with the new session containing messages
-      setChatSessions(prev => prev.map(session => 
-        session.id === newSession.id ? newSession : session
-      ));
-      
-      return;
     }
 
-    // For existing sessions
+    // Create user message based on whether it's a file or text
     const newMessage = {
       type: "user",
-      content: input,
+      content: file ? `Uploaded file: ${file.name}` : input,
       timestamp: new Date().toISOString(),
     };
 
@@ -130,7 +120,7 @@ const AIAssistant = () => {
     const currentMessages = [...(currentSession?.messages || [])];
 
     // Check message limit
-    if (currentMessages.length >= MAX_MESSAGES_PER_CHAT * 2) { // Multiply by 2 to account for both user and AI messages
+    if (currentMessages.length >= MAX_MESSAGES_PER_CHAT * 2) {
       alert("This chat has reached its message limit. Creating a new chat...");
       createNewChat();
       return;
@@ -139,10 +129,12 @@ const AIAssistant = () => {
     // Add new message to current messages
     const updatedMessages = [...currentMessages, newMessage];
 
-    // Add AI response
+    // Create AI response based on whether it's a file upload or text prompt
     const aiResponse = {
       type: "ai",
-      content: "This is a placeholder AI response.",
+      content: file 
+        ? `I've received your file "${file.name}". I can help you create personalized learning materials based on this document. What specific type of learning material would you like me to generate?`
+        : "This is a placeholder AI response.",
       timestamp: new Date().toISOString(),
     };
 
@@ -195,6 +187,12 @@ const AIAssistant = () => {
       setMessages(session.messages || []);
     }
   };
+
+  // Add this function to filter chat sessions
+  const filteredChatSessions = chatSessions.filter(session => {
+    const firstMessage = session.messages?.[0]?.content || "New Chat";
+    return firstMessage.toLowerCase().includes(searchQuery.toLowerCase());
+  });
 
   return (
     <PageWrapper>
@@ -269,6 +267,8 @@ const AIAssistant = () => {
                   fullWidth
                   size="small"
                   placeholder="Search chats..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{ p: 1 }}
                   InputProps={{
                     startAdornment: <SearchIcon sx={{ color: 'primary.main', mr: 1 }} />
@@ -277,7 +277,7 @@ const AIAssistant = () => {
               )}
               
               <List sx={{ overflow: 'auto', flexGrow: 1 }}>
-                {chatSessions.map((session) => (
+                {filteredChatSessions.map((session) => (
                   <React.Fragment key={session.id}>
                     <ListItemButton
                       selected={currentSessionId === session.id}
@@ -442,6 +442,7 @@ const AIAssistant = () => {
                   onKeyPress={(e) => e.key === "Enter" && handleSend()}
                 />
                 <IconButton 
+                  onClick={handleFileClick}
                   sx={{ 
                     position: 'absolute',
                     right: 8,
@@ -458,6 +459,33 @@ const AIAssistant = () => {
                 <SendIcon />
               </IconButton>
             </Box>
+
+            {/* Add hidden file input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handleFileUpload}
+              accept=".pdf,.doc,.docx,.txt"  // Specify accepted file types
+            />
+
+            {/* Add loading indicator */}
+            {isLoading && (
+              <Box sx={{ 
+                position: 'absolute', 
+                top: 0, 
+                left: 0, 
+                right: 0, 
+                bottom: 0, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                zIndex: 1,
+              }}>
+                <CircularProgress />
+              </Box>
+            )}
           </CardContent>
         </Card>
       </Box>
