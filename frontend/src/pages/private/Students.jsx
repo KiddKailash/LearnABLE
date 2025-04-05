@@ -9,7 +9,7 @@ import Typography from "@mui/material/Typography";
 const Students = () => {
   return (
     <PageWrapper>
-      <Typography variant="h1">Students</Typography>
+      <Typography variant="h1">Classes</Typography>
     </PageWrapper>
   );
 };
