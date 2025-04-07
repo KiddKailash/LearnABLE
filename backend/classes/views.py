@@ -6,16 +6,19 @@ from django.http import HttpResponse
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import permission_classes
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from .models import Classes
 from students.models import Student
 from teachers.models import Teacher
+from .serializers import ClassSerializer
+
 
 # Create class object
 @api_view(['POST'])
+@permission_classes([AllowAny]) #testing only remove in prod
 @permission_classes([IsAuthenticated])
 def create_class(request):
     """
@@ -47,9 +50,10 @@ def get_all_classes(request):
     return Response(serializer.data)
 
 @csrf_exempt
-@api_view(['POST', 'GET'])
+@api_view(['POST', 'GET']) 
 @parser_classes([MultiPartParser])
 @authentication_classes([])
+@permission_classes([AllowAny]) #allows testing remove in prod
 def upload_students_csv(request):
     """
     Upload a CSV file containing student details and create Student records.
