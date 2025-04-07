@@ -1,38 +1,39 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Typography, 
-  Button,
-  Box
-} from "@mui/material";
 
-// important dashboard cards that teachers can access
+// MUI Components
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+
+// Important dashboard cards that teachers can access
 const cards = [
   {
     title: "AI Assistant",
-    description: "Generate personalised learning material based on student needs with an AI assistant",
+    description:
+      "Generate personalised learning material based on student needs with an AI assistant",
     link: "/ai-assistant",
     image: "/images/ai-assistant.png",
-    textAlign: "center"
+    textAlign: "center",
   },
   {
     title: "Students",
     description: "Access Student Information",
     link: "/students",
     image: "/images/students.png",
-    textAlign: "center"
+    textAlign: "center",
   },
   {
     //! NCCD reporting page not yet implemented, link directs user to the student page
     title: "NCCD Reporting",
     description: "Generate reports for NCCD Requirements",
     link: "/students",
-    image: "/images/reporting.png", 
-    textAlign: "center"
+    image: "/images/reporting.png",
+    textAlign: "center",
   },
 ];
 
@@ -44,18 +45,13 @@ const cards = [
  */
 const DashboardCards = () => {
   return (
-    <Box sx={{ 
-      display: "flex", 
-      justifyContent: "center", 
-      flexWrap: "wrap", 
-      gap: 3,
-      py: 2
-    }}>
+    <Stack direction="row" spacing={4} sx={{ my: 2 }}>
+      {/* Responsive grid layout for cards */}
       {cards.map((card, index) => (
         <Card
+          size={4}
           key={index}
           sx={{
-            width: "350px",
             borderRadius: 2,
             overflow: "hidden",
             transition: "transform 0.3s, box-shadow 0.3s",
@@ -66,48 +62,40 @@ const DashboardCards = () => {
           }}
           elevation={2}
         >
-          {/* card image */}
           <CardMedia
             component="img"
-            height = "250"
             image={card.image}
-            alt = {card.title}
+            alt={card.title}
             onError={(e) => {
               e.target.src = card.altImage;
             }}
-            sx= {{ objectFit: "cover" }}
+            sx={{ objectFit: "cover" }}
           />
-          
+
           {/* card content */}
-          <CardContent sx={{ padding: 3 }}>
-            <Typography 
-              variant="h5" 
-              component="div" 
-              fontWeight="bold" 
-              gutterBottom
-            >
+          <CardContent>
+            <Typography variant="h5" fontWeight="bold">
               {card.title}
             </Typography>
-            
-            <Typography 
-              variant="body1" 
-              color ="text.secondary" 
-              sx={{ 
-                mb: 2,
-                minHeight: "60px" //consistent height (for descriptions)
+
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                mb: 1,
               }}
             >
               {card.description}
             </Typography>
-             {/* view button links */}
-            <Link to = {card.link} style={{ textDecoration: "none" }}>
-              <Button 
-                variant = "outlined" 
+            {/* view button links */}
+            <Link to={card.link} style={{ textDecoration: "none", mt: "auto" }}>
+              <Button
+                variant="outlined"
                 color="primary"
-                sx={{ 
+                sx={{
                   textTransform: "none",
                   borderRadius: 1.5,
-                  px: 3
+                  px: 3,
                 }}
               >
                 View
@@ -116,7 +104,7 @@ const DashboardCards = () => {
           </CardContent>
         </Card>
       ))}
-    </Box>
+    </Stack>
   );
 };
 
