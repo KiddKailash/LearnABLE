@@ -36,3 +36,38 @@ def update_student(request, student_id):
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
 
+# Get a single student
+@api_view(['GET'])
+def get_student(request, student_id):
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
+
+    serializer = StudentSerializer(student)
+    return Response(serializer.data)
+
+# Delete a student
+@api_view(['DELETE'])
+def delete_student(request, student_id):
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
+
+    student.delete()
+    return Response({"message": "Student deleted successfully"}, status=204)
+
+# Update student's fields
+@api_view(['PATCH'])
+def partial_update_student(request, student_id):
+    try:
+        student = Student.objects.get(id=student_id)
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
+
+    serializer = StudentSerializer(student, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
