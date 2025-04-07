@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Student
 from .serializers import StudentSerializer
+from classes.models import Classes
 
 #Get all students
 @api_view(['GET'])
@@ -71,3 +72,16 @@ def partial_update_student(request, student_id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
+
+@api_view(['GET'])
+def get_students_by_class(request, class_id):
+    """
+    Returns all students in a given class.
+    """
+    try:
+        class_obj = Classes.objects.get(id=class_id)
+        students = class_obj.students.all()  # many-to-many relationship
+        serializer = StudentSerializer(students, many=True)
+        return Response(serializer.data)
+    except Classes.DoesNotExist:
+        return Response({"error": "Class not found"}, status=404)

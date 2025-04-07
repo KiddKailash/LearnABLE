@@ -5,7 +5,8 @@ from .views import (
     create_student,
     update_student,
     delete_student,
-    partial_update_student
+    partial_update_student,
+    get_students_by_class
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('students/<int:student_id>/update/', update_student, name="update_student"),
     path('students/<int:student_id>/patch/', partial_update_student, name="partial_update_student"),
     path('students/<int:student_id>/delete/', delete_student, name="delete_student"),
+    path('class/<int:class_id>/', get_students_by_class, name="get_students_by_class"),
 ]

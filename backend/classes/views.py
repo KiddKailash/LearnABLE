@@ -27,7 +27,11 @@ def create_class(request):
     serializer = ClassSerializer(data=data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({
+    "message": "Class created successfully!",
+    "class_id": serializer.data["id"],
+    "class_data": serializer.data
+}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
@@ -49,6 +53,7 @@ def get_all_classes(request):
 def upload_students_csv(request):
     """
     Upload a CSV file containing student details and create Student records.
+    Links them to an existing class via class_id.
 
     The CSV is expected to have columns such as:
       - first_name
@@ -60,53 +65,62 @@ def upload_students_csv(request):
       - guardian_last_name (optional)
       - disability_info (optional; will typically be blank)
 
-    Any missing fields will be set to empty or default values.
-    
     Returns:
-        Response: A JSON response with a success message and a list of created student IDs,
-                  or an error message if processing fails.
+        Response: Success message and student IDs, or error message.
     """
     if request.method == 'GET':
-        # Show a basic file upload form for testing in browser
         html = """
         <html>
         <body>
             <h2>Upload Student CSV</h2>
             <form method="post" enctype="multipart/form-data">
                 <input type="file" name="file" required />
+                <input type="text" name="class_id" placeholder="Enter class ID" required />
                 <button type="submit">Upload</button>
             </form>
         </body>
         </html>
         """
         return HttpResponse(html)
-    
+
+    class_id = request.POST.get("class_id")
+    if not class_id:
+        return Response({"error": "Missing class_id in request"}, status=400)
+
+    try:
+        class_obj = Classes.objects.get(id=class_id)
+    except Classes.DoesNotExist:
+        return Response({"error": "Class not found"}, status=404)
+
     csv_file = request.FILES.get("file")
     if not csv_file:
-        return Response({"error": "CSV file is required"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "CSV file is required"}, status=400)
 
     try:
         decoded_file = csv_file.read().decode("utf-8")
         io_string = io.StringIO(decoded_file)
         reader = csv.DictReader(io_string)
         student_ids = []
-        
+
         for row in reader:
             student = Student.objects.create(
                 first_name=row.get("first_name", ""),
                 last_name=row.get("last_name", ""),
                 year_level=row.get("year_level", None),
                 student_email=row.get("student_email", ""),
-                disability_info=row.get("disability_info", ""),  # Will be edited later if needed
+                disability_info=row.get("disability_info", ""),
                 guardian_email=row.get("guardian_email", ""),
                 guardian_first_name=row.get("guardian_first_name", "missing"),
                 guardian_last_name=row.get("guardian_last_name", "missing")
             )
+            class_obj.students.add(student)  # Associate student with class
             student_ids.append(student.id)
-            
-        return Response(
-            {"message": "Students created successfully", "student_ids": student_ids},
-            status=status.HTTP_201_CREATED
-        )
+
+        return Response({
+            "message": "Students created and linked to class successfully",
+            "class_id": class_id,
+            "student_ids": student_ids
+        }, status=201)
+
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": str(e)}, status=500)
