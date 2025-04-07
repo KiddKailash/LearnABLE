@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import create_class, get_all_classes
+from .views import create_class, get_all_classes, upload_students_csv
 
 urlpatterns = [
     path('classes/create/', create_class, name='create_class'),
     path('classes/', get_all_classes, name="get_all_classes"),
+    path("classes/upload-csv/", upload_students_csv, name="upload_students_csv"),
 ]
