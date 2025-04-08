@@ -10,7 +10,7 @@ from .views import (
 )
 
 urlpatterns = [
-    path('students/', get_all_students, name="get_all_students"),
+    path('', get_all_students, name="get_all_students"),
     path('students/create/', create_student, name="create_student"),
     path('students/<int:student_id>/', get_student, name="get_student"),
     path('students/<int:student_id>/update/', update_student, name="update_student"),
