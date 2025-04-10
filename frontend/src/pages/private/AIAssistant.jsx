@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
+import UserContext from "../../services/UserContext"; // Import UserContext
 
 // Local Imports
 import PageWrapper from "../../components/PageWrapper";
@@ -32,6 +33,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 
 const AIAssistant = () => {
+  const { user } = useContext(UserContext); // Access user info from UserContext
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [lastResponse, setLastResponse] = useState(null);
@@ -203,8 +205,8 @@ const AIAssistant = () => {
         mb: 3 
       }}>
         <img 
-          src="/images/ai-icon.png"  // Updated path relative to public folder
-          alt="AI Assistant Icon"
+          src={user.profile_pic ? user.profile_pic : "/images/ai-assistant.png"}  // Use profile picture or default image
+          alt="User Profile"
           style={{
             width: '40px',
             height: '40px',
