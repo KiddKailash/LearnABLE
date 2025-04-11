@@ -1,16 +1,17 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-// MUI
+// MUI components
 import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
+import CircularProgress from "@mui/material/CircularProgress";
 
 // Contexts
-import { SnackbarContext } from "../../contexts/SnackbarContext"; 
+import { SnackbarContext } from "../../contexts/SnackbarContext";
 import UserContext from "../../services/UserObject";
 
 /**
@@ -26,10 +27,12 @@ const Register = () => {
     email: "",
     password: "",
   });
+  
+  // New loading state
+  const [loading, setLoading] = useState(false);
 
   const { showSnackbar } = useContext(SnackbarContext);
   const { registerTeacher } = useContext(UserContext);
-
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -38,19 +41,27 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Match the order in registerTeacher(first_name, last_name, email, password)
-    const result = await registerTeacher(
-      formData.first_name,
-      formData.last_name,
-      formData.email,
-      formData.password
-    );
+    setLoading(true); // Begin loading
 
-    if (result.success) {
-      showSnackbar("Teacher registered successfully!", "success");
-      navigate("/login");
-    } else {
-      showSnackbar(result.message || "Error registering teacher", "error");
+    try {
+      const result = await registerTeacher(
+        formData.first_name,
+        formData.last_name,
+        formData.email,
+        formData.password
+      );
+
+      if (result.success) {
+        showSnackbar("Teacher registered successfully!", "success");
+        navigate("/login");
+      } else {
+        showSnackbar(result.message || "Error registering teacher", "error");
+      }
+    } catch (error) {
+      console.error("Register error:", error);
+      showSnackbar("Error occurred during registration", "error");
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
@@ -86,7 +97,6 @@ const Register = () => {
               Login
             </Link>
           </Typography>
-
           <TextField
             fullWidth
             label="First Name"
@@ -123,9 +133,14 @@ const Register = () => {
             onChange={handleChange}
             variant="outlined"
           />
-
-          <Button fullWidth type="submit" variant="contained" color="primary">
-            Register
+          <Button
+            fullWidth
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Register"}
           </Button>
         </Stack>
       </Box>

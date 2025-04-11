@@ -1,34 +1,47 @@
 import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-// MUI
+// MUI components
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 
-// Context
+// Contexts
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 import UserContext from "../../services/UserObject";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  
+  // New loading state
+  const [loading, setLoading] = useState(false);
+
   const { showSnackbar } = useContext(SnackbarContext);
   const { login } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await login(email, password);
-    if (result.success) {
-      showSnackbar("Login successful!", "success");
-      // go to a protected page or home
-      navigate("/dashboard");
-    } else {
-      showSnackbar(result.message || "Login failed", "error");
+    setLoading(true); // Begin loading
+
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        showSnackbar("Login successful!", "success");
+        navigate("/dashboard");
+      } else {
+        showSnackbar(result.message || "Login failed", "error");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      showSnackbar("Error occurred during login", "error");
+    } finally {
+      setLoading(false); // End loading
     }
   };
 
@@ -59,6 +72,7 @@ const Login = () => {
                 e.preventDefault();
                 navigate("/register");
               }}
+              style={{ cursor: "pointer" }}
             >
               Sign Up
             </Link>
@@ -79,8 +93,8 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
             variant="outlined"
           />
-          <Button fullWidth type="submit" variant="contained" color="primary">
-            Login
+          <Button fullWidth type="submit" variant="contained" color="primary" disabled={loading}>
+            {loading ? <CircularProgress size={24} /> : "Login"}
           </Button>
         </Stack>
       </Box>
