@@ -9,39 +9,9 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
-<<<<<<< HEAD
 // Contexts
 import { SnackbarContext } from "../../contexts/SnackbarContext"; 
 import UserContext from "../../services/UserContext";
-=======
-// Context
-import { SnackbarContext } from "../../contexts/SnackbarContext";
-
-const registerTeacher = async (first_name, last_name, email, password) => {
-  try {
-    const response = await fetch("http://127.0.0.1:8000/api/teachers/register/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        first_name,  
-        last_name,
-        email,
-        password
-      }),
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Registration failed");
-
-    return { success: true, data };
-  } catch (error) {
-    console.error("Registration error:", error);
-    return { success: false, message: error.message };
-  }
-};
->>>>>>> 015e93f5a683884a988d7438bafd30abcb50f43a
 
 /**
  * This component renders a registration form for teachers.

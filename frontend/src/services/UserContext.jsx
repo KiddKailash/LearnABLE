@@ -50,11 +50,7 @@ export const UserProvider = ({ children }) => {
    */
   const login = async (email, password) => {
     try {
-<<<<<<< HEAD
       const response = await fetch(`${BACKEND}/api/teachers/login/`, {
-=======
-      const response = await fetch("http://localhost:8000/api/teachers/login/", {
->>>>>>> 015e93f5a683884a988d7438bafd30abcb50f43a
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -122,11 +118,7 @@ export const UserProvider = ({ children }) => {
    */
   const registerTeacher = async (first_name, last_name, email, password) => {
     try {
-<<<<<<< HEAD
       const response = await fetch(`${BACKEND}/api/teachers/register/`, {
-=======
-      const response = await fetch("http://localhost:8000/api/teachers/register/", {
->>>>>>> 015e93f5a683884a988d7438bafd30abcb50f43a
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ first_name, last_name, email, password }),
