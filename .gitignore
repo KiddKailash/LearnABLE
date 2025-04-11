@@ -6,6 +6,7 @@
 /.pnp
 .pnp.js
 /backend/poetry.lock
+/backend/.venv
 
 # testing
 /coverage
