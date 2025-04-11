@@ -37,10 +37,7 @@ function App({ mode, toggleTheme }) {
     { path: "/", component: <Login /> },
     { path: "/login", component: <Login /> },
     { path: "/register", component: <Register /> },
-
-    // Pass props to your Dashboard so it can pass them along to DashboardAppBar
-    { path: "/dashboard", component: <Dashboard mode={mode} toggleTheme={toggleTheme} /> },
-
+    { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
     { path: "/activity", component: <Activity /> },
     { path: "/ai-assistant", component: <AIAssistant /> },
@@ -57,7 +54,7 @@ function App({ mode, toggleTheme }) {
 
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={<Layout mode={mode} toggleTheme={toggleTheme} />}>
         {pages.map((page, i) => {
           // Determine if the route is public or protected
           const isPublic = publicPaths.includes(page.path) || page.path === "*";

@@ -1,10 +1,10 @@
 /**
- * @file Dashboard.jsx
+ * @file Layout.jsx
  * @description Layout component that renders the primary sidebar (if applicable) alongside
  * the main content area. The main content area displays the active route's content via Outlet.
  *
  * Layout:
- *    [Primary Sidebar] | [Main content area fills leftover space + can scroll]
+ *    [Primary Sidebar] | [AppBar + Main Content]
  *
  * @module Layout
  */
@@ -14,34 +14,26 @@ import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import Sidebar from "./Sidebar";
+import AppBar from "../components/Appbar/AppBar"; 
+import PageWrapper from "./PageWrapper";
 
 // MUI Components
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 
 /**
- * Dashboard component that provides the main layout for the application.
+ * Layout component that provides the main structure of the application.
  *
- * It conditionally renders the primary sidebar based on the current route. For example,
- * the sidebar is hidden on login, registration, home, or catch-all routes.
+ * It conditionally renders the primary sidebar based on the current route and includes a top AppBar
+ * across all pages that require the sidebar.
  *
  * @component
- * @returns {JSX.Element} The rendered Dashboard layout component.
+ * @returns {JSX.Element} The rendered layout with sidebar, appbar, and main content.
  */
-const Layout = () => {
+const Layout = ({ mode, toggleTheme }) => {
   const location = useLocation();
 
-  /**
-   * Determines if the sidebar should be hidden based on the current path.
-   *
-   * The sidebar is not displayed on the following routes:
-   * - /login
-   * - /register
-   * - /
-   * - *
-   *
-   * @type {boolean}
-   */
+  // Sidebar is hidden on public or auth routes
   const doNotDisplaySidebar =
     location.pathname === "/login" ||
     location.pathname === "/register" ||
@@ -52,8 +44,8 @@ const Layout = () => {
     <Box
       sx={{
         display: "flex",
-        height: "100vh", // fill viewport height
-        width: "100%", // fill viewport width
+        height: "100vh",
+        width: "100%",
         bgcolor: "background.default",
         p: 1,
       }}
@@ -70,27 +62,33 @@ const Layout = () => {
         </Box>
       )}
 
-      {/* Outer box that holds secondary sidebar + main content */}
+      {/* Main content area with AppBar + page content */}
       <Box
         sx={{
           bgcolor: "background.paper",
           borderRadius: 5,
           display: "flex",
-          flexGrow: 1, // let this box expand to fill leftover space
+          flexDirection: "column",
+          flexGrow: 1,
         }}
       >
-        {/* MAIN CONTENT AREA */}
+        {/* PAGE CONTENT */}
         <Container
           sx={{
-            flexGrow: 1, // again, fill remaining horizontal space
-            overflowY: "auto", // scroll if content is too tall
-            display: "flex", // we use a flex container to position the <Container>
+            flexGrow: 1,
+            overflowY: "auto",
             width: "100%",
             height: "100%",
           }}
         >
-          {/* Renders whatever route/page is active */}
+          <PageWrapper>
+          {/* GLOBAL APP BAR */}
+          {!doNotDisplaySidebar && (
+            <AppBar mode={mode} toggleTheme={toggleTheme} />
+          )}
+
           <Outlet />
+          </PageWrapper>
         </Container>
       </Box>
     </Box>

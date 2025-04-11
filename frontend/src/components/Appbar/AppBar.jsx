@@ -13,7 +13,7 @@
 import React from "react";
 
 // Local Components
-import ThemeSwitcher from "../../../components/ThemeSwitcher"; // Theme toggle component
+import ThemeSwitcher from "./ThemeSwitcher"; // Theme toggle component
 import Notifications from "./Notifications"; // Notification bell component
 
 // MUI Components

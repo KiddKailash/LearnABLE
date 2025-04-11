@@ -11,7 +11,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 // Custom Components
-import DashboardAppBar from "./DashboardAppBar";
+import DashboardAppBar from "../../../components/Appbar/AppBar";
 import StatsCards from "./StatsCards";
 import UpcomingEvents from "./DashboardCards";
 // import WeeklySchedule from "./WeeklySchedule"; // Uncomment if needed
@@ -25,9 +25,6 @@ const Dashboard = ({ mode, toggleTheme }) => {
 
   return (
     <PageWrapper>
-      {/* Top AppBar with Search and ThemeSwitcher */}
-      <DashboardAppBar mode={mode} toggleTheme={toggleTheme} />
-
       {/* Main Content */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>
