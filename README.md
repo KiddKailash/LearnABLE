@@ -142,12 +142,12 @@ python manage.py runserver
 ```
 
 **Frontend**
+- ***Development***: http://localhost:3000
+- ***Production***: https://storied-boba-17ed52.netlify.app
 
-- ***Development***: (http://localhost:3000)[http://localhost:3000]
-- ***Production***: (https://storied-boba-17ed52.netlify.app)[https://storied-boba-17ed52.netlify.app]
 **Backend** 
-- ***Development***: (http://localhost:8000)[http://localhost:8000]
-- ***Production***: (https://deco3801-smart.uqcloud.net/)[https://deco3801-smart.uqcloud.net/]
+- ***Development***: http://localhost:8000
+- ***Production***: https://deco3801-smart.uqcloud.net/
 
 
 ## License
