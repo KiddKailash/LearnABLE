@@ -1,46 +1,36 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from django.core.files.storage import default_storage
 from .models import Teacher
-from django.contrib.auth.hashers import make_password
-from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework_simplejwt.tokens import RefreshToken
+from .serializers import TeacherSerializer
 
-@csrf_exempt  # Disable CSRF for testing (only for development!)
+@csrf_exempt
 def register_teacher(request):
-    """
-    Registers a new teacher by saving their name, email, and hashed password to the database.
-
-    Args:
-        request (HttpRequest): A POST request with JSON data containing 'name', 'email', and 'password'.
-
-    Returns:
-        JsonResponse: A success message with teacher ID (201) if registration succeeds,
-                      or an error message (400 or 500) on failure.
-    """
     if request.method == "POST":
         try:
-            # Parse the JSON data from request
             data = json.loads(request.body)
-            name = data.get("name", "")
-            email = data.get("email", "")
-            password = data.get("password", "")
-
-            # Check if email already exists
-            if Teacher.objects.filter(email=email).exists():
-                return JsonResponse({"message": "Email already registered!"}, status=400)
-
-            # Hash the password before saving (important for security)
-            hashed_password = make_password(password)
-
-            # Create a new teacher record
-            teacher = Teacher.objects.create(name=name, email=email, password=hashed_password)
-            return JsonResponse({"message": "Teacher registered successfully!", "teacher_id": teacher.id}, status=201)
+            print("Received data:", data)  # Debugging line
+            
+            serializer = TeacherSerializer(data=data)
+            
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse({"message": "Teacher registered successfully!", "teacher_id": serializer.data["id"]}, status=201)
+            else:
+                print("Serializer errors:", serializer.errors)  # Debugging line
+                return JsonResponse({"error": serializer.errors}, status=400)
 
         except Exception as e:
+            print("Exception:", str(e))  # Debugging line
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
+
 
 @csrf_exempt
 def login_teacher(request):
@@ -73,7 +63,8 @@ def login_teacher(request):
             return JsonResponse({
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
-                "name": teacher.name,
+                "first_name": teacher.first_name,
+                "last_name": teacher.last_name,
                 "email": teacher.email
             })
 
@@ -82,3 +73,18 @@ def login_teacher(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
+@api_view(["POST"])
+def upload_profile_pic(request):
+    email = request.data.get("email")
+    file = request.FILES.get("profile_pic")
+
+    if not email or not file:
+        return Response({"error": "Email and profile picture are required."}, status=400)
+
+    try:
+        teacher = Teacher.objects.get(email=email)
+        teacher.profile_pic = file
+        teacher.save()
+        return Response({"message": "Profile picture updated successfully!", "profile_pic": teacher.profile_pic.url})
+    except Teacher.DoesNotExist:
+        return Response({"error": "Teacher not found."}, status=404)

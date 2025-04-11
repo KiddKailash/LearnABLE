@@ -15,18 +15,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-/**
- * Creates a UserContext with default values.
- *
- * Default context object properties:
- *  - user: null (basic teacher info from the server)
- *  - isLoggedIn: false (whether the teacher is authenticated)
- *  - authLoading: true (loading state during auto-login check)
- *  - login: async function placeholder for logging in
- *  - logout: function placeholder for logging out
- *  - registerTeacher: async function placeholder for teacher registration
- *  - refreshToken: async function placeholder for refreshing tokens
- */
 const UserContext = createContext({
   user: null, // Basic teacher info from the server
   isLoggedIn: false, // Whether user is authenticated
@@ -37,27 +25,20 @@ const UserContext = createContext({
   refreshToken: async () => {}, // placeholder if you add a refresh route
 });
 
-/**
- * UserProvider component that wraps child components with UserContext.Provider.
- *
- * It manages authentication state and provides helper functions:
- *
- * @param {Object} props - Component properties.
- * @param {React.ReactNode} props.children - Child components to be wrapped.
- *
- * @returns {JSX.Element} Provider component with authentication context.
- */
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
+  // Import environment variables for backend URL
+  const BACKEND = process.env.REACT_APP_SERVER_URL;
+  
   const navigate = useNavigate();
 
   /**
    * Logs in a teacher.
    *
-   * Sends a POST request to /teachers/login/ with email and password.
+   * Sends a POST request to /api/teachers/login/ with email and password.
    * On success:
    *  - Stores access and refresh tokens in localStorage.
    *  - Stores user info (name and email) in localStorage.
@@ -69,26 +50,27 @@ export const UserProvider = ({ children }) => {
    */
   const login = async (email, password) => {
     try {
-      const response = await fetch("http://localhost:8000/teachers/login/", {
+      const response = await fetch(`${BACKEND}/api/teachers/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-      const data = await response.json();
 
+      const data = await response.json();
       if (response.ok) {
         // Store tokens in localStorage
         localStorage.setItem("access_token", data.access);
         localStorage.setItem("refresh_token", data.refresh);
-        // Also store user info in localStorage for auto-login
-        localStorage.setItem("user_name", data.name);
+
+        // Also store user info for auto-login
+        localStorage.setItem("user_name", data.first_name);
         localStorage.setItem("user_email", data.email);
+
         // Update state
         setUser({
-          name: data.name,
+          first_name: data.first_name,
           email: data.email,
         });
-
         setIsLoggedIn(true);
 
         return { success: true };
@@ -125,29 +107,32 @@ export const UserProvider = ({ children }) => {
   /**
    * Registers a new teacher.
    *
-   * Sends a POST request to /teachers/register/ with name, email, and password.
-   * On success, returns the server response containing a message and teacher_id.
+   * Sends a POST request to /api/teachers/register/ with { first_name, last_name, email, password }.
+   * On success, returns { success: true, data }, else { success: false, message }.
    *
-   * @param {string} name - Teacher's name.
+   * @param {string} first_name - Teacher's first name.
+   * @param {string} last_name - Teacher's last name.
    * @param {string} email - Teacher's email.
    * @param {string} password - Teacher's password.
-   * @returns {Promise<Object>} Result object with success status and message/data.
+   * @returns {Promise<Object>} A result object with success and possible data/message.
    */
-  const registerTeacher = async (name, email, password) => {
+  const registerTeacher = async (first_name, last_name, email, password) => {
     try {
-      const response = await fetch("http://localhost:8000/teachers/register/", {
+      const response = await fetch(`${BACKEND}/api/teachers/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ first_name, last_name, email, password }),
       });
       const data = await response.json();
 
       if (response.ok) {
+        // 201 or 200 from backend => success
         return { success: true, data };
       } else {
+        // e.g. 400 or 500 from backend
         return {
           success: false,
-          message: data.message || "Error registering teacher",
+          message: data.error || data.message || "Error registering teacher",
         };
       }
     } catch (error) {
@@ -160,23 +145,15 @@ export const UserProvider = ({ children }) => {
   };
 
   /**
-   * Refreshes the authentication token.
-   *
-   * This is a placeholder function for future expansion if a token refresh endpoint is added.
-   *
-   * @returns {Promise<Object>} Result object indicating the function is not implemented.
+   * Placeholder for refreshing tokens in the future
    */
   const refreshToken = async () => {
-    // For future expansion if you add /token/refresh/ or similar
     return { success: false, message: "Not implemented" };
   };
 
   /**
-   * Auto-login effect.
-   *
-   * Checks localStorage on component mount for an existing access token and user info.
-   * If found, updates the state to mark the teacher as logged in.
-   * This simulates auto-login; in a real scenario, you might validate the token.
+   * Auto-login effect:
+   * On mount, checks localStorage for an existing access token & user info.
    */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -185,13 +162,9 @@ export const UserProvider = ({ children }) => {
       const storedName = localStorage.getItem("user_name");
       const storedEmail = localStorage.getItem("user_email");
 
-      // If there is a name/email, set them in state
       if (storedName && storedEmail) {
-        setUser({ name: storedName, email: storedEmail });
-      } else {
-        // If you had a /teachers/profile/ route, you'd fetch it here
+        setUser({ first_name: storedName, email: storedEmail });
       }
-
       setIsLoggedIn(true);
     }
     setAuthLoading(false);

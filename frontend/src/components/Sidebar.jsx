@@ -29,7 +29,6 @@ import Tooltip from "@mui/material/Tooltip";
 // MUI Icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import StorageIcon from "@mui/icons-material/Storage";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
@@ -46,7 +45,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 const navItems = [
   { text: "Dashboard", icon: <DashboardIcon /> },
   { text: "Storage", icon: <StorageIcon /> },
-  { text: "Calendar", icon: <CalendarTodayIcon /> },
   { text: "Activity", icon: <TimelineIcon /> },
   { text: "Students", icon: <PeopleIcon /> },
   { text: "Attendance", icon: <EventAvailableIcon /> },

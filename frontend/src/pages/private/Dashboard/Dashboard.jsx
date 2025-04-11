@@ -8,38 +8,39 @@ import PageWrapper from "../../../components/PageWrapper";
 
 // MUI Components
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 // Custom Components
-import DashboardAppBar from "./DashboardAppBar";
+import DashboardAppBar from "../../../components/Appbar/AppBar";
 import StatsCards from "./StatsCards";
-import UpcomingEvents from "./UpcomingEvents";
-import WeeklySchedule from "./WeeklySchedule";
+import UpcomingEvents from "./DashboardCards";
+// import WeeklySchedule from "./WeeklySchedule"; // Uncomment if needed
 
 // Dummy Data
-import { statsData, upcomingEventsData, weeklyScheduleData } from "./dummyData";
-import { Typography } from "@mui/material";
+import { statsData, upcomingEventsData /*, weeklyScheduleData*/ } from "./dummyData";
+import DashboardCards from "./DashboardCards";
 
-const Dashboard = () => {
+const Dashboard = ({ mode, toggleTheme }) => {
   const { user } = useContext(UserContext);
 
   return (
     <PageWrapper>
-      {/* Top AppBar with Search */}
-      <DashboardAppBar />
-
       {/* Main Content */}
-      <Box fullWidth>
+      <Box sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>
-          Welcome, {user.name.split(" ")[0]}
+          Welcome, {user.first_name}
         </Typography>
+        
         {/* Stats Row */}
         <StatsCards stats={statsData} />
 
         {/* Upcoming Events */}
-        <UpcomingEvents events={upcomingEventsData} />
+        {/*<UpcomingEvents events={upcomingEventsData} />*/}
 
         {/* Weekly Schedule */}
         {/* <WeeklySchedule scheduleData={weeklyScheduleData} /> */}
+
+        <DashboardCards />
       </Box>
     </PageWrapper>
   );

@@ -9,21 +9,20 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load the .env file from BASE_DIR
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5bznl27nzd4_xcr99lz8izevk2(al!-5_8o&ut-xcp&8b98yfd'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -40,7 +39,17 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'backend',
-    'teachers'
+    'teachers',
+    'students',
+    'subjects',
+    'classes',
+    'attendancesessions',
+    'studentattendance',
+    'classstudents',
+    'assessments',
+    'studentgrades',
+    'learningmaterial',
+    'nccdreports'
 ]
 
 MIDDLEWARE = [
@@ -133,3 +142,18 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+MEDIA_URL = '/media/'  # URL to access media files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Path to store uploaded files
+
+# for authentication to ensure the logged in person has permission for their content only
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
+
