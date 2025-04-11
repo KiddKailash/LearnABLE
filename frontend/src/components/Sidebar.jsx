@@ -33,7 +33,6 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import MessageIcon from "@mui/icons-material/Message";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -49,8 +48,7 @@ const navItems = [
   { text: "Students", icon: <PeopleIcon /> },
   { text: "Attendance", icon: <EventAvailableIcon /> },
   { text: "Analytics", icon: <BarChartIcon /> },
-  { text: "Message", icon: <MessageIcon /> },
-  { text: "AI Assistant", icon: <SmartToyIcon />, highlight: true },
+  { text: "AI Assistant", icon: <SmartToyIcon />},
 ];
 
 // Navigation items for settings section of the sidebar

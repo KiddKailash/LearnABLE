@@ -19,7 +19,6 @@ import Activity from "./pages/private/Activity";
 import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
 import Attendance from "./pages/private/Attendance";
-import Message from "./pages/private/Message";
 import Storage from "./pages/private/Storage";
 import Students from "./pages/private/Students";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
@@ -43,7 +42,6 @@ function App({ mode, toggleTheme }) {
     { path: "/ai-assistant", component: <AIAssistant /> },
     { path: "/analytics", component: <Analytics /> },
     { path: "/attendance", component: <Attendance /> },
-    { path: "/message", component: <Message /> },
     { path: "/storage", component: <Storage /> },
     { path: "/students", component: <Students /> },
     { path: "/settings", component: <Settings /> },
