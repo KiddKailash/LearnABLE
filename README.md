@@ -141,7 +141,7 @@ echo 'source $(poetry env info --path)/bin/activate' > .envrc
 python manage.py runserver
 ```
 
-The frontend will be at [http://localhost:5173](http://localhost:5173) by default. 
+The frontend will be at [http://localhost:3000](http://localhost:5173) by default.
 The backend will be at [http://localhost:8000](http://localhost:8000) by default.
 
 ## License
