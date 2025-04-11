@@ -3,9 +3,9 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, include
 from . import views
+from .views import ask_openai
 
 
-# Define a simple view for the root URL
 def home(request):
     return HttpResponse("Welcome to the homepage!")
 
@@ -25,5 +25,6 @@ urlpatterns = [
     path("api/", include("studentattendance.urls")),
     path("api/", include("studentgrades.urls")),
     path("api/nccdreports/", include("nccdreports.urls")),
-    path('admin/', admin.site.urls)
+    path('admin/', admin.site.urls),
+    path('api/ask-openai/', ask_openai, name='ask_openai')
 ]
