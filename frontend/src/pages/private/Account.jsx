@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import UserContext from "../../services/UserContext"; // Import UserContext
+import UserContext from "../../services/UserObject"; // Import UserContext
 
 // Local Imports
 import PageWrapper from "../../components/PageWrapper";

@@ -11,7 +11,7 @@ import Box from "@mui/material/Box";
 
 // Context
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-import UserContext from "../../services/UserContext";
+import UserContext from "../../services/UserObject";
 
 const Login = () => {
   const [email, setEmail] = useState("");

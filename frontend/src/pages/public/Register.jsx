@@ -11,7 +11,7 @@ import Stack from "@mui/material/Stack";
 
 // Contexts
 import { SnackbarContext } from "../../contexts/SnackbarContext"; 
-import UserContext from "../../services/UserContext";
+import UserContext from "../../services/UserObject";
 
 /**
  * This component renders a registration form for teachers.
