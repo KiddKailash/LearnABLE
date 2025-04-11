@@ -14,7 +14,7 @@ import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 const registerTeacher = async (first_name, last_name, email, password) => {
   try {
-    const response = await fetch("http://127.0.0.1:8000/teachers/register/", {
+    const response = await fetch("http://127.0.0.1:8000/api/teachers/register/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
