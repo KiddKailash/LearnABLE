@@ -136,6 +136,9 @@ poetry install
 
 # Activate the virtual environment
 echo `$(poetry env activate)`
+# NOTE: If there is a space character in the directory path, this WILL NOT WORK.
+# In this case, Terminal Input 1: poetry env activate
+#               Terminal Input 2: copy/paste the output of terminal input 1 into terminal. 
 
 # Run the development server
 make runserver
