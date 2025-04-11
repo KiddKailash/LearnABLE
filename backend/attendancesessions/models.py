@@ -1,5 +1,5 @@
 from django.db import models
-from classes.models import Classes  # Make sure the 'Classes' model is correctly imported
+from classes.models import Classes 
 
 class AttendanceSession(models.Model):
     # session_id is automatically created as the primary key
