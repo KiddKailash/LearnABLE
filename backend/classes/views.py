@@ -18,14 +18,18 @@ from .serializers import ClassSerializer
 
 # Create class object
 @api_view(['POST'])
-#@permission_classes([AllowAny]) #testing only remove in prod
+@permission_classes([AllowAny]) #testing only remove in prod
 @permission_classes([IsAuthenticated])
 def create_class(request):
     """
     Creates a class and automatically assigns it to the logged-in teacher.
     """
     data = request.data.copy()  # Make a mutable copy
-    data['teacher'] = request.user.id  # Set teacher to the logged-in user, cannot be none
+    teacher_id = data.get('teacher')  # Get teacher from the request data
+    if teacher_id:
+        data['teacher'] = teacher_id
+    else:
+        return Response({"error": "Teacher ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = ClassSerializer(data=data)
     if serializer.is_valid():
@@ -53,7 +57,7 @@ def get_all_classes(request):
 @api_view(['POST', 'GET']) 
 @parser_classes([MultiPartParser])
 @authentication_classes([])
-#@permission_classes([AllowAny]) #allows testing remove in prod
+@permission_classes([AllowAny]) #allows testing remove in prod
 def upload_students_csv(request):
     """
     Upload a CSV file containing student details and create Student records.
