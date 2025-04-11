@@ -4,33 +4,31 @@ import UserContext from "../../services/UserContext"; // Import UserContext
 // Local Imports
 import PageWrapper from "../../components/PageWrapper";
 
-// MUI
-import {
-  Typography,
-  Box,
-  TextField,
-  IconButton,
-  Card,
-  CardContent,
-  Button,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemButton,
-  Divider,
-  CircularProgress,
-} from "@mui/material";
+// MUI Components
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import Divider from "@mui/material/Divider";
+import CircularProgress from "@mui/material/CircularProgress";
+import TextField from "@mui/material/TextField";
+
+// MUI Icons
 import SendIcon from "@mui/icons-material/Send";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
-import ThumbDownIcon from '@mui/icons-material/ThumbDown';
-import ChatIcon from '@mui/icons-material/Chat';
-import SearchIcon from '@mui/icons-material/Search';
-import AddIcon from '@mui/icons-material/Add';
-import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import ThumbDownIcon from "@mui/icons-material/ThumbDown";
+import ChatIcon from "@mui/icons-material/Chat";
+import SearchIcon from "@mui/icons-material/Search";
+import AddIcon from "@mui/icons-material/Add";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 
 const AIAssistant = () => {
   const { user } = useContext(UserContext); // Access user info from UserContext
@@ -42,12 +40,16 @@ const AIAssistant = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const MAX_MESSAGES_PER_CHAT = 10; // Define maximum messages per chat
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Load chat sessions from localStorage
+  // Import environment variables for backend URL
+  const BACKEND = process.env.REACT_APP_SERVER_URL;
+  // Define maximum messages per chat
+  const MAX_MESSAGES_PER_CHAT = 10;
+
+  // Load chat sessions from localStorage on mount
   useEffect(() => {
     const savedSessions = localStorage.getItem("chatSessions");
     if (savedSessions) {
@@ -55,33 +57,42 @@ const AIAssistant = () => {
     }
   }, []);
 
-  // Create new chat session
-  const createNewChat = () => {
-    const newSession = {
-      id: Date.now(),
-      title: "New Chat",
-      timestamp: new Date().toISOString(),
-      messages: []
-    };
-    
-    // Update state with new session
-    setChatSessions(prev => {
-      const newSessions = [newSession, ...prev];
-      localStorage.setItem("chatSessions", JSON.stringify(newSessions));
-      return newSessions;
-    });
-    
-    setCurrentSessionId(newSession.id);
-    setMessages([]);
-    setInput("");
-  };
-
-  // Update the useEffect for saving chat sessions
+  // Save chat sessions to localStorage whenever chatSessions changes
   useEffect(() => {
     if (chatSessions.length > 0) {
       localStorage.setItem("chatSessions", JSON.stringify(chatSessions));
     }
   }, [chatSessions]);
+
+  // ==========================
+  // Create a new chat session
+  // ==========================
+  const createNewChat = () => {
+    const newSession = {
+      id: Date.now(),
+      title: "New Chat",
+      timestamp: new Date().toISOString(),
+      messages: [],
+    };
+
+    // Update state with new session
+    setChatSessions((prev) => {
+      const newSessions = [newSession, ...prev];
+      localStorage.setItem("chatSessions", JSON.stringify(newSessions));
+      return newSessions;
+    });
+
+    setCurrentSessionId(newSession.id);
+    setMessages([]);
+    setInput("");
+  };
+
+  // ==========================
+  // File Input Handling
+  // ==========================
+  const handleFileClick = () => {
+    fileInputRef.current.click();
+  };
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -90,10 +101,9 @@ const AIAssistant = () => {
     }
   };
 
-  const handleFileClick = () => {
-    fileInputRef.current.click();
-  };
-
+  // =====================================
+  // Send message -> calls our new endpoint
+  // =====================================
   const handleSend = async (file = null) => {
     // If no file and no text input, return
     if (!input.trim() && !file) return;
@@ -104,21 +114,23 @@ const AIAssistant = () => {
         id: Date.now(),
         title: "New Chat",
         timestamp: new Date().toISOString(),
-        messages: []
+        messages: [],
       };
       setCurrentSessionId(newSession.id);
-      setChatSessions(prev => [newSession, ...prev]);
+      setChatSessions((prev) => [newSession, ...prev]);
     }
 
-    // Create user message based on whether it's a file or text
+    // Create user message (whether it's a file or plain text)
     const newMessage = {
       type: "user",
       content: file ? `Uploaded file: ${file.name}` : input,
       timestamp: new Date().toISOString(),
     };
 
-    // Get current session's messages
-    const currentSession = chatSessions.find(session => session.id === currentSessionId);
+    // Locate the current chat session
+    const currentSession = chatSessions.find(
+      (session) => session.id === currentSessionId
+    );
     const currentMessages = [...(currentSession?.messages || [])];
 
     // Check message limit
@@ -128,136 +140,238 @@ const AIAssistant = () => {
       return;
     }
 
-    // Add new message to current messages
+    // Add the new user message
     const updatedMessages = [...currentMessages, newMessage];
-
-    // Create AI response based on whether it's a file upload or text prompt
-    const aiResponse = {
-      type: "ai",
-      content: file 
-        ? `I've received your file "${file.name}". I can help you create personalized learning materials based on this document. What specific type of learning material would you like me to generate?`
-        : "This is a placeholder AI response.",
-      timestamp: new Date().toISOString(),
-    };
-
-    const finalMessages = [...updatedMessages, aiResponse];
-
-    // Update state
-    setMessages(finalMessages);
+    setMessages(updatedMessages);
     setInput("");
-    setLastResponse(aiResponse);
-    
-    // Update sessions with final messages
-    setChatSessions(prev => prev.map(session => 
-      session.id === currentSessionId 
-        ? { ...session, messages: finalMessages }
-        : session
-    ));
-  };
 
-  const handleRegenerateResponse = () => {
-    if (!lastResponse) return;
-    // TODO: Implement regeneration logic
-  };
+    // Show loading spinner
+    setIsLoading(true);
 
-  const handleLikeDislike = (messageIndex, action) => {
-    setMessages(prev => prev.map((msg, idx) => {
-      if (idx === messageIndex && msg.type === 'ai') {
-        return {
-          ...msg,
-          feedback: action
-        };
+    try {
+      // Make the call to your new Django endpoint:
+      // If only text-based messages for now, pass { message: input }
+      // You might adapt this to handle the file if needed
+      const response = await fetch(`${BACKEND}/api/ask-openai/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          `Server error: ${response.status} - ${response.statusText}`
+        );
       }
-      return msg;
-    }));
+
+      const data = await response.json();
+
+      // Build new AI response
+      const aiResponse = {
+        type: "ai",
+        content: data.response ?? "[No AI response]",
+        timestamp: new Date().toISOString(),
+      };
+
+      const finalMessages = [...updatedMessages, aiResponse];
+      setMessages(finalMessages);
+      setLastResponse(aiResponse);
+
+      // Update chatSessions in local state
+      setChatSessions((prev) =>
+        prev.map((session) =>
+          session.id === currentSessionId
+            ? { ...session, messages: finalMessages }
+            : session
+        )
+      );
+    } catch (error) {
+      console.error("OpenAI request failed:", error);
+      alert("Error calling AI endpoint. See console for details.");
+    } finally {
+      // Stop loading spinner
+      setIsLoading(false);
+    }
   };
 
+  // =======================================
+  // Optional: Regenerate Last AI Response
+  // =======================================
+  const handleRegenerateResponse = async () => {
+    if (!lastResponse) return;
+
+    // Find the last user message
+    const reversed = [...messages].reverse();
+    const userMsg = reversed.find((msg) => msg.type === "user");
+    if (!userMsg) return;
+
+    setIsLoading(true);
+
+    try {
+      const res = await fetch(`${BACKEND}/api/ask-openai/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMsg.content }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status} - ${res.statusText}`);
+      }
+
+      const data = await res.json();
+
+      const newAiMsg = {
+        type: "ai",
+        content: data.response ?? "[No AI response]",
+        timestamp: new Date().toISOString(),
+      };
+
+      // Option: Just append it
+      const updated = [...messages, newAiMsg];
+      setMessages(updated);
+      setLastResponse(newAiMsg);
+
+      // Update in localStorage
+      setChatSessions((prev) =>
+        prev.map((session) =>
+          session.id === currentSessionId
+            ? { ...session, messages: updated }
+            : session
+        )
+      );
+    } catch (err) {
+      console.error("Error regenerating response:", err);
+      alert("Cannot regenerate right now.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // =======================================
+  // Reaction Buttons (Like/Dislike)
+  // =======================================
+  const handleLikeDislike = (messageIndex, action) => {
+    setMessages((prev) =>
+      prev.map((msg, idx) => {
+        if (idx === messageIndex && msg.type === "ai") {
+          return {
+            ...msg,
+            feedback: action,
+          };
+        }
+        return msg;
+      })
+    );
+  };
+
+  // =======================================
+  // Delete a chat session from the sidebar
+  // =======================================
   const handleDeleteChat = (sessionId, event) => {
-    event.stopPropagation(); // Prevent triggering the ListItemButton click
-    setChatSessions(prev => prev.filter(session => session.id !== sessionId));
+    event.stopPropagation(); // Prevent triggering the main session click
+    setChatSessions((prev) =>
+      prev.filter((session) => session.id !== sessionId)
+    );
     if (currentSessionId === sessionId) {
       setCurrentSessionId(null);
       setMessages([]);
     }
   };
 
-  // Update the session selection handler
+  // =======================================
+  // Select a session from the sidebar
+  // =======================================
   const handleSessionSelect = (sessionId) => {
-    const session = chatSessions.find(s => s.id === sessionId);
+    const session = chatSessions.find((s) => s.id === sessionId);
     if (session) {
       setCurrentSessionId(sessionId);
       setMessages(session.messages || []);
     }
   };
 
-  // Add this function to filter chat sessions
-  const filteredChatSessions = chatSessions.filter(session => {
-    const firstMessage = session.messages?.[0]?.content || "New Chat";
-    return firstMessage.toLowerCase().includes(searchQuery.toLowerCase());
+  // =======================================
+  // Filter sessions by search
+  // =======================================
+  const filteredChatSessions = chatSessions.filter((session) => {
+    const firstMsgContent = session.messages?.[0]?.content || "New Chat";
+    return firstMsgContent.toLowerCase().includes(searchQuery.toLowerCase());
   });
 
+  // =======================================
+  // Render the UI
+  // =======================================
   return (
     <PageWrapper>
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 2, 
-        mb: 3 
-      }}>
-        <img 
-          src={user.profile_pic ? user.profile_pic : "/images/ai-assistant.png"}  // Use profile picture or default image
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          mb: 3,
+        }}
+      >
+        <img
+          src={user.profile_pic ? user.profile_pic : "/images/ai-assistant.png"} // fallback image
           alt="User Profile"
           style={{
-            width: '40px',
-            height: '40px',
-            objectFit: 'contain'
+            width: "40px",
+            height: "40px",
+            objectFit: "contain",
           }}
         />
-        <Typography 
-          variant="h6" 
-          sx={{ 
+        <Typography
+          variant="h6"
+          sx={{
             fontWeight: 500,
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
           }}
         >
           AI Assistant
         </Typography>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, height: "calc(100vh - 160px)" }}>
-        {/* Chat History Sidebar */}
+      <Box sx={{ display: "flex", gap: 2, height: "calc(100vh - 160px)" }}>
+        {/* ============================ */}
+        {/* Chat History Sidebar        */}
+        {/* ============================ */}
         {sidebarOpen && (
-          <Card sx={{ width: 260, height: '100%', overflow: 'hidden' }}>
-            <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Card sx={{ width: 260, height: "100%", overflow: "hidden" }}>
+            <CardContent
+              sx={{
+                p: 0,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
               {/* Sidebar Header */}
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                p: 1,
-                borderBottom: 1,
-                borderColor: 'divider',
-                bgcolor: 'primary.main',
-                color: 'white'
-              }}>
-                <IconButton 
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 1,
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  bgcolor: "primary.main",
+                  color: "white",
+                }}
+              >
+                <IconButton
                   onClick={() => setSidebarOpen(false)}
-                  sx={{ color: 'white' }}
+                  sx={{ color: "white" }}
                 >
                   <MenuOpenIcon />
                 </IconButton>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <IconButton 
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <IconButton
                     onClick={() => setSearchOpen(!searchOpen)}
-                    sx={{ color: 'white' }}
+                    sx={{ color: "white" }}
                   >
                     <SearchIcon />
                   </IconButton>
-                  <IconButton 
-                    onClick={createNewChat}
-                    sx={{ color: 'white' }}
-                  >
+                  <IconButton onClick={createNewChat} sx={{ color: "white" }}>
                     <AddIcon />
                   </IconButton>
                 </Box>
@@ -273,48 +387,59 @@ const AIAssistant = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{ p: 1 }}
                   InputProps={{
-                    startAdornment: <SearchIcon sx={{ color: 'primary.main', mr: 1 }} />
+                    startAdornment: (
+                      <SearchIcon sx={{ color: "primary.main", mr: 1 }} />
+                    ),
                   }}
                 />
               )}
-              
-              <List sx={{ overflow: 'auto', flexGrow: 1 }}>
+
+              {/* Chat Session List */}
+              <List sx={{ overflow: "auto", flexGrow: 1 }}>
                 {filteredChatSessions.map((session) => (
                   <React.Fragment key={session.id}>
                     <ListItemButton
                       selected={currentSessionId === session.id}
                       onClick={() => handleSessionSelect(session.id)}
-                      sx={{ 
+                      sx={{
                         py: 1,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        '&:hover .delete-icon': {
+                        display: "flex",
+                        justifyContent: "space-between",
+                        "&:hover .delete-icon": {
                           opacity: 1,
                         },
                       }}
                     >
-                      <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, overflow: 'hidden' }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexGrow: 1,
+                          overflow: "hidden",
+                        }}
+                      >
                         <ChatIcon sx={{ mr: 1, fontSize: 20 }} />
-                        <ListItemText 
-                          primary={session.messages?.[0]?.content?.slice(0, 30) || "New Chat"} 
-                          secondary={new Date(session.timestamp).toLocaleDateString()}
-                          primaryTypographyProps={{ 
-                            noWrap: true,
-                            fontSize: 14
-                          }}
-                        />
+                        <Box sx={{ overflow: "hidden" }}>
+                          <Typography variant="body2" noWrap>
+                            {session.messages?.[0]?.content?.slice(0, 30) ||
+                              "New Chat"}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {new Date(session.timestamp).toLocaleDateString()}
+                          </Typography>
+                        </Box>
                       </Box>
-                      <IconButton 
+                      <IconButton
                         size="small"
                         className="delete-icon"
                         onClick={(e) => handleDeleteChat(session.id, e)}
-                        sx={{ 
+                        sx={{
                           opacity: 0,
-                          transition: 'opacity 0.2s',
-                          color: 'error.main',
-                          '&:hover': {
-                            bgcolor: 'error.light',
-                            color: 'error.main',
+                          transition: "opacity 0.2s",
+                          color: "error.main",
+                          "&:hover": {
+                            bgcolor: "error.light",
+                            color: "error.main",
                           },
                         }}
                       >
@@ -329,84 +454,105 @@ const AIAssistant = () => {
           </Card>
         )}
 
-        {/* Add Collapse Sidebar Button when sidebar is closed */}
+        {/* Collapse Sidebar Button when sidebar is closed */}
         {!sidebarOpen && (
-          <IconButton 
+          <IconButton
             onClick={() => setSidebarOpen(true)}
-            sx={{ 
-              position: 'absolute', 
+            sx={{
+              position: "absolute",
               left: 0,
               top: 80,
-              bgcolor: 'primary.main',
-              color: 'white',
-              '&:hover': {
-                bgcolor: 'primary.dark',
-              }
+              bgcolor: "primary.main",
+              color: "white",
+              "&:hover": {
+                bgcolor: "primary.dark",
+              },
             }}
           >
-            <MenuOpenIcon sx={{ transform: 'rotate(180deg)' }} />
+            <MenuOpenIcon sx={{ transform: "rotate(180deg)" }} />
           </IconButton>
         )}
 
-        {/* Main Chat Area */}
-        <Card sx={{ 
-          flexGrow: 1, 
-          height: '100%', 
-          display: "flex", 
-          flexDirection: "column",
-          ml: !sidebarOpen ? 4 : 0 // Add margin when sidebar is closed
-        }}>
-          <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}>
+        {/* ============================ */}
+        {/* Main Chat Area              */}
+        {/* ============================ */}
+        <Card
+          sx={{
+            flexGrow: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            ml: !sidebarOpen ? 4 : 0, // Add margin if sidebar is closed
+          }}
+        >
+          <CardContent
+            sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
+          >
             {/* Chat History */}
-            <Box sx={{ 
-              flexGrow: 1, 
-              overflow: "auto", 
-              mb: 2,
-              position: 'relative', // Add this for absolute positioning of watermark
-            }}>
-              {/* Add LearnAble watermark */}
+            <Box
+              sx={{
+                flexGrow: 1,
+                overflow: "auto",
+                mb: 2,
+                position: "relative",
+              }}
+            >
+              {/* Watermark when no messages */}
               {messages.length === 0 && (
                 <Typography
                   sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    color: 'rgba(0, 0, 0, 0.1)',
-                    fontSize: '48px',
-                    fontWeight: 'bold',
-                    pointerEvents: 'none',
-                    userSelect: 'none',
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    color: "rgba(0, 0, 0, 0.1)",
+                    fontSize: "48px",
+                    fontWeight: "bold",
+                    pointerEvents: "none",
+                    userSelect: "none",
                   }}
                 >
                   LearnABLE
                 </Typography>
               )}
-              
+
               {messages.map((message, index) => (
                 <Paper
                   key={index}
                   sx={{
                     p: 2,
                     mb: 2,
-                    bgcolor: message.type === "ai" ? "grey.100" : "primary.light",
-                    color: message.type === "ai" ? "text.primary" : "common.white",
+                    bgcolor:
+                      message.type === "ai" ? "grey.100" : "primary.light",
+                    color:
+                      message.type === "ai" ? "text.primary" : "common.white",
                   }}
                 >
                   <Typography>{message.content}</Typography>
                   {message.type === "ai" && (
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1, gap: 1 }}>
-                      <IconButton 
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-end",
+                        mt: 1,
+                        gap: 1,
+                      }}
+                    >
+                      <IconButton
                         size="small"
-                        onClick={() => handleLikeDislike(index, 'like')}
-                        color={message.feedback === 'like' ? 'primary' : 'default'}
+                        onClick={() => handleLikeDislike(index, "like")}
+                        color={
+                          message.feedback === "like" ? "primary" : "default"
+                        }
                       >
                         <ThumbUpIcon fontSize="small" />
                       </IconButton>
-                      <IconButton 
+                      <IconButton
                         size="small"
-                        onClick={() => handleLikeDislike(index, 'dislike')}
-                        color={message.feedback === 'dislike' ? 'primary' : 'default'}
+                        onClick={() => handleLikeDislike(index, "dislike")}
+                        color={
+                          message.feedback === "dislike" ? "primary" : "default"
+                        }
                       >
                         <ThumbDownIcon fontSize="small" />
                       </IconButton>
@@ -427,14 +573,16 @@ const AIAssistant = () => {
               </Button>
             )}
 
-            {/* Input Area */}
+            {/* Input Area & File Upload */}
             <Box sx={{ display: "flex", gap: 1 }}>
-              <Box sx={{ 
-                display: 'flex', 
-                flexGrow: 1, 
-                position: 'relative',
-                alignItems: 'center' 
-              }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexGrow: 1,
+                  position: "relative",
+                  alignItems: "center",
+                }}
+              >
                 <TextField
                   fullWidth
                   variant="outlined"
@@ -443,48 +591,50 @@ const AIAssistant = () => {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSend()}
                 />
-                <IconButton 
+                <IconButton
                   onClick={handleFileClick}
-                  sx={{ 
-                    position: 'absolute',
+                  sx={{
+                    position: "absolute",
                     right: 8,
-                    color: 'action.active',
-                    '&:hover': {
-                      color: 'primary.main'
-                    }
+                    color: "action.active",
+                    "&:hover": {
+                      color: "primary.main",
+                    },
                   }}
                 >
                   <AttachFileIcon />
                 </IconButton>
               </Box>
-              <IconButton color="primary" onClick={handleSend}>
+              <IconButton color="primary" onClick={() => handleSend()}>
                 <SendIcon />
               </IconButton>
             </Box>
 
-            {/* Add hidden file input */}
+            {/* Hidden file input */}
             <input
               type="file"
               ref={fileInputRef}
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx,.txt"  // Specify accepted file types
+              accept=".pdf,.doc,.docx,.txt"
             />
 
-            {/* Add loading indicator */}
+            {/* Loading overlay */}
             {isLoading && (
-              <Box sx={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                bgcolor: 'rgba(255, 255, 255, 0.8)',
-                zIndex: 1,
-              }}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  bgcolor: "rgba(255, 255, 255, 0.8)",
+                  zIndex: 1,
+                }}
+              >
                 <CircularProgress />
               </Box>
             )}

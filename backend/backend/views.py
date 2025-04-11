@@ -14,7 +14,7 @@ def ask_openai(request):
             user_message = data.get('message', '')
 
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o",
                 messages=[
                     {"role": "system", "content": "You are a helpful assistant."},
                     {"role": "user", "content": user_message}

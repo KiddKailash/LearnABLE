@@ -5,9 +5,9 @@ from django.conf.urls.static import static
 from .views import upload_profile_pic
 
 urlpatterns = [
-    path('teachers/register/', register_teacher, name="register_teacher"),
-    path('teachers/login/', login_teacher, name="login_teacher"),
-    path("api/teachers/upload-profile-pic/", upload_profile_pic, name="upload-profile-pic"),
+    path('register/', register_teacher, name="register_teacher"),
+    path('login/', login_teacher, name="login_teacher"),
+    path("upload-profile-pic/", upload_profile_pic, name="upload-profile-pic"),
 ]
 
 if settings.DEBUG:

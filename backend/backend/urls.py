@@ -26,5 +26,5 @@ urlpatterns = [
     path("api/", include("studentgrades.urls")),
     path("api/nccdreports/", include("nccdreports.urls")),
     path('admin/', admin.site.urls),
-    path('api/ask-openai/', ask_openai, name='ask_openai')
+    path('api/ask-openai/', ask_openai, name='ask_openai'),
 ]
