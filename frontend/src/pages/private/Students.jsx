@@ -111,42 +111,66 @@ const Students = () => {
   };
 
   const handleStudentSubmit = async () => {
-    const payload = {
-      ...studentForm,
-      class_id: selectedClassId,
-    };
-
+    if (!selectedClassId) {
+      alert("No class selected!");
+      return;
+    }
+  
+    const token = localStorage.getItem("access_token");
+  
     try {
-      const response = await fetch("http://localhost:8000/api/students/create/", {
+      // Step 1: Create student
+      const studentResponse = await fetch("http://localhost:8000/api/students/create/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(studentForm),
       });
-
-      const result = await response.json();
-      if (response.ok) {
-        alert("Student added!");
-        setOpenDialog(false);
-        setStudentForm({
-          first_name: "",
-          last_name: "",
-          year_level: "",
-          student_email: "",
-          guardian_email: "",
-          guardian_first_name: "",
-          guardian_last_name: "",
-          disability_info: "",
-        });
-        fetchClasses();
-      } else {
-        alert("Error: " + JSON.stringify(result));
+  
+      const studentResult = await studentResponse.json();
+  
+      if (!studentResponse.ok) {
+        alert("Error creating student: " + JSON.stringify(studentResult));
+        return;
       }
+  
+      // Step 2: Add student to class
+      const addToClassResponse = await fetch(`http://localhost:8000/api/classes/${selectedClassId}/add-student/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ student_id: studentResult.id }),
+      });
+  
+      const addToClassResult = await addToClassResponse.json();
+  
+      if (!addToClassResponse.ok) {
+        alert("Student created but error adding to class: " + JSON.stringify(addToClassResult));
+        return;
+      }
+  
+      alert("Student added to class!");
+      setOpenDialog(false);
+      setStudentForm({
+        first_name: "",
+        last_name: "",
+        year_level: "",
+        student_email: "",
+        guardian_email: "",
+        guardian_first_name: "",
+        guardian_last_name: "",
+        disability_info: "",
+      });
+      fetchClasses();
     } catch (error) {
       console.error("Error submitting student:", error);
     }
   };
+  
 
   return (
     <PageWrapper>
@@ -196,8 +220,8 @@ const Students = () => {
                   variant="outlined"
                   size="small"
                   onClick={() => {
-                    setSelectedClassId(cls.id);
-                    setOpenDialog(true);
+                    setSelectedClassId(cls.id); // Set class ID here
+                    setOpenDialog(true); // Open the dialog for adding student
                   }}
                 >
                   Add Student
@@ -224,6 +248,7 @@ const Students = () => {
         onChange={handleFileChange}
       />
 
+      {/* Dialog for Adding Student */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Add Student</DialogTitle>
         <DialogContent>
@@ -232,7 +257,7 @@ const Students = () => {
               <Grid item xs={12} sm={6} key={key}>
                 <TextField
                   fullWidth
-                  label={key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                  label={key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   value={value}
                   onChange={(e) =>
                     setStudentForm((prev) => ({ ...prev, [key]: e.target.value }))
@@ -244,7 +269,9 @@ const Students = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleStudentSubmit} variant="contained">Add</Button>
+          <Button onClick={handleStudentSubmit} variant="contained">
+            Add
+          </Button>
         </DialogActions>
       </Dialog>
     </PageWrapper>

@@ -53,6 +53,23 @@ def get_all_classes(request):
     serializer = ClassSerializer(classes, many=True)
     return Response(serializer.data)
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_student_to_class(request, class_id):
+    student_id = request.data.get("student_id")
+    if not student_id:
+        return Response({"error": "student_id is required"}, status=400)
+
+    try:
+        cls = Classes.objects.get(id=class_id)
+        student = Student.objects.get(id=student_id)
+        cls.students.add(student)
+        return Response({"message": "Student added to class"})
+    except Classes.DoesNotExist:
+        return Response({"error": "Class not found"}, status=404)
+    except Student.DoesNotExist:
+        return Response({"error": "Student not found"}, status=404)
+
 @csrf_exempt
 @api_view(['POST', 'GET']) 
 @parser_classes([MultiPartParser])
