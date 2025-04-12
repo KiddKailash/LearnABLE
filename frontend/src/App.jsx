@@ -18,7 +18,7 @@ import Account from "./pages/private/Account";
 import Activity from "./pages/private/Activity";
 import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
-import Attendance from "./pages/private/Attendance";
+import Reporting from "./pages/private/Reporting";
 import Storage from "./pages/private/Storage";
 import Students from "./pages/private/Students";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
@@ -41,7 +41,7 @@ function App({ mode, toggleTheme }) {
     { path: "/activity", component: <Activity /> },
     { path: "/ai-assistant", component: <AIAssistant /> },
     { path: "/analytics", component: <Analytics /> },
-    { path: "/attendance", component: <Attendance /> },
+    { path: "/reporting", component: <Reporting /> },
     { path: "/storage", component: <Storage /> },
     { path: "/students", component: <Students /> },
     { path: "/settings", component: <Settings /> },
