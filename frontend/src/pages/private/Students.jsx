@@ -1,41 +1,92 @@
-import React, { useRef, useState } from "react";
-
-// Local Imports
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Typography, Grid, Card, CardContent,
+  CardActions, Box, Button, TextField, Dialog,
+  DialogTitle, DialogContent, DialogActions
+} from "@mui/material";
 import PageWrapper from "../../components/PageWrapper";
 
-// MUI imports
-import { Typography, Grid, Card, CardContent, 
-  CardActions, Box, Button } from "@mui/material";
-
-// Fake data for now
-const fakeClasses = [
-  {id: 1, name: "7.02 English"},
-  {id: 2, name: "9.06 Math"},
-  {id: 3, name: "10.08 History"},
-  {id: 4, name: "8.03 History"},
-  {id: 5, name: "7.01 Digital Solutions"},
-  {id: 6, name: "9.05 Math"}, 
-];
-
 const Students = () => {
-  // State to keep track of which class the file is being uploaded for
+  const [classes, setClasses] = useState([]);
+  const [newClass, setNewClass] = useState({ class_name: "" });
   const [selectedClassId, setSelectedClassId] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Handle file upload when button is clicked
-  const handleFileUpload = (classId) => {
-    setSelectedClassId(classId);  // Set selected class id for file upload
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const [studentForm, setStudentForm] = useState({
+    first_name: "",
+    last_name: "",
+    year_level: "",
+    student_email: "",
+    guardian_email: "",
+    guardian_first_name: "",
+    guardian_last_name: "",
+    disability_info: "",
+  });
+
+  useEffect(() => {
+    fetchClasses();
+  }, []);
+
+  const fetchClasses = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch("http://localhost:8000/api/classes/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setClasses(data);
+      } else {
+        console.error("Error fetching classes:", data.detail);
+        setClasses([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch classes", err);
+      setClasses([]);
     }
   };
 
-  // Handle file change (upload) and trigger the backend
+  const handleCreateClass = async () => {
+    const token = localStorage.getItem("access_token");
+
+    try {
+      const response = await fetch("http://localhost:8000/api/classes/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          class_name: newClass.class_name,
+          teacher: 1, // Replace with actual teacher ID
+        }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setNewClass({ class_name: "" });
+        await fetchClasses();
+        alert("Class created!");
+      } else {
+        alert("Error: " + JSON.stringify(result));
+      }
+    } catch (err) {
+      console.error("Error creating class", err);
+    }
+  };
+
+  const handleFileUpload = (classId) => {
+    setSelectedClassId(classId);
+    fileInputRef.current.click();
+  };
+
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
-    if (!file || !selectedClassId) {
-      return;
-    }
+    if (!file || !selectedClassId) return;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -46,50 +97,116 @@ const Students = () => {
         method: "POST",
         body: formData,
       });
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+
       const result = await response.json();
-      console.log("File uploaded successfully:", result);
-      // Optionally, reset selected class ID after successful upload
-      setSelectedClassId(null);
+      if (response.ok) {
+        alert("CSV uploaded successfully!");
+        fetchClasses();
+      } else {
+        alert("Error: " + JSON.stringify(result));
+      }
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("CSV upload failed:", error);
+    }
+  };
+
+  const handleStudentSubmit = async () => {
+    const payload = {
+      ...studentForm,
+      class_id: selectedClassId,
+    };
+
+    try {
+      const response = await fetch("http://localhost:8000/api/students/create/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert("Student added!");
+        setOpenDialog(false);
+        setStudentForm({
+          first_name: "",
+          last_name: "",
+          year_level: "",
+          student_email: "",
+          guardian_email: "",
+          guardian_first_name: "",
+          guardian_last_name: "",
+          disability_info: "",
+        });
+        fetchClasses();
+      } else {
+        alert("Error: " + JSON.stringify(result));
+      }
+    } catch (error) {
+      console.error("Error submitting student:", error);
     }
   };
 
   return (
     <PageWrapper>
-      {/* Header section of the page */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Students</Typography>
-        <input
-          type="file"
-          accept=".csv"
-          style={{ display: "none" }}
-          ref={fileInputRef}
-          onChange={handleFileChange}
-        />
+      <Box mb={4}>
+        <Typography variant="h4" gutterBottom>Class Management</Typography>
+
+        <Box display="flex" gap={2} mb={2}>
+          <TextField
+            label="Class Name"
+            value={newClass.class_name}
+            onChange={(e) => setNewClass({ ...newClass, class_name: e.target.value })}
+          />
+          <Button variant="contained" onClick={handleCreateClass}>
+            Create Class
+          </Button>
+        </Box>
       </Box>
 
-      {/* List of class cards */}
       <Grid container spacing={3}>
-        {fakeClasses.map((classItem) => (
-          <Grid item xs={12} sm={6} md={4} key={classItem.id}>
+        {Array.isArray(classes) && classes.map((cls) => (
+          <Grid item xs={12} sm={6} md={4} key={cls.id}>
             <Card>
               <CardContent>
-                <Typography variant="h6">{classItem.name}</Typography>
+                <Typography variant="h6">{cls.class_name}</Typography>
+                <Typography variant="body2" color="textSecondary" mb={1}>
+                  {cls.subject || "No subject provided"}
+                </Typography>
+
+                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
+                  Students:
+                </Typography>
+                {cls.students && cls.students.length > 0 ? (
+                  cls.students.map((student, idx) => (
+                    <Typography key={student.id || idx} variant="body2">
+                      {student.first_name} {student.last_name} ({student.year_level})
+                    </Typography>
+                  ))
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No students yet.
+                  </Typography>
+                )}
               </CardContent>
+
               <CardActions>
-                <Button size="small" variant="outlined">
-                  View
-                </Button>
-                {/* File upload button for each class */}
                 <Button
+                  variant="outlined"
                   size="small"
+                  onClick={() => {
+                    setSelectedClassId(cls.id);
+                    setOpenDialog(true);
+                  }}
+                >
+                  Add Student
+                </Button>
+                <Button
                   variant="contained"
                   color="primary"
-                  onClick={() => handleFileUpload(classItem.id)}
+                  size="small"
+                  onClick={() => handleFileUpload(cls.id)}
                 >
                   Upload CSV
                 </Button>
@@ -98,6 +215,38 @@ const Students = () => {
           </Grid>
         ))}
       </Grid>
+
+      <input
+        type="file"
+        accept=".csv"
+        style={{ display: "none" }}
+        ref={fileInputRef}
+        onChange={handleFileChange}
+      />
+
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add Student</DialogTitle>
+        <DialogContent>
+          <Grid container spacing={2}>
+            {Object.entries(studentForm).map(([key, value]) => (
+              <Grid item xs={12} sm={6} key={key}>
+                <TextField
+                  fullWidth
+                  label={key.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                  value={value}
+                  onChange={(e) =>
+                    setStudentForm((prev) => ({ ...prev, [key]: e.target.value }))
+                  }
+                />
+              </Grid>
+            ))}
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+          <Button onClick={handleStudentSubmit} variant="contained">Add</Button>
+        </DialogActions>
+      </Dialog>
     </PageWrapper>
   );
 };
