@@ -23,6 +23,7 @@ import Storage from "./pages/private/Storage";
 import Students from "./pages/private/Students";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
 import Settings from "./pages/private/Settings";
+import StudentListPage from "./pages/private/StudentListPage.jsx"; 
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
@@ -44,6 +45,7 @@ function App({ mode, toggleTheme }) {
     { path: "/attendance", component: <Attendance /> },
     { path: "/storage", component: <Storage /> },
     { path: "/students", component: <Students /> },
+    { path: "/classes/:classId/students", component: <StudentListPage /> },
     { path: "/settings", component: <Settings /> },
   ];
 

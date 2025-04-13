@@ -1,6 +1,6 @@
 // Ultimate Teacher Class Management Page
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   Typography, Grid, Card, CardContent, CardActions,
   Box, Button, TextField, Dialog, DialogTitle, DialogContent,
@@ -9,8 +9,13 @@ import {
 } from "@mui/material";
 import { Edit, Delete, UploadFile, Add, Save, Cancel } from "@mui/icons-material";
 import PageWrapper from "../../components/PageWrapper";
+import { useNavigate } from "react-router-dom";
+import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 const Students = () => {
+  const navigate = useNavigate(); 
+  const { showSnackbar } = useContext(SnackbarContext);
+
   const [classes, setClasses] = useState([]);
   const [newClass, setNewClass] = useState({ class_name: "", subject: "" });
   const [selectedClassId, setSelectedClassId] = useState(null);
@@ -32,11 +37,21 @@ const Students = () => {
 
   useEffect(() => { fetchClasses(); }, []);
 
+  // ⛑ Helper for token expiry
+  const handleAuthError = () => {
+    showSnackbar("Session expired. Please log in again.", "warning");
+    localStorage.clear();
+    navigate("/login");
+  };
+
   const fetchClasses = async () => {
     const token = localStorage.getItem("access_token");
     const response = await fetch("http://localhost:8000/api/classes/", {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    if (response.status === 401) return handleAuthError();
+
     const data = await response.json();
     if (response.ok) setClasses(data);
   };
@@ -46,8 +61,11 @@ const Students = () => {
     const response = await fetch("http://localhost:8000/api/classes/create/", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...newClass, teacher: 1 }),
+      body: JSON.stringify({ ...newClass }),
     });
+
+    if (response.status === 401) return handleAuthError();
+
     const result = await response.json();
     if (response.ok) {
       setNewClass({ class_name: "", subject: "" });
@@ -67,6 +85,9 @@ const Students = () => {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(editClassData),
     });
+
+    if (response.status === 401) return handleAuthError();
+
     if (response.ok) {
       setEditModeId(null);
       fetchClasses();
@@ -76,10 +97,14 @@ const Students = () => {
   const handleDeleteClass = async (id) => {
     const token = localStorage.getItem("access_token");
     if (!window.confirm("Delete this class?")) return;
-    await fetch(`http://localhost:8000/api/classes/${id}/`, {
+
+    const response = await fetch(`http://localhost:8000/api/classes/${id}/`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    if (response.status === 401) return handleAuthError();
+
     fetchClasses();
   };
 
@@ -94,10 +119,14 @@ const Students = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("class_id", selectedClassId);
-    await fetch("http://localhost:8000/api/classes/upload-csv/", {
+
+    const response = await fetch("http://localhost:8000/api/classes/upload-csv/", {
       method: "POST",
       body: formData,
     });
+
+    if (response.status === 401) return handleAuthError();
+
     fetchClasses();
   };
 
@@ -114,14 +143,30 @@ const Students = () => {
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(studentForm),
     });
+
+    if (res.status === 401) return handleAuthError();
+
     const student = await res.json();
-    await fetch(`http://localhost:8000/api/classes/${selectedClassId}/add-student/`, {
+
+    const addRes = await fetch(`http://localhost:8000/api/classes/${selectedClassId}/add-student/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ student_id: student.id }),
     });
+
+    if (addRes.status === 401) return handleAuthError();
+
     setOpenDialog(false);
-    setStudentForm({ first_name: "", last_name: "", year_level: "", student_email: "", guardian_email: "", guardian_first_name: "", guardian_last_name: "", disability_info: "" });
+    setStudentForm({
+      first_name: "",
+      last_name: "",
+      year_level: "",
+      student_email: "",
+      guardian_email: "",
+      guardian_first_name: "",
+      guardian_last_name: "",
+      disability_info: "",
+    });
     fetchClasses();
   };
 
@@ -150,22 +195,15 @@ const Students = () => {
                   <>
                     <Typography variant="h6">{cls.class_name}</Typography>
                     <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1} mt={1}>
-                  <Chip label={cls.subject || "No subject"} color="primary" size="small" />
-                  <Button
-                    onClick={() =>
-                      setExpandedClassIds((prev) =>
-                        prev.includes(cls.id)
-                          ? prev.filter((id) => id !== cls.id)
-                          : [...prev, cls.id]
-                      )
-                    }
-                    size="small"
-                    sx={{ pl: 0 }}
-                  >
-                    {expandedClassIds.includes(cls.id) ? "Hide Students" : "Show Students"}
-                  </Button>
-                </Box>
-
+                      <Chip label={cls.subject || "No subject"} color="primary" size="small" />
+                      <Button
+                        size="small"
+                        sx={{ pl: 0 }}
+                        onClick={() => navigate(`/classes/${cls.id}/students`)}
+                      >
+                        View Students
+                      </Button>
+                    </Box>
                   </>
                 )}
 
@@ -196,12 +234,6 @@ const Students = () => {
                   <Button variant="contained" onClick={saveClassEdit} startIcon={<Save />}>Save</Button>
                 ) : (
                   <>
-                    <Tooltip title="Add Student">
-                      <IconButton onClick={() => { setSelectedClassId(cls.id); setOpenDialog(true); }}><Add /></IconButton>
-                    </Tooltip>
-                    <Tooltip title="Upload CSV">
-                      <IconButton onClick={() => handleFileUpload(cls.id)}><UploadFile /></IconButton>
-                    </Tooltip>
                     <Tooltip title="Edit Class">
                       <IconButton onClick={() => handleEditClass(cls)}><Edit /></IconButton>
                     </Tooltip>
@@ -210,7 +242,8 @@ const Students = () => {
                     </Tooltip>
                   </>
                 )}
-              </CardActions>
+            </CardActions>
+
             </Card>
           </Grid>
         ))}
