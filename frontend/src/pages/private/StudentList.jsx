@@ -7,6 +7,7 @@ import {
 } from "@mui/material";
 import { Edit, Delete, UploadFile, Add } from "@mui/icons-material";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
+import { ClassNames } from "@emotion/react";
 
 const StudentListPage = () => {
   const { classId } = useParams();
