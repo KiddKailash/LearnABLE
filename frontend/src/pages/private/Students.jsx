@@ -1,18 +1,23 @@
+// Ultimate Teacher Class Management Page
+
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Typography, Grid, Card, CardContent,
-  CardActions, Box, Button, TextField, Dialog,
-  DialogTitle, DialogContent, DialogActions
+  Typography, Grid, Card, CardContent, CardActions,
+  Box, Button, TextField, Dialog, DialogTitle, DialogContent,
+  DialogActions, Table, TableBody, TableCell, TableHead, TableRow,
+  IconButton, Tooltip, Chip
 } from "@mui/material";
+import { Edit, Delete, UploadFile, Add, Save, Cancel } from "@mui/icons-material";
 import PageWrapper from "../../components/PageWrapper";
 
 const Students = () => {
   const [classes, setClasses] = useState([]);
-  const [newClass, setNewClass] = useState({ class_name: "" });
+  const [newClass, setNewClass] = useState({ class_name: "", subject: "" });
   const [selectedClassId, setSelectedClassId] = useState(null);
+  const [expandedClassIds, setExpandedClassIds] = useState([]);
+  const [editModeId, setEditModeId] = useState(null);
+  const [editClassData, setEditClassData] = useState({ class_name: "", subject: "" });
   const [openDialog, setOpenDialog] = useState(false);
-  const fileInputRef = useRef(null);
-
   const [studentForm, setStudentForm] = useState({
     first_name: "",
     last_name: "",
@@ -23,60 +28,59 @@ const Students = () => {
     guardian_last_name: "",
     disability_info: "",
   });
+  const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    fetchClasses();
-  }, []);
+  useEffect(() => { fetchClasses(); }, []);
 
   const fetchClasses = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch("http://localhost:8000/api/classes/", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setClasses(data);
-      } else {
-        console.error("Error fetching classes:", data.detail);
-        setClasses([]);
-      }
-    } catch (err) {
-      console.error("Failed to fetch classes", err);
-      setClasses([]);
-    }
+    const token = localStorage.getItem("access_token");
+    const response = await fetch("http://localhost:8000/api/classes/", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await response.json();
+    if (response.ok) setClasses(data);
   };
 
   const handleCreateClass = async () => {
     const token = localStorage.getItem("access_token");
-
-    try {
-      const response = await fetch("http://localhost:8000/api/classes/create/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          class_name: newClass.class_name,
-          teacher: 1, // Replace with actual teacher ID
-        }),
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        setNewClass({ class_name: "" });
-        await fetchClasses();
-        alert("Class created!");
-      } else {
-        alert("Error: " + JSON.stringify(result));
-      }
-    } catch (err) {
-      console.error("Error creating class", err);
+    const response = await fetch("http://localhost:8000/api/classes/create/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ ...newClass, teacher: 1 }),
+    });
+    const result = await response.json();
+    if (response.ok) {
+      setNewClass({ class_name: "", subject: "" });
+      fetchClasses();
     }
+  };
+
+  const handleEditClass = (cls) => {
+    setEditModeId(cls.id);
+    setEditClassData({ class_name: cls.class_name, subject: cls.subject || "" });
+  };
+
+  const saveClassEdit = async () => {
+    const token = localStorage.getItem("access_token");
+    const response = await fetch(`http://localhost:8000/api/classes/${editModeId}/`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(editClassData),
+    });
+    if (response.ok) {
+      setEditModeId(null);
+      fetchClasses();
+    }
+  };
+
+  const handleDeleteClass = async (id) => {
+    const token = localStorage.getItem("access_token");
+    if (!window.confirm("Delete this class?")) return;
+    await fetch(`http://localhost:8000/api/classes/${id}/`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    fetchClasses();
   };
 
   const handleFileUpload = (classId) => {
@@ -84,172 +88,137 @@ const Students = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = async (event) => {
-    const file = event.target.files[0];
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
     if (!file || !selectedClassId) return;
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("class_id", selectedClassId);
-
-    try {
-      const response = await fetch("http://localhost:8000/api/classes/upload-csv/", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-      if (response.ok) {
-        alert("CSV uploaded successfully!");
-        fetchClasses();
-      } else {
-        alert("Error: " + JSON.stringify(result));
-      }
-    } catch (error) {
-      console.error("CSV upload failed:", error);
-    }
+    await fetch("http://localhost:8000/api/classes/upload-csv/", {
+      method: "POST",
+      body: formData,
+    });
+    fetchClasses();
   };
 
   const handleStudentSubmit = async () => {
-    if (!selectedClassId) {
-      alert("No class selected!");
-      return;
-    }
-  
     const token = localStorage.getItem("access_token");
-  
-    try {
-      // Step 1: Create student
-      const studentResponse = await fetch("http://localhost:8000/api/students/create/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(studentForm),
-      });
-  
-      const studentResult = await studentResponse.json();
-  
-      if (!studentResponse.ok) {
-        alert("Error creating student: " + JSON.stringify(studentResult));
-        return;
-      }
-  
-      // Step 2: Add student to class
-      const addToClassResponse = await fetch(`http://localhost:8000/api/classes/${selectedClassId}/add-student/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ student_id: studentResult.id }),
-      });
-  
-      const addToClassResult = await addToClassResponse.json();
-  
-      if (!addToClassResponse.ok) {
-        alert("Student created but error adding to class: " + JSON.stringify(addToClassResult));
-        return;
-      }
-  
-      alert("Student added to class!");
-      setOpenDialog(false);
-      setStudentForm({
-        first_name: "",
-        last_name: "",
-        year_level: "",
-        student_email: "",
-        guardian_email: "",
-        guardian_first_name: "",
-        guardian_last_name: "",
-        disability_info: "",
-      });
-      fetchClasses();
-    } catch (error) {
-      console.error("Error submitting student:", error);
-    }
+    const classObj = classes.find((cls) => cls.id === selectedClassId);
+    const exists = classObj?.students?.some(
+      (s) => s.student_email.toLowerCase() === studentForm.student_email.toLowerCase()
+    );
+    if (exists) return alert("Student already exists in this class!");
+
+    const res = await fetch("http://localhost:8000/api/students/create/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(studentForm),
+    });
+    const student = await res.json();
+    await fetch(`http://localhost:8000/api/classes/${selectedClassId}/add-student/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ student_id: student.id }),
+    });
+    setOpenDialog(false);
+    setStudentForm({ first_name: "", last_name: "", year_level: "", student_email: "", guardian_email: "", guardian_first_name: "", guardian_last_name: "", disability_info: "" });
+    fetchClasses();
   };
-  
 
   return (
     <PageWrapper>
       <Box mb={4}>
-        <Typography variant="h4" gutterBottom>Class Management</Typography>
-
-        <Box display="flex" gap={2} mb={2}>
-          <TextField
-            label="Class Name"
-            value={newClass.class_name}
-            onChange={(e) => setNewClass({ ...newClass, class_name: e.target.value })}
-          />
-          <Button variant="contained" onClick={handleCreateClass}>
-            Create Class
-          </Button>
+        <Typography variant="h4">Class Management</Typography>
+        <Box display="flex" gap={2} mt={2}>
+          <TextField label="Class Name" value={newClass.class_name} onChange={(e) => setNewClass({ ...newClass, class_name: e.target.value })} />
+          <TextField label="Subject" value={newClass.subject} onChange={(e) => setNewClass({ ...newClass, subject: e.target.value })} />
+          <Button variant="contained" startIcon={<Add />} onClick={handleCreateClass}>Create</Button>
         </Box>
       </Box>
 
       <Grid container spacing={3}>
-        {Array.isArray(classes) && classes.map((cls) => (
-          <Grid item xs={12} sm={6} md={4} key={cls.id}>
+        {classes.map((cls) => (
+          <Grid item xs={12} md={6} key={cls.id}>
             <Card>
               <CardContent>
-                <Typography variant="h6">{cls.class_name}</Typography>
-                <Typography variant="body2" color="textSecondary" mb={1}>
-                  {cls.subject || "No subject provided"}
-                </Typography>
-
-                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                  Students:
-                </Typography>
-                {cls.students && cls.students.length > 0 ? (
-                  cls.students.map((student, idx) => (
-                    <Typography key={student.id || idx} variant="body2">
-                      {student.first_name} {student.last_name} ({student.year_level})
-                    </Typography>
-                  ))
+                {editModeId === cls.id ? (
+                  <>
+                    <TextField fullWidth label="Class Name" value={editClassData.class_name} onChange={(e) => setEditClassData({ ...editClassData, class_name: e.target.value })} sx={{ mb: 1 }} />
+                    <TextField fullWidth label="Subject" value={editClassData.subject} onChange={(e) => setEditClassData({ ...editClassData, subject: e.target.value })} />
+                  </>
                 ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No students yet.
-                  </Typography>
+                  <>
+                    <Typography variant="h6">{cls.class_name}</Typography>
+                    <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1} mt={1}>
+                  <Chip label={cls.subject || "No subject"} color="primary" size="small" />
+                  <Button
+                    onClick={() =>
+                      setExpandedClassIds((prev) =>
+                        prev.includes(cls.id)
+                          ? prev.filter((id) => id !== cls.id)
+                          : [...prev, cls.id]
+                      )
+                    }
+                    size="small"
+                    sx={{ pl: 0 }}
+                  >
+                    {expandedClassIds.includes(cls.id) ? "Hide Students" : "Show Students"}
+                  </Button>
+                </Box>
+
+                  </>
+                )}
+
+                {expandedClassIds.includes(cls.id) && cls.students?.length > 0 && (
+                  <Table size="small" sx={{ mt: 1 }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Year</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {cls.students.map((s) => (
+                        <TableRow key={s.id}>
+                          <TableCell>{s.first_name} {s.last_name}</TableCell>
+                          <TableCell>{s.student_email}</TableCell>
+                          <TableCell>{s.year_level}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
 
               <CardActions>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => {
-                    setSelectedClassId(cls.id); // Set class ID here
-                    setOpenDialog(true); // Open the dialog for adding student
-                  }}
-                >
-                  Add Student
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={() => handleFileUpload(cls.id)}
-                >
-                  Upload CSV
-                </Button>
+                {editModeId === cls.id ? (
+                  <Button variant="contained" onClick={saveClassEdit} startIcon={<Save />}>Save</Button>
+                ) : (
+                  <>
+                    <Tooltip title="Add Student">
+                      <IconButton onClick={() => { setSelectedClassId(cls.id); setOpenDialog(true); }}><Add /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Upload CSV">
+                      <IconButton onClick={() => handleFileUpload(cls.id)}><UploadFile /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Edit Class">
+                      <IconButton onClick={() => handleEditClass(cls)}><Edit /></IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Class">
+                      <IconButton color="error" onClick={() => handleDeleteClass(cls.id)}><Delete /></IconButton>
+                    </Tooltip>
+                  </>
+                )}
               </CardActions>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      <input
-        type="file"
-        accept=".csv"
-        style={{ display: "none" }}
-        ref={fileInputRef}
-        onChange={handleFileChange}
-      />
+      <input type="file" accept=".csv" hidden ref={fileInputRef} onChange={handleFileChange} />
 
-      {/* Dialog for Adding Student */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
         <DialogTitle>Add Student</DialogTitle>
         <DialogContent>
           <Grid container spacing={2}>
@@ -259,19 +228,15 @@ const Students = () => {
                   fullWidth
                   label={key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   value={value}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({ ...prev, [key]: e.target.value }))
-                  }
+                  onChange={(e) => setStudentForm((prev) => ({ ...prev, [key]: e.target.value }))}
                 />
               </Grid>
             ))}
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleStudentSubmit} variant="contained">
-            Add
-          </Button>
+          <Button onClick={() => setOpenDialog(false)} startIcon={<Cancel />}>Cancel</Button>
+          <Button onClick={handleStudentSubmit} variant="contained" startIcon={<Add />}>Add</Button>
         </DialogActions>
       </Dialog>
     </PageWrapper>

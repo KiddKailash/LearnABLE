@@ -149,3 +149,25 @@ def upload_students_csv(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+
+@api_view(["PUT", "DELETE"])
+@permission_classes([IsAuthenticated])
+def class_detail(request, class_id):
+    try:
+        cls = Classes.objects.get(id=class_id)
+    except Classes.DoesNotExist:
+        return Response({"error": "Class not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "PUT":
+        serializer = ClassSerializer(cls, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        cls.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+

@@ -8,4 +8,4 @@ class ClassSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Classes
-        fields = ['id', 'class_name', 'subject', 'teacher', 'students']
+        fields = '__all__'
