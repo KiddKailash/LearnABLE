@@ -5,7 +5,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Student
 from .serializers import StudentSerializer
+from classes.serializers import ClassSerializer
 from classes.models import Classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import permission_classes
 
 #Get all students
 @api_view(['GET'])
@@ -20,6 +23,7 @@ def create_student(request):
     serializer = StudentSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
+        print(f"Created student: {Student.student_email}")
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -74,14 +78,14 @@ def partial_update_student(request, student_id):
     return Response(serializer.errors, status=400)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_students_by_class(request, class_id):
     """
-    Returns all students in a given class.
+    Returns full class object including students.
     """
     try:
         class_obj = Classes.objects.get(id=class_id)
-        students = class_obj.students.all()  # many-to-many relationship
-        serializer = StudentSerializer(students, many=True)
+        serializer = ClassSerializer(class_obj)
         return Response(serializer.data)
     except Classes.DoesNotExist:
         return Response({"error": "Class not found"}, status=404)

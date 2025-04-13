@@ -65,42 +65,18 @@ def add_student_to_class(request, class_id):
     except Student.DoesNotExist:
         return Response({"error": "Student not found"}, status=404)
 
-@csrf_exempt
 @api_view(['POST', 'GET']) 
 @parser_classes([MultiPartParser])
-@authentication_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def upload_students_csv(request):
-    """
-    Upload a CSV file containing student details and create Student records.
-    Links them to an existing class via class_id.
-
-    The CSV is expected to have columns such as:
-      - first_name
-      - last_name
-      - year_level
-      - student_email
-      - guardian_email
-      - guardian_first_name (optional)
-      - guardian_last_name (optional)
-      - disability_info (optional; will typically be blank)
-
-    Returns:
-        Response: Success message and student IDs, or error message.
-    """
     if request.method == 'GET':
-        html = """
-        <html>
-        <body>
-            <h2>Upload Student CSV</h2>
-            <form method="post" enctype="multipart/form-data">
-                <input type="file" name="file" required />
-                <input type="text" name="class_id" placeholder="Enter class ID" required />
-                <button type="submit">Upload</button>
-            </form>
-        </body>
-        </html>
-        """
-        return HttpResponse(html)
+        return HttpResponse(
+            "<h2>Upload Student CSV</h2>"
+            "<form method='post' enctype='multipart/form-data'>"
+            "<input type='file' name='file' required />"
+            "<input type='text' name='class_id' placeholder='Enter class ID' required />"
+            "<button type='submit'>Upload</button></form></body></html>"
+        )
 
     class_id = request.POST.get("class_id")
     if not class_id:
@@ -120,25 +96,31 @@ def upload_students_csv(request):
         io_string = io.StringIO(decoded_file)
         reader = csv.DictReader(io_string)
         student_ids = []
+        skipped = []
 
         for row in reader:
+            email = row.get("student_email", "").strip().lower()
+            if Student.objects.filter(student_email__iexact=email).exists():
+                skipped.append(email)
+                continue
+
             student = Student.objects.create(
                 first_name=row.get("first_name", ""),
                 last_name=row.get("last_name", ""),
                 year_level=row.get("year_level", None),
-                student_email=row.get("student_email", ""),
+                student_email=email,
                 disability_info=row.get("disability_info", ""),
                 guardian_email=row.get("guardian_email", ""),
                 guardian_first_name=row.get("guardian_first_name", "missing"),
                 guardian_last_name=row.get("guardian_last_name", "missing")
             )
-            class_obj.students.add(student)  # Associate student with class
+            class_obj.students.add(student)
             student_ids.append(student.id)
 
         return Response({
-            "message": "Students created and linked to class successfully",
-            "class_id": class_id,
-            "student_ids": student_ids
+            "message": "Upload completed",
+            "created": len(student_ids),
+            "skipped_duplicates": skipped,
         }, status=201)
 
     except Exception as e:

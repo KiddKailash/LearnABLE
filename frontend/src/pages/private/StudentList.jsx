@@ -7,11 +7,12 @@ import {
 } from "@mui/material";
 import { Edit, Delete, UploadFile, Add } from "@mui/icons-material";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-import { ClassNames } from "@emotion/react";
 
 const StudentListPage = () => {
   const { classId } = useParams();
   const { showSnackbar } = useContext(SnackbarContext);
+
+  const [className, setClassName] = useState("");
   const [students, setStudents] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
   const [form, setForm] = useState({});
@@ -26,6 +27,7 @@ const StudentListPage = () => {
     guardian_last_name: "",
     disability_info: "",
   });
+
   const fileInputRef = useRef(null);
 
   const authHeader = () => ({
@@ -47,7 +49,13 @@ const StudentListPage = () => {
     if (res.status === 401) return handleAuthError();
 
     const data = await res.json();
-    setStudents(data);
+    if (Array.isArray(data)) {
+      // fallback for bad response
+      setStudents(data);
+    } else {
+      setStudents(data.students || []);
+      setClassName(data.class_name || `#${classId}`);
+    }
   };
 
   useEffect(() => {
@@ -57,7 +65,6 @@ const StudentListPage = () => {
   const handleDelete = async (studentId) => {
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
-
     if (!window.confirm(`Remove ${student.first_name} ${student.last_name}?`)) return;
 
     const res = await fetch(`http://localhost:8000/api/students/${studentId}/delete/`, {
@@ -108,8 +115,10 @@ const StudentListPage = () => {
 
     const res = await fetch("http://localhost:8000/api/classes/upload-csv/", {
       method: "POST",
-      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
       body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
     });
 
     if (res.status === 401) return handleAuthError();
@@ -118,7 +127,8 @@ const StudentListPage = () => {
       await fetchStudents();
       showSnackbar("CSV uploaded successfully", "success");
     } else {
-      showSnackbar("CSV upload failed", "error");
+      const err = await res.json();
+      showSnackbar(`CSV upload failed: ${err.error || "Unknown error"}`, "error");
     }
   };
 
@@ -156,7 +166,9 @@ const StudentListPage = () => {
 
   return (
     <>
-      <Typography variant="h4" mb={2}>Students in Class {classId}</Typography>
+      <Typography variant="h4" mb={2}>
+        Students in {className}
+      </Typography>
 
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Button variant="contained" onClick={() => setNewStudentDialog(true)} startIcon={<Add />}>
@@ -205,7 +217,6 @@ const StudentListPage = () => {
         </TableBody>
       </Table>
 
-      {/* Edit Dialog */}
       <Dialog open={!!editingStudent} onClose={() => setEditingStudent(null)}>
         <DialogTitle>Edit Student</DialogTitle>
         <DialogContent>
@@ -226,7 +237,6 @@ const StudentListPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Add Student Dialog */}
       <Dialog open={newStudentDialog} onClose={() => setNewStudentDialog(false)}>
         <DialogTitle>Add New Student</DialogTitle>
         <DialogContent>
