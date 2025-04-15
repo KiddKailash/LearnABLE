@@ -95,36 +95,40 @@ def upload_students_csv(request):
         decoded_file = csv_file.read().decode("utf-8")
         io_string = io.StringIO(decoded_file)
         reader = csv.DictReader(io_string)
-        student_ids = []
-        skipped = []
+
+        added_to_class = []
+        already_in_class = []
 
         for row in reader:
             email = row.get("student_email", "").strip().lower()
-            if Student.objects.filter(student_email__iexact=email).exists():
-                skipped.append(email)
-                continue
-
-            student = Student.objects.create(
-                first_name=row.get("first_name", ""),
-                last_name=row.get("last_name", ""),
-                year_level=row.get("year_level", None),
+            student, created = Student.objects.get_or_create(
                 student_email=email,
-                disability_info=row.get("disability_info", ""),
-                guardian_email=row.get("guardian_email", ""),
-                guardian_first_name=row.get("guardian_first_name", "missing"),
-                guardian_last_name=row.get("guardian_last_name", "missing")
+                defaults={
+                    "first_name": row.get("first_name", ""),
+                    "last_name": row.get("last_name", ""),
+                    "year_level": row.get("year_level", None),
+                    "disability_info": row.get("disability_info", ""),
+                    "guardian_email": row.get("guardian_email", ""),
+                    "guardian_first_name": row.get("guardian_first_name", "missing"),
+                    "guardian_last_name": row.get("guardian_last_name", "missing")
+                }
             )
-            class_obj.students.add(student)
-            student_ids.append(student.id)
+
+            if not class_obj.students.filter(id=student.id).exists():
+                class_obj.students.add(student)
+                added_to_class.append(email)
+            else:
+                already_in_class.append(email)
 
         return Response({
             "message": "Upload completed",
-            "created": len(student_ids),
-            "skipped_duplicates": skipped,
+            "added_to_class": added_to_class,
+            "already_in_class": already_in_class
         }, status=201)
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
 
 
 @api_view(["PUT", "DELETE"])
@@ -146,4 +150,3 @@ def class_detail(request, class_id):
         cls.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-
