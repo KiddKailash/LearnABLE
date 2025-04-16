@@ -40,12 +40,10 @@ def create_class(request):
 @permission_classes([IsAuthenticated])
 def get_all_classes(request):
     """
-    Retrieve a list of all classes in the system.
-
-    Returns:
-        Response: A list of serialized class objects.
+    Retrieve a list of classes for the authenticated teacher only.
     """
-    classes = Classes.objects.all()
+    teacher = request.user.teacher  # Get the teacher linked to the current user
+    classes = Classes.objects.filter(teacher=teacher)  # Filter only their classes
     serializer = ClassSerializer(classes, many=True)
     return Response(serializer.data)
 
