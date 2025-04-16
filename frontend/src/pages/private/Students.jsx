@@ -46,15 +46,23 @@ const Students = () => {
 
   const fetchClasses = async () => {
     const token = localStorage.getItem("access_token");
+    console.log("Token:", token); // Log the token to ensure it's correct
+    
     const response = await fetch("http://localhost:8000/api/classes/", {
       headers: { Authorization: `Bearer ${token}` },
     });
-
-    if (response.status === 401) return handleAuthError();
-
+  
+    console.log("Response Status:", response.status); // Log the response status
+  
+    if (response.status === 401) {
+      console.log("Authorization error: ", await response.text()); // Log the error message from the response
+      return handleAuthError();
+    }
+  
     const data = await response.json();
     if (response.ok) setClasses(data);
   };
+  
 
   const handleCreateClass = async () => {
     const token = localStorage.getItem("access_token");

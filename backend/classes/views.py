@@ -37,6 +37,7 @@ def create_class(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_classes(request):
     """
     Retrieve a list of all classes in the system.
