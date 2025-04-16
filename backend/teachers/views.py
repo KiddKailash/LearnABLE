@@ -3,23 +3,22 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import Teacher
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import TeacherSerializer
+from .models import Teacher
+from django.contrib.auth.models import User
 
 @csrf_exempt
 def register_teacher(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body)
-            print("Received data:", data)  # Debugging
+            print("Received data:", data)  # Debug
 
             serializer = TeacherSerializer(data=data)
             if serializer.is_valid():
                 teacher = serializer.save()
-                teacher.set_password(data["password"])  # Properly hash password
-                teacher.save()
                 return JsonResponse({
                     "message": "Teacher registered successfully!",
                     "teacher_id": teacher.id
@@ -43,21 +42,23 @@ def login_teacher(request):
             email = data.get("email")
             password = data.get("password")
 
+            user = authenticate(username=email, password=password)
+            if user is None:
+                return JsonResponse({"message": "Invalid email or password"}, status=401)
+
+            # Get Teacher profile
             try:
-                teacher = Teacher.objects.get(email=email)
+                teacher = user.teacher
             except Teacher.DoesNotExist:
-                return JsonResponse({"message": "Invalid email or password"}, status=401)
+                return JsonResponse({"message": "Teacher profile not found"}, status=404)
 
-            if not teacher.check_password(password):
-                return JsonResponse({"message": "Invalid email or password"}, status=401)
-
-            refresh = RefreshToken.for_user(teacher)
+            refresh = RefreshToken.for_user(user)
             return JsonResponse({
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
-                "first_name": teacher.first_name,
-                "last_name": teacher.last_name,
-                "email": teacher.email
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email
             })
 
         except Exception as e:
@@ -75,12 +76,13 @@ def upload_profile_pic(request):
         return Response({"error": "Email and profile picture are required."}, status=400)
 
     try:
-        teacher = Teacher.objects.get(email=email)
+        user = User.objects.get(email=email)
+        teacher = user.teacher
         teacher.profile_pic = file
         teacher.save()
         return Response({
             "message": "Profile picture updated successfully!",
             "profile_pic": teacher.profile_pic.url
         })
-    except Teacher.DoesNotExist:
+    except (User.DoesNotExist, Teacher.DoesNotExist):
         return Response({"error": "Teacher not found."}, status=404)

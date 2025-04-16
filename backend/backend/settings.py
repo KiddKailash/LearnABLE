@@ -156,9 +156,6 @@ SIMPLE_JWT = {
     'TOKEN_OBTAIN_SERIALIZER': 'teachers.views.TeacherTokenObtainPairSerializer',
 }
 
-# settings.py
-AUTH_USER_MODEL = 'teachers.Teacher'
-
 
 MEDIA_URL = '/media/'  # URL to access media files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Path to store uploaded files
