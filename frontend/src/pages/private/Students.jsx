@@ -1,19 +1,21 @@
-// Ultimate Teacher Class Management Page
-
 import React, { useEffect, useRef, useState, useContext } from "react";
 import {
   Typography, Grid, Card, CardContent, CardActions,
   Box, Button, TextField, Dialog, DialogTitle, DialogContent,
   DialogActions, Table, TableBody, TableCell, TableHead, TableRow,
-  IconButton, Tooltip, Chip
+  IconButton, Tooltip, Chip, Snackbar
 } from "@mui/material";
 import { Edit, Delete, UploadFile, Add, Save, Cancel } from "@mui/icons-material";
 import PageWrapper from "../../components/PageWrapper";
 import { useNavigate } from "react-router-dom";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 
+/**
+ * Component for managing classes and students.
+ * Allows teachers to create/edit/delete classes, upload student CSVs, and add students manually.
+ */
 const Students = () => {
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
 
   const [classes, setClasses] = useState([]);
@@ -22,6 +24,7 @@ const Students = () => {
   const [expandedClassIds, setExpandedClassIds] = useState([]);
   const [editModeId, setEditModeId] = useState(null);
   const [editClassData, setEditClassData] = useState({ class_name: "", subject: "" });
+
   const [openDialog, setOpenDialog] = useState(false);
   const [studentForm, setStudentForm] = useState({
     first_name: "",
@@ -33,11 +36,17 @@ const Students = () => {
     guardian_last_name: "",
     disability_info: "",
   });
+
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const [pendingStudentDelete, setPendingStudentDelete] = useState(null);
+  const [showStudentDeleteSnackbar, setShowStudentDeleteSnackbar] = useState(false);
+
   const fileInputRef = useRef(null);
 
   useEffect(() => { fetchClasses(); }, []);
 
-  // ⛑ Helper for token expiry
   const handleAuthError = () => {
     showSnackbar("Session expired. Please log in again.", "warning");
     localStorage.clear();
@@ -46,23 +55,13 @@ const Students = () => {
 
   const fetchClasses = async () => {
     const token = localStorage.getItem("access_token");
-    console.log("Token:", token); // Log the token to ensure it's correct
-    
     const response = await fetch("http://localhost:8000/api/classes/", {
       headers: { Authorization: `Bearer ${token}` },
     });
-  
-    console.log("Response Status:", response.status); // Log the response status
-  
-    if (response.status === 401) {
-      console.log("Authorization error: ", await response.text()); // Log the error message from the response
-      return handleAuthError();
-    }
-  
+    if (response.status === 401) return handleAuthError();
     const data = await response.json();
     if (response.ok) setClasses(data);
   };
-  
 
   const handleCreateClass = async () => {
     const token = localStorage.getItem("access_token");
@@ -102,18 +101,54 @@ const Students = () => {
     }
   };
 
-  const handleDeleteClass = async (id) => {
-    const token = localStorage.getItem("access_token");
-    if (!window.confirm("Delete this class?")) return;
+  const handleDeleteClass = (id) => {
+    setPendingDeleteId(id);
+    setDeleteDialogOpen(true);
+  };
 
-    const response = await fetch(`http://localhost:8000/api/classes/${id}/`, {
+  const confirmDeleteClass = async () => {
+    const token = localStorage.getItem("access_token");
+    const response = await fetch(`http://localhost:8000/api/classes/${pendingDeleteId}/`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
 
+    setDeleteDialogOpen(false);
+    setPendingDeleteId(null);
+
     if (response.status === 401) return handleAuthError();
 
     fetchClasses();
+  };
+
+  const handleDeleteStudent = (studentId) => {
+    setPendingStudentDelete(studentId);
+    setShowStudentDeleteSnackbar(true);
+  };
+
+  const confirmDeleteStudent = async () => {
+    const student = classes.flatMap((cls) => cls.students || []).find((s) => s.id === pendingStudentDelete);
+    if (!student) {
+      showSnackbar("Student not found", "warning");
+      return;
+    }
+
+    const res = await fetch(`http://localhost:8000/api/students/${pendingStudentDelete}/delete/`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+    });
+
+    setShowStudentDeleteSnackbar(false);
+    setPendingStudentDelete(null);
+
+    if (res.status === 401) return handleAuthError();
+
+    if (res.ok) {
+      showSnackbar("Student deleted successfully", "success");
+      fetchClasses();
+    } else {
+      showSnackbar("Failed to delete student", "error");
+    }
   };
 
   const handleFileUpload = (classId) => {
@@ -124,6 +159,7 @@ const Students = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !selectedClassId) return;
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("class_id", selectedClassId);
@@ -204,13 +240,7 @@ const Students = () => {
                     <Typography variant="h6">{cls.class_name}</Typography>
                     <Box display="flex" flexDirection="column" alignItems="flex-start" gap={1} mt={1}>
                       <Chip label={cls.subject || "No subject"} color="primary" size="small" />
-                      <Button
-                        size="small"
-                        sx={{ pl: 0 }}
-                        onClick={() => navigate(`/classes/${cls.id}/students`)}
-                      >
-                        View Students
-                      </Button>
+                      <Button size="small" sx={{ pl: 0 }} onClick={() => navigate(`/classes/${cls.id}/students`)}>View Students</Button>
                     </Box>
                   </>
                 )}
@@ -222,6 +252,7 @@ const Students = () => {
                         <TableCell>Name</TableCell>
                         <TableCell>Email</TableCell>
                         <TableCell>Year</TableCell>
+                        <TableCell>Actions</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -230,6 +261,11 @@ const Students = () => {
                           <TableCell>{s.first_name} {s.last_name}</TableCell>
                           <TableCell>{s.student_email}</TableCell>
                           <TableCell>{s.year_level}</TableCell>
+                          <TableCell>
+                            <Tooltip title="Delete Student">
+                              <IconButton color="error" onClick={() => handleDeleteStudent(s.id)}><Delete /></IconButton>
+                            </Tooltip>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -250,8 +286,7 @@ const Students = () => {
                     </Tooltip>
                   </>
                 )}
-            </CardActions>
-
+              </CardActions>
             </Card>
           </Grid>
         ))}
@@ -269,8 +304,7 @@ const Students = () => {
                   fullWidth
                   label={key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   value={value}
-                  onChange={(e) => setStudentForm((prev) => ({ ...prev, [key]: e.target.value }))}
-                />
+                  onChange={(e) => setStudentForm((prev) => ({ ...prev, [key]: e.target.value }))} />
               </Grid>
             ))}
           </Grid>
@@ -280,6 +314,19 @@ const Students = () => {
           <Button onClick={handleStudentSubmit} variant="contained" startIcon={<Add />}>Add</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Confirmation dialog for deleting class */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this class?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmDeleteClass} color="error" variant="contained">Delete</Button>
+        </DialogActions>
+      </Dialog>
+
     </PageWrapper>
   );
 };

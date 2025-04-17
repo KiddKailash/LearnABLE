@@ -28,6 +28,9 @@ const StudentListPage = () => {
     disability_info: "",
   });
 
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState(null);
+
   const fileInputRef = useRef(null);
 
   const authHeader = () => ({
@@ -50,7 +53,6 @@ const StudentListPage = () => {
 
     const data = await res.json();
     if (Array.isArray(data)) {
-      // fallback for bad response
       setStudents(data);
     } else {
       setStudents(data.students || []);
@@ -62,12 +64,12 @@ const StudentListPage = () => {
     fetchStudents();
   }, [classId]);
 
-  const handleDelete = async (studentId) => {
-    const student = students.find((s) => s.id === studentId);
-    if (!student) return;
-    if (!window.confirm(`Remove ${student.first_name} ${student.last_name}?`)) return;
+  const handleDelete = async () => {
+    if (!studentToDelete) return;
 
-    const res = await fetch(`http://localhost:8000/api/students/${studentId}/delete/`, {
+    showSnackbar("Deleting student...", "info");
+
+    const res = await fetch(`http://localhost:8000/api/students/${studentToDelete.id}/delete/`, {
       method: "DELETE",
       headers: authHeader(),
     });
@@ -75,11 +77,19 @@ const StudentListPage = () => {
     if (res.status === 401) return handleAuthError();
 
     if (res.ok) {
-      setStudents((prev) => prev.filter((s) => s.id !== studentId));
-      showSnackbar("Student deleted", "success");
+      setStudents((prev) => prev.filter((s) => s.id !== studentToDelete.id));
+      showSnackbar("Student deleted successfully", "success");
     } else {
       showSnackbar("Failed to delete student", "error");
     }
+
+    setConfirmDeleteDialogOpen(false);
+    setStudentToDelete(null);
+  };
+
+  const promptDelete = (student) => {
+    setStudentToDelete(student);
+    setConfirmDeleteDialogOpen(true);
   };
 
   const handleEdit = (student) => {
@@ -210,7 +220,7 @@ const StudentListPage = () => {
               <TableCell>{s.year_level}</TableCell>
               <TableCell>
                 <IconButton onClick={() => handleEdit(s)}><Edit /></IconButton>
-                <IconButton onClick={() => handleDelete(s.id)}><Delete /></IconButton>
+                <IconButton onClick={() => promptDelete(s)}><Delete /></IconButton>
               </TableCell>
             </TableRow>
           ))}
@@ -254,6 +264,17 @@ const StudentListPage = () => {
         <DialogActions>
           <Button onClick={() => setNewStudentDialog(false)}>Cancel</Button>
           <Button onClick={handleAddStudent} variant="contained">Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={confirmDeleteDialogOpen} onClose={() => setConfirmDeleteDialogOpen(false)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete {studentToDelete?.first_name} {studentToDelete?.last_name}?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error" variant="contained">Delete</Button>
         </DialogActions>
       </Dialog>
     </>
