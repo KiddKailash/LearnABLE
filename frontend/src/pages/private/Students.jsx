@@ -218,11 +218,36 @@ const Students = () => {
     <PageWrapper>
       <Box mb={4}>
         <Typography variant="h4">Class Management</Typography>
-        <Box display="flex" gap={2} mt={2}>
-          <TextField label="Class Name" value={newClass.class_name} onChange={(e) => setNewClass({ ...newClass, class_name: e.target.value })} />
-          <TextField label="Subject" value={newClass.subject} onChange={(e) => setNewClass({ ...newClass, subject: e.target.value })} />
-          <Button variant="contained" startIcon={<Add />} onClick={handleCreateClass}>Create</Button>
-        </Box>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault(); // Prevent page reload
+            handleCreateClass(); // Same function as button
+          }}
+        >
+          <Box display="flex" gap={2} mt={2}>
+            <TextField
+              label="Class Name"
+              value={newClass.class_name}
+              onChange={(e) =>
+                setNewClass({ ...newClass, class_name: e.target.value })
+              }
+            />
+            <TextField
+              label="Subject"
+              value={newClass.subject}
+              onChange={(e) =>
+                setNewClass({ ...newClass, subject: e.target.value })
+              }
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              startIcon={<Add />}
+            >
+              Create
+            </Button>
+          </Box>
+        </form>
       </Box>
 
       <Grid container spacing={3}>

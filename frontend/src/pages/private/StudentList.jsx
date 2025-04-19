@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Typography, Table, TableHead, TableRow, TableCell, TableBody,
   Button, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions,
@@ -8,8 +8,10 @@ import {
 import { Edit, Delete, UploadFile, Add } from "@mui/icons-material";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 
+
 const StudentListPage = () => {
   const { classId } = useParams();
+  const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
 
   const [className, setClassName] = useState("");
@@ -176,9 +178,12 @@ const StudentListPage = () => {
 
   return (
     <>
-      <Typography variant="h4" mb={2}>
-        Students in {className}
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h4">Students in {className}</Typography>
+        <Button variant="outlined" onClick={() => navigate("/students")}>
+          ← Back to Classes
+        </Button>
+      </Box>
 
       <Box display="flex" justifyContent="space-between" mb={2}>
         <Button variant="contained" onClick={() => setNewStudentDialog(true)} startIcon={<Add />}>
