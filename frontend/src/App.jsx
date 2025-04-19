@@ -21,7 +21,7 @@ import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
 import Reporting from "./pages/private/Reporting";
 import Storage from "./pages/private/Storage";
-import Classes from "./pages/private/Classes"; // ✅ updated import
+import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
 import Settings from "./pages/private/Settings";
 import StudentListPage from "./pages/private/StudentList.jsx";

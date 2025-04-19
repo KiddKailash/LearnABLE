@@ -1,10 +1,12 @@
 /**
- * @file Layout.jsx
+ * @file Dashboard.jsx
+ * @file Dashboard.jsx
  * @description Layout component that renders the primary sidebar (if applicable) alongside
- * the main content area. The main content area displays the active route's content via Outlet.
+ * the main content area and an additional right-hand sidebar. The main content area displays
+ * the active route's content via Outlet.
  *
  * Layout:
- *    [Primary Sidebar] | [AppBar + Main Content]
+ *    [Primary Sidebar] | [Main content area fills leftover space + can scroll]
  *
  * @module Layout
  */
@@ -14,43 +16,56 @@ import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import Sidebar from "./Sidebar";
-import AppBar from "../components/Appbar/AppBar"; 
-import PageWrapper from "./PageWrapper";
+import Chatbar from "./Chatbar";
 
 // MUI Components
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 
 /**
- * Layout component that provides the main structure of the application.
+ * Dashboard component that provides the main layout for the application.
+ * Dashboard component that provides the main layout for the application.
  *
- * It conditionally renders the primary sidebar based on the current route and includes a top AppBar
- * across all pages that require the sidebar.
+ * It conditionally renders the primary sidebar based on the current route. For example,
+ * the sidebar is hidden on login, registration, home, or catch-all routes.
  *
  * @component
- * @returns {JSX.Element} The rendered layout with sidebar, appbar, and main content.
+ * @returns {JSX.Element} The rendered Dashboard layout component.
+ * @returns {JSX.Element} The rendered Dashboard layout component.
  */
-const Layout = ({ mode, toggleTheme }) => {
+const Layout = () => {
   const location = useLocation();
 
-  // Sidebar is hidden on public or auth routes
+  /**
+   * Determines if the sidebar should be hidden based on the current path.
+   *
+   * The sidebar is not displayed on the following routes:
+   * - /login
+   * - /register
+   * - /
+   * - *
+   *
+   * @type {boolean}
+   */
   const doNotDisplaySidebar =
     location.pathname === "/login" ||
     location.pathname === "/register" ||
     location.pathname === "/" ||
     location.pathname === "*";
 
+  const doNotDisplayChatbar = doNotDisplaySidebar; // ADD ROUTES HERE
+
   return (
     <Box
       sx={{
         display: "flex",
-        height: "100vh",
-        width: "100%",
+        height: "100vh", // fill viewport height
+        width: "100%", // fill viewport width
         bgcolor: "background.default",
-        p: 1,
+        p: doNotDisplaySidebar ? 0 : 1,
+        gap: 1,
       }}
     >
-      {/* PRIMARY SIDEBAR */}
       {!doNotDisplaySidebar && (
         <Box
           sx={{
@@ -62,35 +77,39 @@ const Layout = ({ mode, toggleTheme }) => {
         </Box>
       )}
 
-      {/* Main content area with AppBar + page content */}
+      {/* Outer box that holds secondary sidebar + main content */}
       <Box
         sx={{
           bgcolor: "background.paper",
           borderRadius: 5,
           display: "flex",
-          flexDirection: "column",
-          flexGrow: 1,
+          flexGrow: 1, // let this box expand to fill leftover space
         }}
       >
-        {/* PAGE CONTENT */}
+        {/* MAIN CONTENT AREA */}
         <Container
           sx={{
-            flexGrow: 1,
-            overflowY: "auto",
+            flexGrow: 1, // again, fill remaining horizontal space
+            overflowY: "auto", // scroll if content is too tall
+            display: "flex", // we use a flex container to position the <Container>
             width: "100%",
             height: "100%",
           }}
         >
-          <PageWrapper>
-          {/* GLOBAL APP BAR */}
-          {!doNotDisplaySidebar && (
-            <AppBar mode={mode} toggleTheme={toggleTheme} />
-          )}
-
+          {/* Renders whatever route/page is active */}
           <Outlet />
-          </PageWrapper>
         </Container>
       </Box>
+
+      {!doNotDisplayChatbar && (
+        <Chatbar
+          sx={(theme) => ({
+            flexShrink: 0,
+            overflow: "auto",
+            borderRadius: theme.shape.border,
+          })}
+        />
+      )}
     </Box>
   );
 };
