@@ -157,6 +157,13 @@ export const UserProvider = ({ children }) => {
    */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
+    const response = fetch(`${BACKEND}/classes/api/classes/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log("Response:", response.data);
+
     if (token) {
       // retrieve user data from localStorage
       const storedName = localStorage.getItem("user_name");
