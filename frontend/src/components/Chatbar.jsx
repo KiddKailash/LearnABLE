@@ -183,7 +183,7 @@ const Chatbar = ({ apiUrlOverride, modelOverride }) => {
   return (
     <Box
       sx={{
-        width: 360,
+        width: 300,
         display: "flex",
         flexDirection: "column",
         height: "100%",
