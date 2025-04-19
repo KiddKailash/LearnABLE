@@ -11,10 +11,10 @@ import { useNavigate } from "react-router-dom";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 /**
- * Component for managing classes and students.
+ * Component for managing classes.
  * Allows teachers to create/edit/delete classes, upload student CSVs, and add students manually.
  */
-const Students = () => {
+const Classes = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
 
@@ -356,4 +356,4 @@ const Students = () => {
   );
 };
 
-export default Students;
+export default Classes;

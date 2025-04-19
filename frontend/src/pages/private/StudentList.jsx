@@ -180,7 +180,7 @@ const StudentListPage = () => {
     <>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h4">Students in {className}</Typography>
-        <Button variant="outlined" onClick={() => navigate("/students")}>
+        <Button variant="outlined" onClick={() => navigate("/classes")}>
           ← Back to Classes
         </Button>
       </Box>

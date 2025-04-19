@@ -45,7 +45,7 @@ const navItems = [
   { text: "Dashboard", icon: <DashboardIcon /> },
   { text: "Storage", icon: <StorageIcon /> },
   { text: "Activity", icon: <TimelineIcon /> },
-  { text: "Students", icon: <PeopleIcon /> },
+  { text: "Classes", icon: <PeopleIcon /> },
   { text: "Reporting", icon: <EventAvailableIcon /> },
   { text: "Analytics", icon: <BarChartIcon /> },
   { text: "AI Assistant", icon: <SmartToyIcon />},

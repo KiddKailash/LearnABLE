@@ -13,6 +13,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/public/Login";
 import PageNotFound from "./pages/public/PageNotFound";
 import Register from "./pages/public/Register";
+
 // Webpages - Private
 import Account from "./pages/private/Account";
 import Activity from "./pages/private/Activity";
@@ -20,18 +21,16 @@ import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
 import Reporting from "./pages/private/Reporting";
 import Storage from "./pages/private/Storage";
-import Students from "./pages/private/Students";
+import Classes from "./pages/private/Classes"; // ✅ updated import
 import Dashboard from "./pages/private/Dashboard/Dashboard";
 import Settings from "./pages/private/Settings";
-import StudentListPage from "./pages/private/StudentList.jsx"; 
+import StudentListPage from "./pages/private/StudentList.jsx";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
 
 function App({ mode, toggleTheme }) {
-  // Define an array of page objects, each with a route path and the component to render.
-  // The "*" path acts as a catch-all route for undefined URLs.
   const pages = [
     { path: "*", component: <PageNotFound /> },
     { path: "/", component: <Login /> },
@@ -44,7 +43,7 @@ function App({ mode, toggleTheme }) {
     { path: "/analytics", component: <Analytics /> },
     { path: "/reporting", component: <Reporting /> },
     { path: "/storage", component: <Storage /> },
-    { path: "/students", component: <Students /> },
+    { path: "/classes", component: <Classes /> }, // ✅ updated route
     { path: "/classes/:classId/students", component: <StudentListPage /> },
     { path: "/settings", component: <Settings /> },
   ];
