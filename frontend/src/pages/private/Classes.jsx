@@ -55,7 +55,7 @@ const Classes = () => {
 
   const fetchClasses = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch("http://localhost:8000/classes/api/classes/", {
+    const response = await fetch("http://localhost:8000/api/classes/", {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response.status === 401) return handleAuthError();
