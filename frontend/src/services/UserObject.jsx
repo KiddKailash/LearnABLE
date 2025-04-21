@@ -157,12 +157,20 @@ export const UserProvider = ({ children }) => {
    */
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    const response = fetch(`${BACKEND}/classes/api/classes/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    console.log("Response:", response.data);
+    if (token) {
+      fetch(`${BACKEND}/api/classes/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Classes API response:", data);
+        })
+        .catch((err) => {
+          console.error("Error fetching classes:", err);
+        });
+    }    
 
     if (token) {
       // retrieve user data from localStorage
