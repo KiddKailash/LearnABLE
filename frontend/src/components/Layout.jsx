@@ -101,7 +101,8 @@ const Layout = () => {
         </Container>
       </Box>
 
-      {!doNotDisplayChatbar && (
+      {/* Secondary sidebar */}
+      {/* {!doNotDisplayChatbar && (
         <Chatbar
           sx={(theme) => ({
             flexShrink: 0,
@@ -109,7 +110,7 @@ const Layout = () => {
             borderRadius: theme.shape.border,
           })}
         />
-      )}
+      )} */}
     </Box>
   );
 };
