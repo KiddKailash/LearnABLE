@@ -1,81 +1,279 @@
 import React, { useState, useEffect, useContext } from "react";
 import UserContext from "../../services/UserObject"; // Import UserContext
 
-// Local Imports
-import PageWrapper from "../../components/PageWrapper";
+// mui imports
+import { Card, CardContent, Typography, Grid, TextField, Button, 
+  Avatar, Dialog, DialogTitle, DialogContent, DialogActions, Alert, Snackbar } from "@mui/material";
 
-// MUI
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Input from "@mui/material/Input";
-import Avatar from "@mui/material/Avatar";
 
 const Account = () => {
-  const { user, isLoggedIn } = useContext(UserContext); // Access user info from UserContext
-  const [profilePic, setProfilePic] = useState(null);
-  const [preview, setPreview] = useState(""); // For previewing the image
-  const [email, setEmail] = useState(""); // Email will be set automatically after fetching user data
 
-  // If user is logged in, get the email from UserContext
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [schoolName, setSchoolName] = useState("");
+  const [teacherID, setTeacherID] = useState("");
+
+  const [profilePic, setProfilePicture] = useState(null);
+  const [preview, setPreview] = useState(null);
+
+
+  const [openPasswordDialog, setOpenPasswordDialog] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const [alertMessage, setAlertMessage] = useState("");
+  const [alertSeverity, setAlertSeverity] = useState("success");
+  const [openAlert, setOpenAlert] = useState(false);
+
   useEffect(() => {
-    if (user && user.email) {
-      setEmail(user.email); // Set the email from context
-    }
-  }, [user]);
+    //! fetch request may need to be updated
+    fetch("http://127.0.0.1:8000/api/teachers/profile/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setEmail(data.email);
+        setFullName(data.full_name);
+        setSchoolName(data.school_name);
+        setTeacherID(data.teacher_id);
+        if (data.profile_picture) {
+          setPreview(`http://127.0.0.1:8000${data.profile_picture}`);
+        }
+      });
+  }, []);
 
-  const handleFileChange = (e) => {
+
+  /**
+   * This function sends a request to the server to update the teacher's profile information
+   * Iff the changes are successful, the user is notfified with a 'success message', else 
+   * the user is notified with an 'error message'
+   */
+
+  const handleSaveChanges = () => {
+    // create a FormData object
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("full_name", fullName);
+    formData.append("school_name", schoolName);
+    formData.append("teacher_id", teacherID);
+    // append  profile picture
+    if (profilePic) {
+      formData.append("profile_picture", profilePic);
+    }
+
+    fetch("http://127.0.0.1:8000/api/teachers/profile/update/", {
+      method: "PUT",
+      body: formData,
+    })
+    // alert user of update profile status
+      .then((response) => response.json())
+      .then((data) => {
+        //alert("Changes saved successfully!");
+        setAlertMessage("Changes saved successfully!");
+        setAlertSeverity("success");
+        setOpenAlert(true);
+      })
+      .catch((error) => {
+        console.error("Error saving changes:", error);
+        //alert("Failed to update profile.");
+        setAlertMessage("Error updating profile");
+        setAlertSeverity("error");
+        setOpenAlert(true);
+        
+      });
+  };
+
+  
+  
+  /**
+   * This function handles whenever the user/teacher selects a new profile picture.
+   * @param {Event} e the event that is triggered the function call
+   */
+
+  const handlePictureChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfilePic(file);
-      setPreview(URL.createObjectURL(file)); // Generate preview URL
+      setProfilePicture(file);
+      setPreview(URL.createObjectURL(file));
     }
   };
 
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!profilePic || !email) {
-      alert("Please select a file to upload and ensure you're logged in.");
+  const handleOpenPasswordDialog = () => setOpenPasswordDialog(true);
+
+  /**
+   * This function closes the password change dialog
+   */
+  
+  const handleClosePasswordDialog = () => {
+    setOpenPasswordDialog(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmNewPassword("");
+  };
+
+ 
+
+  /**
+   * This function sends a request to the server to change the teacher/user's password.
+   * User is notified iff there password has been successfully change.
+   */
+
+  const handleChangePassword = async () => {
+    // check iff the new password is same
+    if (newPassword !== confirmNewPassword) {
+      setAlertMessage("Please verify that the passwords you entered are the same");
+      setAlertSeverity("error");
+      setOpenAlert(true);
+      
+      return;
+    }
+    // check iff current password is same as new password
+    if (currentPassword === newPassword) {
+      setAlertMessage("New password can't be same as the current password. Please try again.");
+      setAlertSeverity("error");
+      setOpenAlert(true);
       return;
     }
 
-    const formData = new FormData();
-    formData.append("email", email); // Assuming email identifies the user
-    formData.append("profile_pic", profilePic);
-
+    //send password change request
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/teachers/upload-profile-pic/", {
+      const response = await fetch("http://127.0.0.1:8000/api/teachers/change-password/", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
       });
-
-      const data = await response.json();
+      // alert user of change password status
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}, Message: ${JSON.stringify(data)}`);
+        const data = await response.json();
+        throw new Error(data.detail || "Unable to change password");
       }
 
-      console.log("Profile picture uploaded successfully:", data);
-      alert("Profile picture updated!");
-    } catch (error) {
-      console.error("Error uploading profile picture:", error);
-      alert("Failed to upload profile picture.");
+      
+      setAlertMessage("Password saved successfully!");
+      setAlertSeverity("success");
+      setOpenAlert(true);
+      handleClosePasswordDialog();
+    } catch (err) {
+     
+      setAlertMessage(`Error: ${err.message}`);
+      setAlertSeverity("error");
+      setOpenAlert(true);
     }
   };
 
-  if (!isLoggedIn) {
-    return <Typography variant="h6">You must be logged in to access this page.</Typography>;
-  }
-
   return (
-    <PageWrapper>
-      <Typography variant="h1">Account</Typography>
-      <form onSubmit={handleUpload} style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px" }}>
-        <Avatar src={preview || "/media/profile-pics/default.png"} sx={{ width: 100, height: 100 }} />
-        <Input type="file" accept="image/*" onChange={handleFileChange} required />
-        <Button type="submit" variant="contained" color="primary">
-          Upload Profile Picture
-        </Button>
-      </form>
-    </PageWrapper>
+    <Card sx={{ maxWidth: 800, mx: "auto", mt: 4, p: 2 }}>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>
+          Account Information
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sx={{ textAlign: "center" }}>
+            <Avatar
+              alt = "Profile Picture"
+              src={preview}
+              sx={{ width: 100, height: 100, mx: "auto", mb: 2 }}
+            />
+            <Button variant ="contained" component= "label">
+              Upload Profile Picture
+              <input type = "file" hidden onChange={handlePictureChange} />
+            </Button>
+          </Grid>
+          <Grid item xs = {12} sm= {6}>
+            <TextField
+              fullWidth
+              label="Full Name"
+              value = {fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label = "Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label = "School Name"
+              value = {schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label = "Teacher ID"
+              value = {teacherID}
+              onChange={(e) => setTeacherID(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sx = {{ textAlign: "center", mt: 2 }}>
+            <Button variant="contained" color = "primary" onClick={handleSaveChanges}>
+              Save Changes
+            </Button>
+          </Grid>
+          <Grid item xs={12} sx={{ textAlign: "center" }}>
+            <Button variant="outlined" color="secondary" onClick={handleOpenPasswordDialog}>
+              Change Password
+            </Button>
+          </Grid>
+        </Grid>
+      </CardContent>
+
+      <Dialog open={openPasswordDialog} onClose={handleClosePasswordDialog}>
+        <DialogTitle>Change Password</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1, 
+          pt: 1, width: "300px", "& .MuiTextField-root": { mt: 1 } }}>
+          <TextField
+            type = "password"
+            label = "Current Password"
+            value = {currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+
+          <TextField
+            type = "password"
+            label =" New Password"
+            value = {newPassword}
+            onChange ={(e) => setNewPassword(e.target.value)}
+            required
+          />
+          <TextField
+            type="password"
+            label ="Confirm New Password"
+            value={confirmNewPassword}
+            onChange = {(e) => setConfirmNewPassword(e.target.value)}
+            required
+          />
+
+        </DialogContent>
+        <DialogActions>
+          <Button onClick ={handleClosePasswordDialog}>Cancel</Button>
+          <Button onClick={handleChangePassword} variant="contained">Save</Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open = {openAlert} autoHideDuration={6500} onClose = {() => setOpenAlert(false)} 
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+        <Alert onClose={() => setOpenAlert(false)} severity = {alertSeverity} sx= {{ width: "100%" }}>
+          {alertMessage}
+          </Alert>
+      </Snackbar>
+    </Card>
   );
 };
 
