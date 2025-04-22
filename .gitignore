@@ -42,3 +42,6 @@ yarn-error.log*
 # But do NOT ignore __init__.py
 !**./backend/*/migrations/__init__.py
 
+# Ignore media files
+backend/media/
+

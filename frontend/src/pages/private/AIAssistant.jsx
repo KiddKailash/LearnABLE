@@ -63,7 +63,7 @@ const LearningMaterialUploader = () => {
     formData.append("title", title);
     formData.append("file", file);
     formData.append("objective", learningObjective);
-    formData.append("class_associated", selectedClass);
+    formData.append("class_assigned", selectedClass);
 
     setIsUploading(true);
 
