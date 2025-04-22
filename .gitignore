@@ -6,6 +6,7 @@
 /.pnp
 .pnp.js
 /backend/poetry.lock
+/backend/.venv
 
 # testing
 /coverage
@@ -31,6 +32,7 @@ yarn-error.log*
 
 # Ignore Python cache directories and files
 **/__pycache__/
+**/migrations/
 *.pyc
 ./backend/*/__pycache__
 

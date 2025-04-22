@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 
 // Services
-import UserContext from "../../../services/UserContext";
+import UserContext from "../../../services/UserObject";
 
 // Local Components
 import PageWrapper from "../../../components/PageWrapper";
@@ -11,23 +11,19 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 // Custom Components
-import DashboardAppBar from "./DashboardAppBar";
 import StatsCards from "./StatsCards";
-import UpcomingEvents from "./DashboardCards";
+// import UpcomingEvents from "./DashboardCards";
 // import WeeklySchedule from "./WeeklySchedule"; // Uncomment if needed
 
 // Dummy Data
-import { statsData, upcomingEventsData /*, weeklyScheduleData*/ } from "./dummyData";
+import { statsData/*, upcomingEventsData , weeklyScheduleData*/ } from "./dummyData";
 import DashboardCards from "./DashboardCards";
 
-const Dashboard = ({ mode, toggleTheme }) => {
+const Dashboard = () => {
   const { user } = useContext(UserContext);
 
   return (
     <PageWrapper>
-      {/* Top AppBar with Search and ThemeSwitcher */}
-      <DashboardAppBar mode={mode} toggleTheme={toggleTheme} />
-
       {/* Main Content */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>

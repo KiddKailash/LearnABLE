@@ -1,13 +1,12 @@
 from django.db import models
+from students.models import Student
 
 class Classes(models.Model):
-    # Updated foreign key references to other apps
     teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE)
-    subject = models.ForeignKey('subjects.Subject', on_delete=models.SET_NULL, null=True)
-    
-    # Define class_name as a character field with a max length of 100
+    subject = models.CharField(max_length=100, null=True, blank=True)
     class_name = models.CharField(max_length=100)
-    
-    # Optionally, add a __str__ method to represent the object by its class name
+
+    students = models.ManyToManyField('students.Student', related_name='classes') #Many students can be in many classes
+
     def __str__(self):
         return self.class_name

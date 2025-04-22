@@ -135,14 +135,23 @@ pip install poetry
 poetry install
 
 # Activate the virtual environment
-echo 'source $(poetry env info --path)/bin/activate' > .envrc
+echo `$(poetry env activate)`
+# NOTE: If there is a space character in the directory path, this WILL NOT WORK.
+# In this case, Terminal Input 1: poetry env activate
+#               Terminal Input 2: copy/paste the output of terminal input 1 into terminal. 
 
 # Run the development server
-python manage.py runserver
+make runserver
 ```
 
-The frontend will be at [http://localhost:5173](http://localhost:5173) by default. 
-The backend will be at [http://localhost:8000](http://localhost:8000) by default.
+**Frontend**
+- ***Development***: http://localhost:3000
+- ***Production***: https://storied-boba-17ed52.netlify.app
+
+**Backend** 
+- ***Development***: http://localhost:8000
+- ***Production***: https://deco3801-smart.uqcloud.net/
+
 
 ## License
 This project is in active development. License terms may be provided later.

@@ -13,53 +13,48 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/public/Login";
 import PageNotFound from "./pages/public/PageNotFound";
 import Register from "./pages/public/Register";
+
 // Webpages - Private
 import Account from "./pages/private/Account";
 import Activity from "./pages/private/Activity";
 import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
-import Attendance from "./pages/private/Attendance";
-import Calendar from "./pages/private/Calendar";
-import Message from "./pages/private/Message";
+import Reporting from "./pages/private/Reporting";
 import Storage from "./pages/private/Storage";
-import Students from "./pages/private/Students";
+import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
 import Settings from "./pages/private/Settings";
+import StudentListPage from "./pages/private/StudentList.jsx";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
 
 function App({ mode, toggleTheme }) {
-  // Define an array of page objects, each with a route path and the component to render.
-  // The "*" path acts as a catch-all route for undefined URLs.
   const pages = [
-    { path: "*", component: <PageNotFound /> },
     { path: "/", component: <Login /> },
     { path: "/login", component: <Login /> },
     { path: "/register", component: <Register /> },
-
-    // Pass props to your Dashboard so it can pass them along to DashboardAppBar
-    { path: "/dashboard", component: <Dashboard mode={mode} toggleTheme={toggleTheme} /> },
-
+    { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
     { path: "/activity", component: <Activity /> },
     { path: "/ai-assistant", component: <AIAssistant /> },
     { path: "/analytics", component: <Analytics /> },
-    { path: "/attendance", component: <Attendance /> },
-    { path: "/calendar", component: <Calendar /> },
-    { path: "/message", component: <Message /> },
+    { path: "/reporting", component: <Reporting /> },
     { path: "/storage", component: <Storage /> },
-    { path: "/students", component: <Students /> },
+    { path: "/classes", component: <Classes /> },
+    { path: "/classes/:classId/students", component: <StudentListPage /> },
     { path: "/settings", component: <Settings /> },
+    { path: "*", component: <PageNotFound /> }, // ← move this to the end
   ];
+  
 
   // Define an array of paths that are public.
   const publicPaths = ["/", "/login", "/register"];
 
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
+      <Route path="/" element={<Layout mode={mode} toggleTheme={toggleTheme} />}>
         {pages.map((page, i) => {
           // Determine if the route is public or protected
           const isPublic = publicPaths.includes(page.path) || page.path === "*";

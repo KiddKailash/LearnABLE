@@ -1,7 +1,9 @@
 /**
  * @file Dashboard.jsx
+ * @file Dashboard.jsx
  * @description Layout component that renders the primary sidebar (if applicable) alongside
- * the main content area. The main content area displays the active route's content via Outlet.
+ * the main content area and an additional right-hand sidebar. The main content area displays
+ * the active route's content via Outlet.
  *
  * Layout:
  *    [Primary Sidebar] | [Main content area fills leftover space + can scroll]
@@ -14,6 +16,7 @@ import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import Sidebar from "./Sidebar";
+import Chatbar from "./Chatbar";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -21,11 +24,13 @@ import Container from "@mui/material/Container";
 
 /**
  * Dashboard component that provides the main layout for the application.
+ * Dashboard component that provides the main layout for the application.
  *
  * It conditionally renders the primary sidebar based on the current route. For example,
  * the sidebar is hidden on login, registration, home, or catch-all routes.
  *
  * @component
+ * @returns {JSX.Element} The rendered Dashboard layout component.
  * @returns {JSX.Element} The rendered Dashboard layout component.
  */
 const Layout = () => {
@@ -48,6 +53,8 @@ const Layout = () => {
     location.pathname === "/" ||
     location.pathname === "*";
 
+  const doNotDisplayChatbar = doNotDisplaySidebar; // ADD ROUTES HERE
+
   return (
     <Box
       sx={{
@@ -55,10 +62,10 @@ const Layout = () => {
         height: "100vh", // fill viewport height
         width: "100%", // fill viewport width
         bgcolor: "background.default",
-        p: 1,
+        p: doNotDisplaySidebar ? 0 : 1,
+        gap: 1,
       }}
     >
-      {/* PRIMARY SIDEBAR */}
       {!doNotDisplaySidebar && (
         <Box
           sx={{
@@ -93,6 +100,17 @@ const Layout = () => {
           <Outlet />
         </Container>
       </Box>
+
+      {/* Secondary sidebar */}
+      {/* {!doNotDisplayChatbar && (
+        <Chatbar
+          sx={(theme) => ({
+            flexShrink: 0,
+            overflow: "auto",
+            borderRadius: theme.shape.border,
+          })}
+        />
+      )} */}
     </Box>
   );
 };
