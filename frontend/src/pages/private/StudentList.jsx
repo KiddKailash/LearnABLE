@@ -3,11 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Typography, Table, TableHead, TableRow, TableCell, TableBody,
   Button, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions,
-  Box
+  Box, Grid, Paper, Tooltip
 } from "@mui/material";
-import { Edit, Delete, UploadFile, Add } from "@mui/icons-material";
+import { Edit, Delete, UploadFile, Add, Cancel, Save } from "@mui/icons-material";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-
 
 const StudentListPage = () => {
   const { classId } = useParams();
@@ -32,7 +31,6 @@ const StudentListPage = () => {
 
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
-
   const fileInputRef = useRef(null);
 
   const authHeader = () => ({
@@ -120,11 +118,11 @@ const StudentListPage = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+  
     const formData = new FormData();
     formData.append("file", file);
     formData.append("class_id", classId);
-
+  
     const res = await fetch("http://localhost:8000/api/classes/upload-csv/", {
       method: "POST",
       body: formData,
@@ -132,146 +130,220 @@ const StudentListPage = () => {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
     });
-
+  
     if (res.status === 401) return handleAuthError();
-
+  
+    const result = await res.json();
+  
     if (res.ok) {
       await fetchStudents();
-      showSnackbar("CSV uploaded successfully", "success");
+  
+      // ✅ Show success and check for duplicates if provided in response
+      if (result.duplicates && result.duplicates.length > 0) {
+        showSnackbar("CSV uploaded. One or more students were already in the class.", "warning");
+      } else {
+        showSnackbar("CSV uploaded successfully", "success");
+      }
     } else {
-      const err = await res.json();
-      showSnackbar(`CSV upload failed: ${err.error || "Unknown error"}`, "error");
+      showSnackbar(`CSV upload failed: ${result.error || "Unknown error"}`, "error");
     }
   };
+  
 
   const handleAddStudent = async () => {
-    const res = await fetch("http://localhost:8000/api/students/create/", {
+    // Prevent duplicates in the same class
+    const alreadyInClass = students.some(
+      (s) => s.student_email.toLowerCase() === newStudent.student_email.toLowerCase()
+    );
+  
+    if (alreadyInClass) {
+      showSnackbar("Student already exists in this class", "warning");
+      return;
+    }
+  
+    // Check if student already exists elsewhere
+    const existingStudentRes = await fetch("http://localhost:8000/api/students/by-email/", {
+      method: "POST",
+      headers: authHeader(),
+      body: JSON.stringify({ student_email: newStudent.student_email }),
+    });
+  
+    if (existingStudentRes.status === 401) return handleAuthError();
+    const existingStudent = await existingStudentRes.json();
+  
+    if (existingStudent && existingStudent.id) {
+      // Student exists, just link to class
+      const linkRes = await fetch(`http://localhost:8000/api/classes/${classId}/add-student/`, {
+        method: "POST",
+        headers: authHeader(),
+        body: JSON.stringify({ student_id: existingStudent.id }),
+      });
+  
+      if (linkRes.ok) {
+        setNewStudent({
+          first_name: "",
+          last_name: "",
+          year_level: "",
+          student_email: "",
+          guardian_email: "",
+          guardian_first_name: "",
+          guardian_last_name: "",
+          disability_info: "",
+        });
+        setNewStudentDialog(false);
+        await fetchStudents();
+        showSnackbar("Student added to class successfully", "success");
+      } else {
+        showSnackbar("Failed to link student to class", "error");
+      }
+      return;
+    }
+  
+    // Student doesn't exist — create and then link
+    const createRes = await fetch("http://localhost:8000/api/students/create/", {
       method: "POST",
       headers: authHeader(),
       body: JSON.stringify(newStudent),
     });
-
-    if (res.status === 401) return handleAuthError();
-
-    const data = await res.json();
-
-    if (res.ok) {
+  
+    if (createRes.status === 401) return handleAuthError();
+    const newStudentData = await createRes.json();
+  
+    if (createRes.ok) {
       const linkRes = await fetch(`http://localhost:8000/api/classes/${classId}/add-student/`, {
         method: "POST",
         headers: authHeader(),
-        body: JSON.stringify({ student_id: data.id }),
+        body: JSON.stringify({ student_id: newStudentData.id }),
       });
-
-      if (linkRes.status === 401) return handleAuthError();
-
+  
       if (linkRes.ok) {
+        setNewStudent({
+          first_name: "",
+          last_name: "",
+          year_level: "",
+          student_email: "",
+          guardian_email: "",
+          guardian_first_name: "",
+          guardian_last_name: "",
+          disability_info: "",
+        });
         setNewStudentDialog(false);
         await fetchStudents();
-        showSnackbar("Student added successfully", "success");
+        showSnackbar("Student created and added to class", "success");
       } else {
-        showSnackbar("Failed to link student to class", "error");
+        showSnackbar("Student created but failed to link to class", "error");
       }
     } else {
       showSnackbar("Error creating student", "error");
     }
   };
+  
 
   return (
-    <>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+    <Box>
+      {/* Header */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
         <Typography variant="h4">Students in {className}</Typography>
         <Button variant="outlined" onClick={() => navigate("/classes")}>
           ← Back to Classes
         </Button>
       </Box>
 
-      <Box display="flex" justifyContent="space-between" mb={2}>
-        <Button variant="contained" onClick={() => setNewStudentDialog(true)} startIcon={<Add />}>
-          Add Student
-        </Button>
+      {/* Form buttons */}
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Grid container spacing={2} mb={4}>
+          <Grid item>
+            <Button variant="contained" startIcon={<Add />} onClick={() => setNewStudentDialog(true)}>
+              Add Student
+            </Button>
+          </Grid>
+          <Grid item>
+            <input type="file" accept=".csv" hidden ref={fileInputRef} onChange={handleFileChange} />
+            <Button variant="outlined" startIcon={<UploadFile />} onClick={() => fileInputRef.current.click()}>
+              Upload CSV
+            </Button>
+          </Grid>
+        </Grid>
+      </form>
 
-        <Box>
-          <input
-            type="file"
-            accept=".csv"
-            hidden
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
-          <Button
-            variant="outlined"
-            onClick={() => fileInputRef.current.click()}
-            startIcon={<UploadFile />}
-          >
-            Upload CSV
-          </Button>
-        </Box>
-      </Box>
-
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Year</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {students.map((s) => (
-            <TableRow key={s.id}>
-              <TableCell>{s.first_name} {s.last_name}</TableCell>
-              <TableCell>{s.student_email}</TableCell>
-              <TableCell>{s.year_level}</TableCell>
-              <TableCell>
-                <IconButton onClick={() => handleEdit(s)}><Edit /></IconButton>
-                <IconButton onClick={() => promptDelete(s)}><Delete /></IconButton>
-              </TableCell>
+      {/* Table */}
+      <Paper elevation={2}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>Name</strong></TableCell>
+              <TableCell><strong>Email</strong></TableCell>
+              <TableCell><strong>Year</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+          <TableBody>
+            {students.map((s) => (
+              <TableRow key={s.id}>
+                <TableCell>{s.first_name} {s.last_name}</TableCell>
+                <TableCell>{s.student_email}</TableCell>
+                <TableCell>{s.year_level}</TableCell>
+                <TableCell>
+                  <Tooltip title="Edit Student">
+                    <IconButton onClick={() => handleEdit(s)}><Edit /></IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete Student">
+                    <IconButton onClick={() => promptDelete(s)}><Delete /></IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
 
-      <Dialog open={!!editingStudent} onClose={() => setEditingStudent(null)}>
+      {/* Edit dialog */}
+      <Dialog open={!!editingStudent} onClose={() => setEditingStudent(null)} fullWidth maxWidth="sm">
         <DialogTitle>Edit Student</DialogTitle>
         <DialogContent>
-          {Object.entries(form).map(([key, val]) => (
-            <TextField
-              key={key}
-              margin="dense"
-              label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-              fullWidth
-              value={val || ""}
-              onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-            />
-          ))}
+          <Grid container spacing={2}>
+            {Object.entries(form).map(([key, val]) => (
+              <Grid item xs={12} sm={6} key={key}>
+                <TextField
+                  fullWidth
+                  label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  value={val || ""}
+                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditingStudent(null)}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained">Save</Button>
+          <Button onClick={() => setEditingStudent(null)} startIcon={<Cancel />}>Cancel</Button>
+          <Button onClick={handleSave} variant="contained" startIcon={<Save />}>Save</Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={newStudentDialog} onClose={() => setNewStudentDialog(false)}>
+      {/* Add dialog */}
+      <Dialog open={newStudentDialog} onClose={() => setNewStudentDialog(false)} fullWidth maxWidth="sm">
         <DialogTitle>Add New Student</DialogTitle>
         <DialogContent>
-          {Object.entries(newStudent).map(([key, val]) => (
-            <TextField
-              key={key}
-              margin="dense"
-              label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-              fullWidth
-              value={val || ""}
-              onChange={(e) => setNewStudent((f) => ({ ...f, [key]: e.target.value }))}
-            />
-          ))}
+          <Grid container spacing={2}>
+            {Object.entries(newStudent).map(([key, val]) => (
+              <Grid item xs={12} sm={6} key={key}>
+                <TextField
+                  fullWidth
+                  label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                  value={val || ""}
+                  onChange={(e) => setNewStudent((f) => ({ ...f, [key]: e.target.value }))}
+                />
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setNewStudentDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddStudent} variant="contained">Add</Button>
+          <Button onClick={() => setNewStudentDialog(false)} startIcon={<Cancel />}>Cancel</Button>
+          <Button onClick={handleAddStudent} variant="contained" startIcon={<Add />}>Add</Button>
         </DialogActions>
       </Dialog>
 
+      {/* Delete dialog */}
       <Dialog open={confirmDeleteDialogOpen} onClose={() => setConfirmDeleteDialogOpen(false)}>
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
@@ -282,7 +354,7 @@ const StudentListPage = () => {
           <Button onClick={handleDelete} color="error" variant="contained">Delete</Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 };
 
