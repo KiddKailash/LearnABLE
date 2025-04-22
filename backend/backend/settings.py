@@ -150,15 +150,15 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDIENTIALS = True
+CORS_ALLOW_CREDENTIALS = True
 
 SIMPLE_JWT = {
     'TOKEN_OBTAIN_SERIALIZER': 'teachers.views.TeacherTokenObtainPairSerializer',
 }
 
 
-MEDIA_URL = '/media/'  # URL to access media files
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Path to store uploaded files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # for authentication to ensure the logged in person has permission for their content only
 REST_FRAMEWORK = {

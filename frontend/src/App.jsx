@@ -32,7 +32,6 @@ import Layout from "./components/Layout";
 
 function App({ mode, toggleTheme }) {
   const pages = [
-    { path: "*", component: <PageNotFound /> },
     { path: "/", component: <Login /> },
     { path: "/login", component: <Login /> },
     { path: "/register", component: <Register /> },
@@ -43,10 +42,12 @@ function App({ mode, toggleTheme }) {
     { path: "/analytics", component: <Analytics /> },
     { path: "/reporting", component: <Reporting /> },
     { path: "/storage", component: <Storage /> },
-    { path: "/classes", component: <Classes /> }, // ✅ updated route
+    { path: "/classes", component: <Classes /> },
     { path: "/classes/:classId/students", component: <StudentListPage /> },
     { path: "/settings", component: <Settings /> },
+    { path: "*", component: <PageNotFound /> }, // ← move this to the end
   ];
+  
 
   // Define an array of paths that are public.
   const publicPaths = ["/", "/login", "/register"];
