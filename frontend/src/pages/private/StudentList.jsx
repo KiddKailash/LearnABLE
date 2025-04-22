@@ -14,6 +14,8 @@ const StudentListPage = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
 
+  const BACKEND = process.env.REACT_APP_BACKEND_URL;
+
   const [className, setClassName] = useState("");
   const [students, setStudents] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -47,7 +49,7 @@ const StudentListPage = () => {
   };
 
   const fetchStudents = async () => {
-    const res = await fetch(`http://localhost:8000/api/class/${classId}/`, {
+    const res = await fetch(`${BACKEND}/api/class/${classId}/`, {
       headers: authHeader(),
     });
 
@@ -71,7 +73,7 @@ const StudentListPage = () => {
 
     showSnackbar("Deleting student...", "info");
 
-    const res = await fetch(`http://localhost:8000/api/students/${studentToDelete.id}/delete/`, {
+    const res = await fetch(`${BACKEND}/api/students/${studentToDelete.id}/delete/`, {
       method: "DELETE",
       headers: authHeader(),
     });
@@ -100,7 +102,7 @@ const StudentListPage = () => {
   };
 
   const handleSave = async () => {
-    const res = await fetch(`http://localhost:8000/api/students/${editingStudent}/patch/`, {
+    const res = await fetch(`${BACKEND}/api/students/${editingStudent}/patch/`, {
       method: "PATCH",
       headers: authHeader(),
       body: JSON.stringify(form),
@@ -125,7 +127,7 @@ const StudentListPage = () => {
     formData.append("file", file);
     formData.append("class_id", classId);
 
-    const res = await fetch("http://localhost:8000/api/classes/upload-csv/", {
+    const res = await fetch(`${BACKEND}/api/classes/upload-csv/`, {
       method: "POST",
       body: formData,
       headers: {
@@ -145,7 +147,7 @@ const StudentListPage = () => {
   };
 
   const handleAddStudent = async () => {
-    const res = await fetch("http://localhost:8000/api/students/create/", {
+    const res = await fetch(`${BACKEND}/api/students/create/`, {
       method: "POST",
       headers: authHeader(),
       body: JSON.stringify(newStudent),
@@ -156,7 +158,7 @@ const StudentListPage = () => {
     const data = await res.json();
 
     if (res.ok) {
-      const linkRes = await fetch(`http://localhost:8000/api/classes/${classId}/add-student/`, {
+      const linkRes = await fetch(`${BACKEND}/api/classes/${classId}/add-student/`, {
         method: "POST",
         headers: authHeader(),
         body: JSON.stringify({ student_id: data.id }),

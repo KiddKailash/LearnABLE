@@ -1,14 +1,39 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
-import {
-  Typography, Grid, Card, CardContent, CardActions,
-  Box, Button, TextField, Dialog, DialogTitle, DialogContent,
-  DialogActions, Table, TableBody, TableCell, TableHead, TableRow,
-  IconButton, Tooltip, Chip, Snackbar
-} from "@mui/material";
-import { Edit, Delete, UploadFile, Add, Save, Cancel } from "@mui/icons-material";
-import PageWrapper from "../../components/PageWrapper";
 import { useNavigate } from "react-router-dom";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
+
+// Local Imports
+import PageWrapper from "../../components/PageWrapper";
+
+// MUI
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import Chip from "@mui/material/Chip";
+import Box from "@mui/material/Box";
+
+// MUI Icons
+import Edit from "@mui/icons-material/Edit";
+import Delete from "@mui/icons-material/Delete";
+import Add from "@mui/icons-material/Add";
+import Save from "@mui/icons-material/Save";
+import Cancel from "@mui/icons-material/Cancel";
+import UploadFile from "@mui/icons-material/UploadFile";
 
 /**
  * Component for managing classes.
@@ -17,6 +42,8 @@ import { SnackbarContext } from "../../contexts/SnackbarContext";
 const Classes = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
+
+  const BACKEND = process.env.REACT_APP_SERVER_URL;
 
   const [classes, setClasses] = useState([]);
   const [newClass, setNewClass] = useState({ class_name: "", subject: "" });
@@ -55,7 +82,7 @@ const Classes = () => {
 
   const fetchClasses = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch("http://localhost:8000/api/classes/", {
+    const response = await fetch(`${BACKEND}/api/classes/`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (response.status === 401) return handleAuthError();
@@ -65,7 +92,7 @@ const Classes = () => {
 
   const handleCreateClass = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch("http://localhost:8000/api/classes/create/", {
+    const response = await fetch(`${BACKEND}/api/classes/create/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ ...newClass }),
@@ -87,7 +114,7 @@ const Classes = () => {
 
   const saveClassEdit = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch(`http://localhost:8000/api/classes/${editModeId}/`, {
+    const response = await fetch(`${BACKEND}/api/classes/${editModeId}/`, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(editClassData),
@@ -108,7 +135,7 @@ const Classes = () => {
 
   const confirmDeleteClass = async () => {
     const token = localStorage.getItem("access_token");
-    const response = await fetch(`http://localhost:8000/api/classes/${pendingDeleteId}/`, {
+    const response = await fetch(`${BACKEND}/api/classes/${pendingDeleteId}/`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -133,7 +160,7 @@ const Classes = () => {
       return;
     }
 
-    const res = await fetch(`http://localhost:8000/api/students/${pendingStudentDelete}/delete/`, {
+    const res = await fetch(`${BACKEND}/api/students/${pendingStudentDelete}/delete/`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
     });
@@ -164,7 +191,7 @@ const Classes = () => {
     formData.append("file", file);
     formData.append("class_id", selectedClassId);
 
-    const response = await fetch("http://localhost:8000/api/classes/upload-csv/", {
+    const response = await fetch(`${BACKEND}/api/classes/upload-csv/`, {
       method: "POST",
       body: formData,
     });
@@ -182,7 +209,7 @@ const Classes = () => {
     );
     if (exists) return alert("Student already exists in this class!");
 
-    const res = await fetch("http://localhost:8000/api/students/create/", {
+    const res = await fetch(`${BACKEND}/api/students/create/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify(studentForm),
@@ -192,7 +219,7 @@ const Classes = () => {
 
     const student = await res.json();
 
-    const addRes = await fetch(`http://localhost:8000/api/classes/${selectedClassId}/add-student/`, {
+    const addRes = await fetch(`${BACKEND}/api/classes/${selectedClassId}/add-student/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ student_id: student.id }),
