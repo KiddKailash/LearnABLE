@@ -59,6 +59,7 @@ const Classes = () => {
     const res = await fetch(`${BACKEND}/api/classes/create/`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include",
       body: JSON.stringify(newClass),
     });
     if (res.status === 401) return handleAuthError();
