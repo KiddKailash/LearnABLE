@@ -1,4 +1,6 @@
 from django.contrib import admin
-from .models import Teacher  # Import your Teacher model
+from .models import Teacher
 
-admin.site.register(Teacher)  # Register the Teacher model
+@admin.register(Teacher)
+class TeacherProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'school', 'subject_specialty')

@@ -18,11 +18,14 @@ import reportWebVitals from "./tests/reportWebVitals";
 
 // Context/Providers
 import { SnackbarProvider } from "./contexts/SnackbarContext";
-import { UserProvider } from "./services/UserContext";
+import { UserProvider } from "./services/UserObject";
 
 // MUI imports
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { getTheme } from "./global-styling";
+
+// Error Boundary
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const Root = () => {
   // Create a piece of state for theme mode
@@ -37,16 +40,18 @@ const Root = () => {
   const theme = useMemo(() => getTheme(mode), [mode]);
 
   return (
-    <Router>
-      <UserProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <SnackbarProvider>
-            <App mode={mode} toggleTheme={toggleTheme} />
-          </SnackbarProvider>
-        </ThemeProvider>
-      </UserProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <UserProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <SnackbarProvider>
+              <App mode={mode} toggleTheme={toggleTheme} />
+            </SnackbarProvider>
+          </ThemeProvider>
+        </UserProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };
 

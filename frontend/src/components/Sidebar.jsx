@@ -13,7 +13,7 @@ import React, { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // Contexts
-import UserContext from "../services/UserContext";
+import UserContext from "../services/UserObject";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -33,9 +33,7 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import MessageIcon from "@mui/icons-material/Message";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
-import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -46,17 +44,15 @@ const navItems = [
   { text: "Dashboard", icon: <DashboardIcon /> },
   { text: "Storage", icon: <StorageIcon /> },
   { text: "Activity", icon: <TimelineIcon /> },
-  { text: "Students", icon: <PeopleIcon /> },
-  { text: "Attendance", icon: <EventAvailableIcon /> },
+  { text: "Classes", icon: <PeopleIcon /> },
+  { text: "Reporting", icon: <EventAvailableIcon /> },
   { text: "Analytics", icon: <BarChartIcon /> },
-  { text: "Message", icon: <MessageIcon /> },
-  { text: "AI Assistant", icon: <SmartToyIcon />, highlight: true },
+  { text: "AI Assistant", icon: <SmartToyIcon />},
 ];
 
 // Navigation items for settings section of the sidebar
 const settingsItems = [
   { text: "Account", icon: <AccountCircleIcon /> },
-  { text: "Settings", icon: <SettingsIcon /> },
   { text: "Logout", icon: <LogoutIcon />, isLogout: true },
 ];
 
