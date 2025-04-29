@@ -28,11 +28,8 @@ import Tooltip from "@mui/material/Tooltip";
 
 // MUI Icons
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import StorageIcon from "@mui/icons-material/Storage";
-import TimelineIcon from "@mui/icons-material/Timeline";
 import PeopleIcon from "@mui/icons-material/People";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import BarChartIcon from "@mui/icons-material/BarChart";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -42,11 +39,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 // Navigation items for main section of the sidebar
 const navItems = [
   { text: "Dashboard", icon: <DashboardIcon /> },
-  { text: "Storage", icon: <StorageIcon /> },
-  { text: "Activity", icon: <TimelineIcon /> },
   { text: "Classes", icon: <PeopleIcon /> },
   { text: "Reporting", icon: <EventAvailableIcon /> },
-  { text: "Analytics", icon: <BarChartIcon /> },
   { text: "AI Assistant", icon: <SmartToyIcon />},
 ];
 
