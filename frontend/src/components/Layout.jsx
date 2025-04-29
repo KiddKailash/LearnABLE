@@ -94,8 +94,8 @@ const Layout = () => {
           }}
         >
           <PageWrapper>
-          {/* Renders whatever route/page is active */}
-          <Outlet />
+            {/* Renders whatever route/page is active */}
+            <Outlet />
           </PageWrapper>
         </Container>
       </Box>
