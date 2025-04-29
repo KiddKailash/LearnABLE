@@ -16,7 +16,6 @@ import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import Sidebar from "./Sidebar";
-import Chatbar from "./Chatbar";
 
 // MUI Components
 import Box from "@mui/material/Box";
