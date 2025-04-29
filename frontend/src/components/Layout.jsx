@@ -16,7 +16,7 @@ import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import Sidebar from "./Sidebar";
-
+import PageWrapper from "./PageWrapper";
 // MUI Components
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
@@ -93,21 +93,12 @@ const Layout = () => {
             height: "100%",
           }}
         >
-          {/* Renders whatever route/page is active */}
-          <Outlet />
+          <PageWrapper>
+            {/* Renders whatever route/page is active */}
+            <Outlet />
+          </PageWrapper>
         </Container>
       </Box>
-
-      {/* Secondary sidebar */}
-      {/* {!doNotDisplayChatbar && (
-        <Chatbar
-          sx={(theme) => ({
-            flexShrink: 0,
-            overflow: "auto",
-            borderRadius: theme.shape.border,
-          })}
-        />
-      )} */}
     </Box>
   );
 };

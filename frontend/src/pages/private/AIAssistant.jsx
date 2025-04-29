@@ -16,9 +16,6 @@ import Box from "@mui/material/Box";
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 
-// Local Imports
-import PageWrapper from "../../components/PageWrapper";
-
 const LearningMaterialUploader = () => {
   const BACKEND = process.env.REACT_APP_SERVER_URL;
 
@@ -99,8 +96,8 @@ const LearningMaterialUploader = () => {
   };
 
   return (
-    <PageWrapper>
-      <Typography variant="h5" sx={{ mb: 3 }}>
+    <>
+      <Typography variant="h4" gutterBottom>
         Upload Learning Material
       </Typography>
 
@@ -169,7 +166,7 @@ const LearningMaterialUploader = () => {
           )}
         </CardContent>
       </Card>
-    </PageWrapper>
+    </>
   );
 };
 

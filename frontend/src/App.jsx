@@ -22,7 +22,7 @@ import Analytics from "./pages/private/Analytics";
 import Reporting from "./pages/private/NCCDReport/Reporting.jsx";
 import Storage from "./pages/private/Storage";
 import Classes from "./pages/private/Classes";
-import Dashboard from "./pages/private/Dashboard/Dashboard";
+import Dashboard from "./pages/private/Dashboard";
 import Settings from "./pages/private/Settings";
 import StudentListPage from "./pages/private/StudentList.jsx";
 

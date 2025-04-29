@@ -14,7 +14,7 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "./api";
+import api from "../services/api";
 
 const UserContext = createContext({
   user: null, // Basic teacher info from the server
