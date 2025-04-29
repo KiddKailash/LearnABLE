@@ -23,18 +23,31 @@ def create_class(request):
     """
     Creates a class and automatically assigns it to the logged-in teacher.
     """
-    data = request.data.copy()  # Make a mutable copy
-    data['teacher'] = request.user.id  # Automatically assign the logged-in teacher
-
-    serializer = ClassSerializer(data=data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response({
-            "message": "Class created successfully!",
-            "class_id": serializer.data["id"],
-            "class_data": serializer.data
-        }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # Get the teacher instance associated with the authenticated user
+        teacher = Teacher.objects.get(user=request.user)
+        
+        # Make a mutable copy of the request data
+        data = request.data.copy()
+        
+        # Assign the teacher's ID, not the user's ID
+        data['teacher'] = teacher.id
+        
+        serializer = ClassSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Class created successfully!",
+                "class_id": serializer.data["id"],
+                "class_data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    except Teacher.DoesNotExist:
+        return Response(
+            {"error": "No teacher profile found for this user"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -42,10 +55,20 @@ def get_all_classes(request):
     """
     Retrieve a list of classes for the authenticated teacher only.
     """
-    teacher = request.user.teacher  # Get the teacher linked to the current user
-    classes = Classes.objects.filter(teacher=teacher)  # Filter only their classes
-    serializer = ClassSerializer(classes, many=True)
-    return Response(serializer.data)
+    try:
+        # Get the teacher linked to the current user
+        teacher = Teacher.objects.get(user=request.user)
+        
+        # Filter only their classes
+        classes = Classes.objects.filter(teacher=teacher)
+        serializer = ClassSerializer(classes, many=True)
+        return Response(serializer.data)
+        
+    except Teacher.DoesNotExist:
+        return Response(
+            {"error": "No teacher profile found for this user"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
