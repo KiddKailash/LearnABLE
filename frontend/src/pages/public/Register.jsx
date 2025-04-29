@@ -12,7 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 // Contexts
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-import UserContext from "../../services/UserObject";
+import UserContext from "../../contexts/UserObject";
 
 /**
  * This component renders a registration form for teachers.

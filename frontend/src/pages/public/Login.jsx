@@ -17,7 +17,7 @@ import { validateEmail, validateRequired } from "../../utils/validationRules";
 
 // Contexts
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-import UserContext from "../../services/UserObject";
+import UserContext from "../../contexts/UserObject";
 
 /**
  * Login form validation function

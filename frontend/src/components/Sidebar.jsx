@@ -13,7 +13,7 @@ import React, { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 // Contexts
-import UserContext from "../services/UserObject";
+import UserContext from "../contexts/UserObject";
 
 // MUI Components
 import Box from "@mui/material/Box";

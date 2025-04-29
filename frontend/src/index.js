@@ -18,7 +18,7 @@ import reportWebVitals from "./tests/reportWebVitals";
 
 // Context/Providers
 import { SnackbarProvider } from "./contexts/SnackbarContext";
-import { UserProvider } from "./services/UserObject";
+import { UserProvider } from "./contexts/UserObject";
 
 // MUI imports
 import { ThemeProvider, CssBaseline } from "@mui/material";

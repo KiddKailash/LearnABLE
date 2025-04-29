@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Services
-import UserContext from "../../services/UserObject";
+import UserContext from "../../contexts/UserObject";
 import api from "../../services/api";
 
 // MUI Components
