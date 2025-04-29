@@ -34,7 +34,6 @@ import PeopleIcon from "@mui/icons-material/People";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
-import SettingsIcon from "@mui/icons-material/Settings";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -54,7 +53,6 @@ const navItems = [
 // Navigation items for settings section of the sidebar
 const settingsItems = [
   { text: "Account", icon: <AccountCircleIcon /> },
-  { text: "Settings", icon: <SettingsIcon /> },
   { text: "Logout", icon: <LogoutIcon />, isLogout: true },
 ];
 
