@@ -10,6 +10,7 @@ class LearningMaterials(models.Model):
     class_assigned = models.ForeignKey(Classes, on_delete=models.CASCADE, null=True, blank=True)
     file = models.FileField(upload_to='learning_materials/')
     objective = models.TextField(blank=True, null=True)
+    ai_processed = models.BooleanField(blank=False, null=False)
 
     class Meta:
         verbose_name = "Learning material"
