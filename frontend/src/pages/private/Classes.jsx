@@ -1,21 +1,39 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Typography, Grid, Card, CardContent, CardActions, Box,
-  Button, TextField, Dialog, DialogTitle, DialogContent,
-  DialogActions, Table, TableHead, TableRow, TableCell,
-  TableBody, IconButton, Tooltip, Chip, Container
-} from "@mui/material";
-import {
-  Add, Edit, Delete, Save, Cancel, UploadFile
-} from "@mui/icons-material";
+
+// MUI Components
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardActions from "@mui/material/CardActions";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import IconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
+import Chip from "@mui/material/Chip";
+import Container from "@mui/material/Container";
+
+// MUI Icons
+import Add from "@mui/icons-material/Add";
+import Edit from "@mui/icons-material/Edit";
+import Delete from "@mui/icons-material/Delete";
+import Save from "@mui/icons-material/Save";
+import Cancel from "@mui/icons-material/Cancel";
+
 import { SnackbarContext } from "../../contexts/SnackbarContext";
+import UserContext from "../../services/UserObject";
+import api from "../../services/api";
 
 const Classes = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
-
-  const BACKEND = process.env.REACT_APP_SERVER_URL;
+  const { user } = useContext(UserContext);
 
   const [classes, setClasses] = useState([]);
   const [newClass, setNewClass] = useState({ class_name: "", subject: "" });
@@ -45,27 +63,38 @@ const Classes = () => {
   };
 
   const fetchClasses = async () => {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BACKEND}/api/classes/`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (res.status === 401) return handleAuthError();
-    const data = await res.json();
-    if (res.ok) setClasses(data);
+    try {
+      const data = await api.classes.getAll();
+      setClasses(data);
+    } catch (error) {
+      if (error.status === 401) {
+        handleAuthError();
+      } else {
+        showSnackbar("Failed to fetch classes: " + (error.message || "Unknown error"), "error");
+      }
+    }
   };
 
   const handleCreateClass = async () => {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BACKEND}/api/classes/create/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      credentials: "include",
-      body: JSON.stringify(newClass),
-    });
-    if (res.status === 401) return handleAuthError();
-    if (res.ok) {
+    try {
+      // We don't need to manually set the teacher ID - the backend will extract it from 
+      // the authentication token since we're using IsAuthenticated permission
+      await api.classes.create(newClass);
       setNewClass({ class_name: "", subject: "" });
       fetchClasses();
+      showSnackbar("Class created successfully", "success");
+    } catch (error) {
+      console.error("Create class error:", error);
+      if (error.status === 401) {
+        handleAuthError();
+      } else {
+        // Show more detailed error message from backend if available
+        const errorMsg = error.data && typeof error.data === 'object' 
+          ? Object.entries(error.data).map(([key, value]) => `${key}: ${value}`).join(', ')
+          : error.message || "Unknown error";
+        
+        showSnackbar("Failed to create class: " + errorMsg, "error");
+      }
     }
   };
 
@@ -75,16 +104,17 @@ const Classes = () => {
   };
 
   const saveClassEdit = async () => {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BACKEND}/api/classes/${editModeId}/`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(editClassData),
-    });
-    if (res.status === 401) return handleAuthError();
-    if (res.ok) {
+    try {
+      await api.classes.update(editModeId, editClassData);
       setEditModeId(null);
       fetchClasses();
+      showSnackbar("Class updated successfully", "success");
+    } catch (error) {
+      if (error.status === 401) {
+        handleAuthError();
+      } else {
+        showSnackbar("Failed to update class: " + (error.message || "Unknown error"), "error");
+      }
     }
   };
 
@@ -94,14 +124,19 @@ const Classes = () => {
   };
 
   const confirmDeleteClass = async () => {
-    const token = localStorage.getItem("access_token");
-    await fetch(`${BACKEND}/api/classes/${pendingDeleteId}/`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setDeleteDialogOpen(false);
-    setPendingDeleteId(null);
-    fetchClasses();
+    try {
+      await api.classes.delete(pendingDeleteId);
+      setDeleteDialogOpen(false);
+      setPendingDeleteId(null);
+      fetchClasses();
+      showSnackbar("Class deleted successfully", "success");
+    } catch (error) {
+      if (error.status === 401) {
+        handleAuthError();
+      } else {
+        showSnackbar("Failed to delete class: " + (error.message || "Unknown error"), "error");
+      }
+    }
   };
 
   const handleDeleteStudent = (id) => {
@@ -117,36 +152,48 @@ const Classes = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !selectedClassId) return;
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("class_id", selectedClassId);
-    await fetch(`${BACKEND}/api/classes/upload-csv/`, {
-      method: "POST",
-      body: formData,
-    });
-    fetchClasses();
+    
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("class_id", selectedClassId);
+      
+      await api.classes.uploadStudentCSV(formData);
+      fetchClasses();
+      showSnackbar("Students uploaded successfully", "success");
+    } catch (error) {
+      if (error.status === 401) {
+        handleAuthError();
+      } else {
+        showSnackbar("Failed to upload students: " + (error.message || "Unknown error"), "error");
+      }
+    }
   };
 
   const handleStudentSubmit = async () => {
-    const token = localStorage.getItem("access_token");
-    const res = await fetch(`${BACKEND}/api/students/create/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(studentForm),
-    });
-    if (res.status === 401) return handleAuthError();
-    const student = await res.json();
-    await fetch(`${BACKEND}/api/classes/${selectedClassId}/add-student/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ student_id: student.id }),
-    });
-    setOpenDialog(false);
-    setStudentForm({
-      first_name: "", last_name: "", year_level: "", student_email: "",
-      guardian_email: "", guardian_first_name: "", guardian_last_name: "", disability_info: "",
-    });
-    fetchClasses();
+    try {
+      // Create the student
+      const student = await api.students.create(studentForm);
+      
+      // Add student to the selected class
+      await api.classes.addStudent(selectedClassId, student.id);
+      
+      // Reset form and close dialog
+      setOpenDialog(false);
+      setStudentForm({
+        first_name: "", last_name: "", year_level: "", student_email: "",
+        guardian_email: "", guardian_first_name: "", guardian_last_name: "", disability_info: "",
+      });
+      
+      fetchClasses();
+      showSnackbar("Student added successfully", "success");
+    } catch (error) {
+      if (error.status === 401) {
+        handleAuthError();
+      } else {
+        showSnackbar("Failed to add student: " + (error.message || "Unknown error"), "error");
+      }
+    }
   };
 
   return (
@@ -174,7 +221,7 @@ const Classes = () => {
 
       <Grid container spacing={3}>
         {classes.map((cls) => (
-          <Grid item xs={12} md={6} key={cls.id}>
+          <Grid size={{xs:12, md:6}} key={cls.id}>
             <Card>
               <CardContent>
                 {editModeId === cls.id ? (
@@ -231,7 +278,7 @@ const Classes = () => {
         <DialogContent>
           <Grid container spacing={2}>
             {Object.entries(studentForm).map(([key, value]) => (
-              <Grid item xs={12} sm={6} key={key}>
+          <Grid size={{xs:12, sm:6}} key={key}>
                 <TextField
                   fullWidth
                   label={key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
@@ -249,9 +296,9 @@ const Classes = () => {
       </Dialog>
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Delete Class</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete this class?
+          <Typography>Are you sure you want to delete this class? This action cannot be undone.</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>

@@ -1,11 +1,35 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Typography, Table, TableHead, TableRow, TableCell, TableBody,
-  Button, IconButton, Dialog, DialogTitle, DialogContent, TextField, DialogActions,
-  Box, Grid, Paper, Tooltip, Container
-} from "@mui/material";
-import { Edit, Delete, UploadFile, Add, Cancel, Save } from "@mui/icons-material";
+
+// MUI Components
+import Typography from "@mui/material/Typography";
+import Table from "@mui/material/Table";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableCell from "@mui/material/TableCell";
+import TableBody from "@mui/material/TableBody";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
+import Paper from "@mui/material/Paper";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid2";
+import Box from "@mui/material/Box";
+import DialogActions from "@mui/material/DialogActions";
+
+// MUI Icons
+import Edit from "@mui/icons-material/Edit";
+import Delete from "@mui/icons-material/Delete";
+import UploadFile from "@mui/icons-material/UploadFile";
+import Add from "@mui/icons-material/Add";
+import Cancel from "@mui/icons-material/Cancel";
+import Save from "@mui/icons-material/Save";
+
+// Local Imports
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 const StudentListPage = () => {
@@ -235,12 +259,12 @@ const StudentListPage = () => {
       </Box>
 
       <Grid container spacing={2} mb={4}>
-        <Grid item>
+        <Grid>
           <Button variant="contained" startIcon={<Add />} onClick={() => setNewStudentDialog(true)}>
             Add Student
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <input type="file" accept=".csv" hidden ref={fileInputRef} onChange={handleFileChange} />
           <Button variant="outlined" startIcon={<UploadFile />} onClick={() => fileInputRef.current.click()}>
             Upload CSV
@@ -285,7 +309,7 @@ const StudentListPage = () => {
         <DialogContent>
           <Grid container spacing={2}>
             {Object.entries(form).map(([key, val]) => (
-              <Grid item xs={12} sm={6} key={key}>
+              <Grid  size={{xs:12, sm:6}} key={key}>
                 <TextField
                   fullWidth
                   label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -307,8 +331,8 @@ const StudentListPage = () => {
         <DialogContent>
           <Grid container spacing={2}>
             {Object.entries(newStudent).map(([key, val]) => (
-              <Grid item xs={12} sm={6} key={key}>
-                <TextField
+              <Grid  size={{xs:12, sm:6}} key={key}>
+              <TextField
                   fullWidth
                   label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
                   value={val || ""}

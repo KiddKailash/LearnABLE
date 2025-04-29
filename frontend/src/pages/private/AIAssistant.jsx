@@ -1,23 +1,25 @@
-import React, { useState, useContext, useEffect, useRef } from "react";
-import {
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  CircularProgress,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-} from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+
+// MUI Components
+import Typography from "@mui/material/Typography";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Box from "@mui/material/Box";
+
+// MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import UserContext from "../../services/UserObject";
+
+// Local Imports
 import PageWrapper from "../../components/PageWrapper";
 
 const LearningMaterialUploader = () => {
-  const { user } = useContext(UserContext);
   const BACKEND = process.env.REACT_APP_SERVER_URL;
 
   const [title, setTitle] = useState("");
