@@ -24,6 +24,9 @@ import { UserProvider } from "./services/UserObject";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { getTheme } from "./global-styling";
 
+// Error Boundary
+import ErrorBoundary from "./components/ErrorBoundary";
+
 const Root = () => {
   // Create a piece of state for theme mode
   const [mode, setMode] = useState("light");
@@ -37,16 +40,18 @@ const Root = () => {
   const theme = useMemo(() => getTheme(mode), [mode]);
 
   return (
-    <Router>
-      <UserProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <SnackbarProvider>
-            <App mode={mode} toggleTheme={toggleTheme} />
-          </SnackbarProvider>
-        </ThemeProvider>
-      </UserProvider>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <UserProvider>
+          <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <SnackbarProvider>
+              <App mode={mode} toggleTheme={toggleTheme} />
+            </SnackbarProvider>
+          </ThemeProvider>
+        </UserProvider>
+      </Router>
+    </ErrorBoundary>
   );
 };
 
