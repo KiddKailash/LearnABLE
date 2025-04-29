@@ -99,8 +99,8 @@ const LearningMaterialUploader = () => {
   };
 
   return (
-    <PageWrapper>
-      <Typography variant="h5" sx={{ mb: 3 }}>
+    <>
+      <Typography variant="h4" gutterBottom>
         Upload Learning Material
       </Typography>
 
@@ -169,7 +169,7 @@ const LearningMaterialUploader = () => {
           )}
         </CardContent>
       </Card>
-    </PageWrapper>
+    </>
   );
 };
 
