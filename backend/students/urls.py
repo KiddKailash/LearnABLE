@@ -18,6 +18,6 @@ urlpatterns = [
     path('<int:student_id>/', get_student, name="get_student"),
     path('<int:student_id>/patch/', partial_update_student, name="partial_update_student"),
     path('<int:student_id>/delete/', delete_student, name="delete_student"),
-    path('class/<int:class_id>/', get_students_by_class, name="get_students_by_class"),
+    path('classes/<int:class_id>/', get_students_by_class, name="get_students_by_class"),
     path('classes/upload-csv/', upload_csv_to_class, name="upload_csv_to_class"),
 ]

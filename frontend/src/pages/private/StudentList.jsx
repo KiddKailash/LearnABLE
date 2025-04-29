@@ -69,7 +69,7 @@ const StudentListPage = () => {
   };
 
   const fetchStudents = async () => {
-    const res = await fetch(`http://localhost:8000/api/class/${classId}/`, {
+    const res = await fetch(`http://localhost:8000/api/students/classes/${classId}/`, {
       headers: authHeader(),
     });
 
