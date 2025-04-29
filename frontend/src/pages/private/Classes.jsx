@@ -69,7 +69,7 @@ const Classes = () => {
 
   useEffect(() => {
     fetchClasses();
-  }, []);
+  }, [fetchClasses]);
 
   const handleAuthError = () => {
     showSnackbar("Session expired. Please log in again.", "warning");
