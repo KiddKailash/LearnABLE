@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActions from "@mui/material/CardActions";
@@ -318,7 +318,7 @@ const Classes = () => {
               }}
             >
               <Grid container spacing={2}>
-                <Grid item xs={12} md={5}>
+                <Grid size={{ xs: 12, md: 5 }}>
                   <TextField
                     fullWidth
                     label="Class Name"
@@ -329,7 +329,7 @@ const Classes = () => {
                     required
                   />
                 </Grid>
-                <Grid item xs={12} md={5}>
+                <Grid size={{ xs: 12, md: 5 }}>
                   <TextField
                     fullWidth
                     label="Subject"
@@ -339,7 +339,11 @@ const Classes = () => {
                     }
                   />
                 </Grid>
-                <Grid item xs={12} md={2} display="flex" alignItems="center">
+                <Grid
+                  size={{ xs: 12, md: 2 }}
+                  display="flex"
+                  alignItems="center"
+                >
                   <Box display="flex" gap={1}>
                     <Button type="submit" variant="contained" fullWidth>
                       Create
@@ -386,7 +390,7 @@ const Classes = () => {
         ) : (
           <Grid container spacing={3}>
             {classes.map((cls) => (
-              <Grid item xs={12} sm={6} md={4} key={cls.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={cls.id}>
                 <Card
                   elevation={3}
                   sx={{
@@ -580,7 +584,7 @@ const Classes = () => {
         <DialogContent>
           <Box my={2}>
             <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="First Name"
@@ -593,7 +597,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Last Name"
@@ -606,7 +610,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Year Level"
@@ -619,7 +623,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Student Email"
@@ -633,13 +637,13 @@ const Classes = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Divider sx={{ my: 1 }}>
                   <Chip label="Guardian Information" />
                 </Divider>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Guardian First Name"
@@ -652,7 +656,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Guardian Last Name"
@@ -665,7 +669,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   label="Guardian Email"
@@ -679,13 +683,13 @@ const Classes = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Divider sx={{ my: 1 }}>
                   <Chip label="Additional Information" />
                 </Divider>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   fullWidth
                   multiline
