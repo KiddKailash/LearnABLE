@@ -19,7 +19,7 @@ import Account from "./pages/private/Account";
 import Activity from "./pages/private/Activity";
 import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
-import Reporting from "./pages/private/Reporting";
+import Reporting from "./pages/private/NCCDReport/Reporting.jsx";
 import Storage from "./pages/private/Storage";
 import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard/Dashboard";

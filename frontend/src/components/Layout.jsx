@@ -52,8 +52,6 @@ const Layout = () => {
     location.pathname === "/" ||
     location.pathname === "*";
 
-  const doNotDisplayChatbar = doNotDisplaySidebar; // ADD ROUTES HERE
-
   return (
     <Box
       sx={{
