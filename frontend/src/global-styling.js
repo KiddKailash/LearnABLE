@@ -78,39 +78,40 @@ export const getTheme = () => {
       dark: {
         palette: {
           primary: {
-            main: "#005E85", // $qg-global-primary
+            main: "#0A9BCF", // Brighter blue for better contrast on dark
             dark: "#063652", // $qg-global-primary-dark
+            light: "#4FC3EF", // Light blue for hover states
           },
           secondary: {
-            main: "#9AC02C", // $qg-light-green
-            dark: "#78ba00",
+            main: "#B2D959", // Brighter green for better contrast
+            dark: "#90C933",
           },
           link: {
-            main: "#13578b", // $qg-blue-dark
-            visited: "#8800BB",
+            main: "#4FC3EF", // Brighter blue link for dark mode
+            visited: "#D580FF", // Brighter purple for visited links
           },
           background: {
-            paper: "#1F1F1F", 
-            default: "#121212",
+            paper: "#1A1A1A", 
+            default: "#0A0A0A",
           },
           // Set appropriate text colors for dark mode
           text: {
-            primary: "#ffffff",
-            secondary: "rgba(255, 255, 255, 0.7)",
+            primary: "#FFFFFF",
+            secondary: "rgba(255, 255, 255, 0.8)",
             disabled: "rgba(255, 255, 255, 0.5)",
           },
           // Alert colours mapped to Material-UI palette properties:
           info: {
-            main: "#1E77AA", // $brand-info
+            main: "#33A9E0", // Brighter info color
           },
           success: {
-            main: "#9EBF6D", // $brand-success
+            main: "#A6D878", // Brighter success color
           },
           warning: {
-            main: "#F9AF71", // $brand-warning
+            main: "#FFB380", // Brighter warning color
           },
           error: {
-            main: "#B90824", // $brand-danger (critical)
+            main: "#FF334D", // Brighter error color
           },
         },
       },

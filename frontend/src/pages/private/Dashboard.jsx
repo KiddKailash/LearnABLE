@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 // Services
 import UserContext from "../../contexts/UserObject";
@@ -43,6 +44,7 @@ const Dashboard = () => {
   const { user } = useContext(UserContext);
   const { showSnackbar } = useContext(SnackbarContext);
   const navigate = useNavigate();
+  const theme = useTheme();
 
   // State management
   const [loading, setLoading] = useState(true);
@@ -206,7 +208,10 @@ const Dashboard = () => {
                 display: "flex",
                 alignItems: "center",
                 transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                backgroundColor: stat.color,
+                backgroundColor: (theme) => 
+                  theme.palette.mode === 'dark' 
+                    ? theme.palette.background.paper
+                    : stat.color,
                 "&:hover": {
                   transform: "translateY(-4px)",
                   boxShadow: 3,
@@ -249,6 +254,7 @@ const Dashboard = () => {
                   py: 2,
                   borderBottom: "1px solid",
                   borderColor: "divider",
+                  "&:hover": { bgcolor: "action.hover" },
                 }}
               >
                 <ListItemIcon>
@@ -267,6 +273,7 @@ const Dashboard = () => {
                   py: 2,
                   borderBottom: "1px solid",
                   borderColor: "divider",
+                  "&:hover": { bgcolor: "action.hover" },
                 }}
               >
                 <ListItemIcon>
@@ -285,6 +292,7 @@ const Dashboard = () => {
                   py: 2,
                   borderBottom: "1px solid",
                   borderColor: "divider",
+                  "&:hover": { bgcolor: "action.hover" },
                 }}
               >
                 <ListItemIcon>
@@ -299,7 +307,10 @@ const Dashboard = () => {
 
               <ListItemButton
                 onClick={() => handleNavigate("/analytics")}
-                sx={{ py: 2 }}
+                sx={{ 
+                  py: 2,
+                  "&:hover": { bgcolor: "action.hover" },
+                }}
               >
                 <ListItemIcon>
                   <BarChartIcon color="primary" />
@@ -524,7 +535,11 @@ const Dashboard = () => {
                     );
                     return (
                       <Grid item xs={12} md={6} lg={4} key={report.id}>
-                        <Card variant="outlined" sx={{ height: "100%" }}>
+                        <Card variant="outlined" sx={{ 
+                          height: "100%",
+                          bgcolor: "background.paper",
+                          borderColor: "divider"
+                        }}>
                           <CardContent>
                             <Box
                               sx={{

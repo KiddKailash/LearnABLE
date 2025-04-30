@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -40,6 +41,7 @@ import api from "../../services/api";
 const Classes = () => {
   const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
+  const theme = useTheme();
 
   const [classes, setClasses] = useState([]);
   const [newClass, setNewClass] = useState({ class_name: "", subject: "" });
@@ -250,23 +252,21 @@ const Classes = () => {
   };
 
   const getRandomColor = (str) => {
-    const colors = [
-      "#F44336",
-      "#E91E63",
-      "#9C27B0",
-      "#673AB7",
-      "#3F51B5",
-      "#2196F3",
-      "#03A9F4",
-      "#00BCD4",
-      "#009688",
-      "#4CAF50",
-      "#8BC34A",
-      "#CDDC39",
-      "#FFC107",
-      "#FF9800",
-      "#FF5722",
+    // For dark mode, use brighter colors with better contrast
+    const lightModeColors = [
+      "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5",
+      "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50",
+      "#8BC34A", "#CDDC39", "#FFC107", "#FF9800", "#FF5722",
     ];
+    
+    const darkModeColors = [
+      "#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE",
+      "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA", "#69F0AE",
+      "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40",
+    ];
+    
+    const colors = theme.palette.mode === 'dark' ? darkModeColors : lightModeColors;
+    
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -306,6 +306,7 @@ const Classes = () => {
               mb: 4,
               display: addClassFormOpen ? "block" : "none",
               borderRadius: 2,
+              bgcolor: "background.paper",
             }}
           >
             <Typography variant="h6" mb={2}>
@@ -368,7 +369,7 @@ const Classes = () => {
             sx={{
               p: 5,
               textAlign: "center",
-              backgroundColor: "#f5f5f5",
+              backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5',
               borderRadius: 2,
             }}
           >
@@ -399,6 +400,7 @@ const Classes = () => {
                     flexDirection: "column",
                     borderRadius: 2,
                     transition: "transform 0.2s, box-shadow 0.2s",
+                    bgcolor: "background.paper",
                     "&:hover": {
                       transform: "translateY(-4px)",
                       boxShadow: 6,
@@ -579,6 +581,11 @@ const Classes = () => {
         onClose={() => setOpenDialog(false)}
         fullWidth
         maxWidth="md"
+        PaperProps={{
+          sx: {
+            bgcolor: "background.paper",
+          }
+        }}
       >
         <DialogTitle>Add Student</DialogTitle>
         <DialogContent>
@@ -724,6 +731,11 @@ const Classes = () => {
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: "background.paper",
+          }
+        }}
       >
         <DialogTitle>Delete Class</DialogTitle>
         <DialogContent>
