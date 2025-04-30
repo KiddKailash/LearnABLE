@@ -32,7 +32,7 @@ import Container from "@mui/material/Container";
  * @returns {JSX.Element} The rendered Dashboard layout component.
  * @returns {JSX.Element} The rendered Dashboard layout component.
  */
-const Layout = () => {
+const Layout = ({ mode }) => {
   const location = useLocation();
 
   /**
@@ -70,7 +70,7 @@ const Layout = () => {
             overflow: "auto",
           }}
         >
-          <Sidebar />
+          <Sidebar mode={mode} />
         </Box>
       )}
 

@@ -15,6 +15,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import authApi from "../services/authApi";
 
 const UserContext = createContext({
   user: null, // Basic teacher info from the server
@@ -24,6 +25,7 @@ const UserContext = createContext({
   logout: () => {},
   registerTeacher: async () => {},
   refreshToken: async () => {}, // placeholder if you add a refresh route
+  updateUserInfo: (info) => {}, // update user info including theme preference
 });
 
 export const UserProvider = ({ children }) => {
@@ -32,6 +34,22 @@ export const UserProvider = ({ children }) => {
   const [authLoading, setAuthLoading] = useState(true);
   
   const navigate = useNavigate();
+
+  /**
+   * Updates user information in context
+   * @param {Object} info - User information to update
+   */
+  const updateUserInfo = (info) => {
+    // If theme preference is being updated, save it to localStorage
+    if (info.theme_preference) {
+      localStorage.setItem("theme_preference", info.theme_preference);
+    }
+    
+    setUser(prevUser => ({
+      ...prevUser,
+      ...info
+    }));
+  };
 
   /**
    * Logs in a teacher.
@@ -48,7 +66,7 @@ export const UserProvider = ({ children }) => {
    */
   const login = async (email, password) => {
     try {
-      const data = await api.post('/api/teachers/login/', { email, password });
+      const data = await authApi.login(email, password);
       
       // Store tokens in localStorage
       localStorage.setItem("access_token", data.access);
@@ -57,11 +75,17 @@ export const UserProvider = ({ children }) => {
       // Also store user info for auto-login
       localStorage.setItem("user_name", data.first_name);
       localStorage.setItem("user_email", data.email);
+      
+      // Store theme preference if available
+      if (data.theme_preference) {
+        localStorage.setItem("theme_preference", data.theme_preference);
+      }
 
       // Update state
       setUser({
         first_name: data.first_name,
         email: data.email,
+        theme_preference: data.theme_preference || 'light',
       });
       setIsLoggedIn(true);
 
@@ -84,6 +108,7 @@ export const UserProvider = ({ children }) => {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user_name");
     localStorage.removeItem("user_email");
+    localStorage.removeItem("theme_preference");
     setUser(null);
     setIsLoggedIn(false);
     navigate("/login");
@@ -103,7 +128,7 @@ export const UserProvider = ({ children }) => {
    */
   const registerTeacher = async (first_name, last_name, email, password) => {
     try {
-      const data = await api.post('/api/teachers/register/', { 
+      const data = await authApi.register({ 
         first_name, 
         last_name, 
         email, 
@@ -112,9 +137,30 @@ export const UserProvider = ({ children }) => {
       
       return { success: true, data };
     } catch (error) {
+      // Format error message properly for display
+      let errorMessage = "Error registering teacher";
+      
+      if (error.data && typeof error.data === 'object') {
+        // Handle structured error responses
+        const messages = [];
+        Object.entries(error.data).forEach(([field, fieldErrors]) => {
+          if (Array.isArray(fieldErrors)) {
+            messages.push(`${field}: ${fieldErrors.join(', ')}`);
+          } else if (typeof fieldErrors === 'string') {
+            messages.push(`${field}: ${fieldErrors}`);
+          }
+        });
+        
+        if (messages.length > 0) {
+          errorMessage = messages.join('. ');
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       return {
         success: false,
-        message: error.message || "Error registering teacher",
+        message: errorMessage,
       };
     }
   };
@@ -130,7 +176,7 @@ export const UserProvider = ({ children }) => {
         throw new Error("No refresh token available");
       }
       
-      const data = await api.post('/api/token/refresh/', { refresh });
+      const data = await authApi.refreshToken();
       
       // Update access token in localStorage
       localStorage.setItem("access_token", data.access);
@@ -159,21 +205,25 @@ export const UserProvider = ({ children }) => {
           return;
         }
         
+        // Initialize default theme from localStorage
+        const storedTheme = localStorage.getItem("theme_preference") || 'light';
+        
+        // Set initial user state with minimal data
+        const storedName = localStorage.getItem("user_name");
+        const storedEmail = localStorage.getItem("user_email");
+        if (storedName && storedEmail) {
+          setUser({ 
+            first_name: storedName, 
+            email: storedEmail,
+            theme_preference: storedTheme
+          });
+          setIsLoggedIn(true);
+        }
+        
         // Verify token is valid by making a test API call
         try {
-          await api.get('/api/classes/');
-          
-          // If API call succeeds, retrieve user data from localStorage
-          const storedName = localStorage.getItem("user_name");
-          const storedEmail = localStorage.getItem("user_email");
-          
-          if (storedName && storedEmail) {
-            setUser({ first_name: storedName, email: storedEmail });
-            setIsLoggedIn(true);
-          } else {
-            // Missing user data, clear invalid session
-            logout();
-          }
+          await api.classes.getAll();
+          // If the above API call succeeds, we're authenticated
         } catch (error) {
           // If API call fails with 401, token is invalid
           if (error.status === 401) {
@@ -182,16 +232,13 @@ export const UserProvider = ({ children }) => {
             if (!refreshResult.success) {
               logout();
             }
+          } else if (error.status >= 500) {
+            // Server error, but we can still consider user logged in
+            // if we have the basic user info from localStorage
+            console.warn("Server error during auto-login verification:", error);
           } else {
-            // Other error, but we can still consider user logged in
-            // if we have the basic user info
-            const storedName = localStorage.getItem("user_name");
-            const storedEmail = localStorage.getItem("user_email");
-            
-            if (storedName && storedEmail) {
-              setUser({ first_name: storedName, email: storedEmail });
-              setIsLoggedIn(true);
-            }
+            // Other errors might indicate an invalid session
+            logout();
           }
         }
       } finally {
@@ -212,6 +259,7 @@ export const UserProvider = ({ children }) => {
         logout,
         registerTeacher,
         refreshToken,
+        updateUserInfo,
       }}
     >
       {children}

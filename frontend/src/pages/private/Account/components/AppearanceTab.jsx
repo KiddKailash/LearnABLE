@@ -13,6 +13,7 @@ const AppearanceTab = ({
   isSaving,
   handleSaveTheme,
 }) => {
+
   return (
     <Box sx={{ px: 3 }}>
       <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
@@ -29,6 +30,7 @@ const AppearanceTab = ({
         </Typography>
 
         <Grid container spacing={2}>
+          {/* Light Mode Option */}
           <Grid item xs={12} sm={4}>
             <Paper
               variant="outlined"
@@ -148,6 +150,7 @@ const AppearanceTab = ({
             </Paper>
           </Grid>
 
+          {/* Dark Mode Option */}
           <Grid item xs={12} sm={4}>
             <Paper
               variant="outlined"
@@ -267,6 +270,7 @@ const AppearanceTab = ({
             </Paper>
           </Grid>
 
+          {/* System Mode Option */}
           <Grid item xs={12} sm={4}>
             <Paper
               variant="outlined"
@@ -331,7 +335,8 @@ const AppearanceTab = ({
                     borderColor: "divider",
                   }}
                 />
-                {/* Light mode side elements */}
+                
+                {/* Light mode side elements (left side) */}
                 <Box
                   sx={{
                     position: "absolute",
@@ -373,7 +378,7 @@ const AppearanceTab = ({
                   }}
                 />
 
-                {/* Dark mode side elements */}
+                {/* Dark mode side elements (right side) */}
                 <Box
                   sx={{
                     position: "absolute",

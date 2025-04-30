@@ -10,7 +10,7 @@
  * @module index
  */
 
-import React, { useMemo, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
@@ -18,36 +18,58 @@ import reportWebVitals from "./tests/reportWebVitals";
 
 // Context/Providers
 import { SnackbarProvider } from "./contexts/SnackbarContext";
-import { UserProvider } from "./contexts/UserObject";
+import { UserProvider, default as UserContext } from "./contexts/UserObject";
 
 // MUI imports
-import { ThemeProvider, CssBaseline } from "@mui/material";
+import { 
+  ThemeProvider, 
+  useColorScheme,
+  getInitColorSchemeScript
+} from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import { getTheme } from "./global-styling";
 
 // Error Boundary
 import ErrorBoundary from "./components/ErrorBoundary";
 
+const ThemeWrapper = () => {
+  const { user } = useContext(UserContext);
+  const { setMode, mode } = useColorScheme();
+
+  // Update color scheme when user preferences change
+  useEffect(() => {
+    if (user?.theme_preference) {
+      // Save the preference to localStorage for persistence between sessions
+      localStorage.setItem('theme_preference', user.theme_preference);
+      
+      // Update the theme mode
+      setMode(user.theme_preference);
+    }
+  }, [user, setMode]);
+
+  return (
+    <SnackbarProvider>
+      <App mode={mode} />
+    </SnackbarProvider>
+  );
+};
+
 const Root = () => {
-  // Create a piece of state for theme mode
-  const [mode, setMode] = useState("light");
-
-  // Function to toggle the theme
-  const toggleTheme = () => {
-    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
-  };
-
-  // Memoize theme to avoid unnecessary recalculations on re-renders
-  const theme = useMemo(() => getTheme(mode), [mode]);
-
+  const theme = getTheme();
+  
   return (
     <ErrorBoundary>
       <Router>
         <UserProvider>
-          <ThemeProvider theme={theme}>
+          {getInitColorSchemeScript({ defaultMode: "system" })}
+          <ThemeProvider 
+            theme={theme}
+            defaultMode="system"
+            colorSchemeSelector=".mode-$mode" 
+            modeStorageKey="theme_preference"
+          >
             <CssBaseline />
-            <SnackbarProvider>
-              <App mode={mode} toggleTheme={toggleTheme} />
-            </SnackbarProvider>
+            <ThemeWrapper />
           </ThemeProvider>
         </UserProvider>
       </Router>

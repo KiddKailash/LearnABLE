@@ -30,38 +30,89 @@ import { createTheme } from "@mui/material/styles";
  *      Warning:                   #F9AF71 ($brand-warning)
  *      Critical/Error:            #B90824 ($brand-danger)
  *
- * @param {string} [mode="light"] - The colour mode of the theme, either "light" or "dark".
  * @returns {object} A Material-UI theme object.
  */
-export const getTheme = (mode = "light") => {
-  // GLOBAL theme customisations
-  let themeOptions = {
-    palette: {
-      mode, // sets light or dark mode
-      primary: {
-        main: "#005E85", // $qg-global-primary
-        dark: "#063652", // $qg-global-primary-dark
+export const getTheme = () => {
+  // Define common theme options used across all modes
+  const themeOptions = {
+    // In MUI v6, we specify light and dark color schemes
+    colorSchemes: {
+      light: {
+        palette: {
+          primary: {
+            main: "#005E85", // $qg-global-primary
+            dark: "#063652", // $qg-global-primary-dark
+          },
+          secondary: {
+            main: "#9AC02C", // $qg-light-green
+            dark: "#78ba00",
+          },
+          link: {
+            main: "#13578b", // $qg-blue-dark
+            visited: "#8800BB",
+          },
+          background: {
+            paper: "#ffffff", // $qg-global-primary-lightest
+            default: "#f5f5f5", // $qg-white
+          },
+          text: {
+            primary: "#212529", // $qg-dark-grey-darker
+            secondary: "#585e62", // $qg-dark-grey
+            disabled: "#EFF2F4", // $qg-global-primary-light
+          },
+          // Alert colours mapped to Material-UI palette properties:
+          info: {
+            main: "#1E77AA", // $brand-info
+          },
+          success: {
+            main: "#9EBF6D", // $brand-success
+          },
+          warning: {
+            main: "#F9AF71", // $brand-warning
+          },
+          error: {
+            main: "#B90824", // $brand-danger (critical)
+          },
+        },
       },
-      secondary: {
-        main: "#9AC02C", // $qg-light-green
-        dark: "#78ba00",
-      },
-      link: {
-        main: "#13578b", // $qg-blue-dark
-        visited: "#8800BB",
-      },
-      // Alert colours mapped to Material-UI palette properties:
-      info: {
-        main: "#1E77AA", // $brand-info
-      },
-      success: {
-        main: "#9EBF6D", // $brand-success
-      },
-      warning: {
-        main: "#F9AF71", // $brand-warning
-      },
-      error: {
-        main: "#B90824", // $brand-danger (critical)
+      dark: {
+        palette: {
+          primary: {
+            main: "#005E85", // $qg-global-primary
+            dark: "#063652", // $qg-global-primary-dark
+          },
+          secondary: {
+            main: "#9AC02C", // $qg-light-green
+            dark: "#78ba00",
+          },
+          link: {
+            main: "#13578b", // $qg-blue-dark
+            visited: "#8800BB",
+          },
+          background: {
+            paper: "#1F1F1F", 
+            default: "#121212",
+          },
+          // Set appropriate text colors for dark mode
+          text: {
+            primary: "#ffffff",
+            secondary: "rgba(255, 255, 255, 0.7)",
+            disabled: "rgba(255, 255, 255, 0.5)",
+          },
+          // Alert colours mapped to Material-UI palette properties:
+          info: {
+            main: "#1E77AA", // $brand-info
+          },
+          success: {
+            main: "#9EBF6D", // $brand-success
+          },
+          warning: {
+            main: "#F9AF71", // $brand-warning
+          },
+          error: {
+            main: "#B90824", // $brand-danger (critical)
+          },
+        },
       },
     },
     typography: {
@@ -71,41 +122,10 @@ export const getTheme = (mode = "light") => {
     },
     shape: {
       border: 3,
-    }
+    },
+    // Enable CSS variables with class-based selectors
+    cssVarPrefix: 'mui',
   };
-
-  // LIGHT MODE specific customisations
-  if (mode === "light") {
-    themeOptions = {
-      ...themeOptions,
-      palette: {
-        ...themeOptions.palette,
-        background: {
-          paper: "#ffffff", // $qg-global-primary-lightest
-          default: "#f5f5f5", // $qg-white
-        },
-        text: {
-          primary: "#212529", // $qg-dark-grey-darker
-          secondary: "#585e62", // $qg-dark-grey
-          disabled: "#EFF2F4", // $qg-global-primary-light
-        },
-      },
-    };
-  }
-
-  // DARK MODE specific customisations
-  if (mode === "dark") {
-    themeOptions = {
-      ...themeOptions,
-      palette: {
-        ...themeOptions.palette,
-        background: {
-          paper: "#1F1F1F", // $qg-global-primary-lightest
-          default: "#121212", // $qg-white
-        },
-      },
-    };
-  }
 
   return createTheme(themeOptions);
 };

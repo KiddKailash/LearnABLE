@@ -16,9 +16,14 @@ export const SnackbarProvider = ({ children }) => {
   });
 
   const showSnackbar = useCallback((message, severity = "info") => {
+    // Ensure message is a string
+    const formattedMessage = typeof message === 'object' 
+      ? JSON.stringify(message) 
+      : String(message);
+      
     setSnackbar({
       open: true,
-      message,
+      message: formattedMessage,
       severity,
     });
   }, []);

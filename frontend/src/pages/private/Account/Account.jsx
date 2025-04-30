@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useColorScheme } from "@mui/material/styles";
 
 // Contexts and Services
 import UserContext from "../../../contexts/UserObject";
-import api from "../../../services/api";
+import accountApi from "../../../services/accountApi";
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 
 // Local Components
@@ -69,6 +70,7 @@ const Account = () => {
 
   // Appearance state
   const [themeMode, setThemeMode] = useState("system");
+  const { setMode } = useColorScheme();
 
   // Sessions state
   const [sessions, setSessions] = useState([]);
@@ -89,7 +91,7 @@ const Account = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await api.account.getProfile();
+        const data = await accountApi.getProfile();
         setProfile(data);
 
         // Set form fields
@@ -123,7 +125,7 @@ const Account = () => {
     const fetchSessions = async () => {
       try {
         setSessionsLoading(true);
-        const data = await api.account.getActiveSessions();
+        const data = await accountApi.getActiveSessions();
         setSessions(data || []);
       } catch (error) {
         console.error("Failed to load sessions:", error);
@@ -136,6 +138,11 @@ const Account = () => {
     fetchSessions();
   }, [showSnackbar]);
 
+  // Update theme when user preferences change
+  useEffect(() => {
+    setThemeMode(user?.theme_preference || "system");
+  }, [user?.theme_preference]);
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -146,7 +153,7 @@ const Account = () => {
       setIsSaving(true);
 
       // Update user and profile data
-      await api.account.updateProfile({
+      await accountApi.updateProfile({
         user: {
           first_name: firstName,
           last_name: lastName,
@@ -175,10 +182,10 @@ const Account = () => {
         formData.append("email", email);
 
         setIsSaving(true);
-        await api.account.uploadProfilePicture(formData);
+        await accountApi.uploadProfilePicture(formData);
 
         // Refresh profile data
-        const updatedProfile = await api.account.getProfile();
+        const updatedProfile = await accountApi.getProfile();
         setProfile(updatedProfile);
 
         showSnackbar("Profile photo updated successfully", "success");
@@ -195,7 +202,7 @@ const Account = () => {
       setIsSaving(true);
 
       if (profile?.notification_preferences?.google_connected) {
-        await api.account.disconnectGoogleAccount();
+        await accountApi.disconnectGoogleAccount();
 
         // Update profile state
         const updatedProfile = { ...profile };
@@ -208,7 +215,7 @@ const Account = () => {
       } else {
         // In a real app, we would initiate OAuth flow here
         // For demo purposes, we'll just simulate success
-        await api.account.connectGoogleAccount("dummy-token");
+        await accountApi.connectGoogleAccount("dummy-token");
 
         // Update profile state
         const updatedProfile = { ...profile };
@@ -238,7 +245,7 @@ const Account = () => {
   const handleChangePassword = async () => {
     try {
       setIsSaving(true);
-      await api.account.changePassword({
+      await accountApi.changePassword({
         current_password: currentPassword,
         new_password: newPassword,
       });
@@ -259,7 +266,7 @@ const Account = () => {
   const handleSetupTwoFactor = async () => {
     try {
       setQrCodeLoading(true);
-      const data = await api.account.setupTwoFactor();
+      const data = await accountApi.setupTwoFactor();
       setTwoFactorData(data);
     } catch (error) {
       showSnackbar("Failed to set up two-factor authentication", "error");
@@ -272,7 +279,7 @@ const Account = () => {
   const handleVerifyTwoFactor = async () => {
     try {
       setIsSaving(true);
-      await api.account.verifyTwoFactor(twoFactorCode);
+      await accountApi.verifyTwoFactor(twoFactorCode);
 
       // Update profile
       const updatedProfile = {
@@ -298,7 +305,7 @@ const Account = () => {
   const handleDisableTwoFactor = async () => {
     try {
       setIsSaving(true);
-      await api.account.disableTwoFactor(twoFactorCode);
+      await accountApi.disableTwoFactor(twoFactorCode);
 
       // Update profile
       const updatedProfile = {
@@ -327,7 +334,7 @@ const Account = () => {
   const handleSaveNotifications = async () => {
     try {
       setIsSaving(true);
-      await api.account.updateNotifications(notificationSettings);
+      await accountApi.updateNotifications(notificationSettings);
 
       // Update local state
       const updatedProfile = { ...profile };
@@ -346,24 +353,20 @@ const Account = () => {
   const handleSaveTheme = async () => {
     try {
       setIsSaving(true);
-      await api.account.updateTheme(themeMode);
-
-      // Update profile
-      const updatedProfile = {
-        ...profile,
-        theme_preference: themeMode,
-      };
-      setProfile(updatedProfile);
-
-      // Update user context with the new theme preference
+      await accountApi.updateTheme(themeMode);
+      
+      // Update user context
       updateUserInfo({ theme_preference: themeMode });
-
-      // Save to localStorage for persistence between sessions
+      
+      // Update the MUI color scheme
+      setMode(themeMode);
+      
+      // Update localStorage to persist between sessions
       localStorage.setItem("theme_preference", themeMode);
-
-      showSnackbar("Theme updated successfully", "success");
+      
+      showSnackbar("Theme preference saved", "success");
     } catch (error) {
-      showSnackbar("Failed to update theme", "error");
+      showSnackbar("Failed to save theme preference", "error");
     } finally {
       setIsSaving(false);
     }
@@ -373,7 +376,7 @@ const Account = () => {
   const handleTerminateSession = async (sessionId) => {
     try {
       setIsSaving(true);
-      await api.account.terminateSession(sessionId);
+      await accountApi.terminateSession(sessionId);
 
       // Remove from local state
       setSessions(sessions.filter((s) => s.id !== sessionId));
@@ -394,10 +397,10 @@ const Account = () => {
         )
       ) {
         setIsSaving(true);
-        await api.account.terminateAllSessions();
+        await accountApi.terminateAllSessions();
 
         // Refresh sessions
-        const updatedSessions = await api.account.getActiveSessions();
+        const updatedSessions = await accountApi.getActiveSessions();
         setSessions(updatedSessions.filter((session) => session.is_current));
 
         showSnackbar("Logged out from all other devices", "success");
@@ -412,7 +415,7 @@ const Account = () => {
   const handleRefreshSessions = async () => {
     try {
       setSessionsLoading(true);
-      const data = await api.account.getActiveSessions();
+      const data = await accountApi.getActiveSessions();
       setSessions(data || []);
     } catch (error) {
       showSnackbar("Failed to refresh sessions", "error");
@@ -425,7 +428,7 @@ const Account = () => {
   const handleExportAccountData = async () => {
     try {
       setIsSaving(true);
-      const data = await api.account.exportAccountData();
+      const data = await accountApi.exportAccountData();
 
       // Create a download link
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -450,7 +453,7 @@ const Account = () => {
   const handleExportSelectedData = async () => {
     try {
       setIsSaving(true);
-      const data = await api.account.exportAccountData(exportOptions);
+      const data = await accountApi.exportAccountData(exportOptions);
 
       // Create a download link
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -476,7 +479,7 @@ const Account = () => {
   const handleDeleteAccount = async () => {
     try {
       setIsSaving(true);
-      await api.account.deleteAccount(deletePassword);
+      await accountApi.deleteAccount(deletePassword);
 
       // Log the user out
       logout();
