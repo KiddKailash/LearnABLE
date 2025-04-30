@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useContext, useEffect } from "react";
 
 // Local Components
 import PasswordField from "./PasswordField";
@@ -23,28 +23,160 @@ import CircularProgress from "@mui/material/CircularProgress";
 // MUI Icons
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
-const SecurityTab = ({
-  profile,
-  currentPassword,
-  setCurrentPassword,
-  newPassword,
-  setNewPassword,
-  confirmPassword,
-  setConfirmPassword,
-  setup2FADialogOpen,
-  setSetup2FADialogOpen,
-  disable2FADialogOpen,
-  setDisable2FADialogOpen,
-  qrCodeLoading,
-  twoFactorData,
-  twoFactorCode,
-  setTwoFactorCode,
-  isSaving,
-  handleChangePassword,
-  handleSetupTwoFactor,
-  handleVerifyTwoFactor,
-  handleDisableTwoFactor,
-}) => {
+// Contexts and Services
+import UserContext from "../../../../contexts/UserObject";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
+import api from "../../../../services/api";
+
+const SecurityTab = () => {
+  // Get user profile from context
+  const { 
+    user, 
+    updateUserInfo, 
+    setupTwoFactor, 
+    verifyAndEnableTwoFactor, 
+    disableTwoFactor, 
+    get2FAStatus,
+    twoFactorData 
+  } = useContext(UserContext);
+  const { showSnackbar } = useContext(SnackbarContext);
+  
+  // Password change states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  
+  // 2FA states
+  const [setup2FADialogOpen, setSetup2FADialogOpen] = useState(false);
+  const [disable2FADialogOpen, setDisable2FADialogOpen] = useState(false);
+  const [qrCodeLoading, setQrCodeLoading] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(user?.two_factor_enabled || false);
+  
+  console.log("User is ", user);
+  console.log("Two factor data is", twoFactorData);
+  
+  // Loading state
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Effect to fetch the latest 2FA status when component mounts
+  useEffect(() => {
+    const fetchTwoFactorStatus = async () => {
+      try {
+        const result = await get2FAStatus();
+        if (result.success) {
+          setTwoFactorEnabled(result.two_factor_enabled);
+        }
+      } catch (error) {
+        console.error("Error fetching 2FA status:", error);
+      }
+    };
+    
+    fetchTwoFactorStatus();
+  }, []);
+  
+  // Update local state when user object changes
+  useEffect(() => {
+    if (user && typeof user.two_factor_enabled === 'boolean') {
+      setTwoFactorEnabled(user.two_factor_enabled);
+    }
+  }, [user]);
+  
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      showSnackbar("New passwords do not match", "error");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const result = await api.account.changePassword({
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      
+      if (result.success) {
+        showSnackbar("Password changed successfully", "success");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        
+        // Update last password change in user profile
+        updateUserInfo({
+          last_password_change: new Date().toISOString(),
+        });
+      } else {
+        showSnackbar(result.message || "Failed to change password", "error");
+      }
+    } catch (error) {
+      showSnackbar(error.message || "An error occurred", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handleSetupTwoFactor = async () => {
+    setQrCodeLoading(true);
+    try {
+      const result = await setupTwoFactor();
+      if (!result.success) {
+        showSnackbar(result.message || "Failed to setup two-factor authentication", "error");
+        setSetup2FADialogOpen(false);
+      }
+      // Note: We no longer need to set twoFactorData here as it's managed in the UserContext
+    } catch (error) {
+      showSnackbar("Error setting up two-factor authentication", "error");
+      setSetup2FADialogOpen(false);
+    } finally {
+      setQrCodeLoading(false);
+    }
+  };
+  
+  const handleVerifyTwoFactor = async () => {
+    setIsSaving(true);
+    try {
+      const result = await verifyAndEnableTwoFactor(twoFactorCode);
+      if (result.success) {
+        showSnackbar("Two-factor authentication enabled successfully", "success");
+        setSetup2FADialogOpen(false);
+        setTwoFactorCode("");
+        setTwoFactorEnabled(true);
+      } else {
+        showSnackbar(result.message || "Failed to verify code", "error");
+      }
+    } catch (error) {
+      showSnackbar("Error verifying two-factor authentication", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  const handleDisableTwoFactor = async () => {
+    setIsSaving(true);
+    try {
+      const result = await disableTwoFactor(twoFactorCode);
+      if (result.success) {
+        showSnackbar("Two-factor authentication disabled successfully", "success");
+        setDisable2FADialogOpen(false);
+        setTwoFactorCode("");
+        setTwoFactorEnabled(false);
+      } else {
+        showSnackbar(result.message || "Failed to disable two-factor authentication", "error");
+      }
+    } catch (error) {
+      showSnackbar("Error disabling two-factor authentication", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  // Load 2FA QR code when dialog opens
+  useEffect(() => {
+    if (setup2FADialogOpen && !twoFactorData) {
+      handleSetupTwoFactor();
+    }
+  }, [setup2FADialogOpen, twoFactorData]);
+
   return (
     <Box sx={{ px: 3 }}>
       <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
@@ -133,9 +265,9 @@ const SecurityTab = ({
           <FormControlLabel
             control={
               <Switch
-                checked={profile?.two_factor_enabled || false}
+                checked={twoFactorEnabled}
                 onChange={() => {
-                  if (profile?.two_factor_enabled) {
+                  if (twoFactorEnabled) {
                     setDisable2FADialogOpen(true);
                   } else {
                     setSetup2FADialogOpen(true);
@@ -144,31 +276,17 @@ const SecurityTab = ({
                 color="primary"
               />
             }
-            label={profile?.two_factor_enabled ? "Enabled" : "Disabled"}
+            label={twoFactorEnabled ? "Enabled" : "Disabled"}
           />
         </Box>
 
-        {profile?.two_factor_enabled && (
+        {twoFactorEnabled && (
           <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mt: 2 }}>
             Two-factor authentication is enabled for your account
           </Alert>
         )}
       </Paper>
-
-      {/* Account Activity */}
-      <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 0.5, fontWeight: "medium" }}>
-          Recent Account Activity
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Last password change:{" "}
-          {new Date(profile?.last_password_change).toLocaleDateString()}
-        </Typography>
-
-        <Button variant="outlined" onClick={() => {}}>
-          View All Activity
-        </Button>
-      </Paper>
+    
 
       {/* Two-Factor Authentication Setup Dialog */}
       <Dialog open={setup2FADialogOpen} onClose={() => setSetup2FADialogOpen(false)}>

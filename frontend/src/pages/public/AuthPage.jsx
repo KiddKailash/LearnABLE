@@ -11,6 +11,12 @@ import Box from "@mui/material/Box";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Alert from "@mui/material/Alert";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
 
 // Custom components
 import LoadingButton from "../../components/LoadingButton";
@@ -75,10 +81,25 @@ const validateRegisterForm = (values) => {
   return errors;
 };
 
+/**
+ * 2FA form validation function
+ */
+const validate2FAForm = (values) => {
+  const errors = {};
+
+  if (!values.code) {
+    errors.code = "Authentication code is required";
+  } else if (!/^\d{6}$/.test(values.code)) {
+    errors.code = "Code must be 6 digits";
+  }
+
+  return errors;
+};
+
 const AuthPage = ({ initialTab = 0 }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { showSnackbar } = useContext(SnackbarContext);
-  const { login, registerTeacher } = useContext(UserContext);
+  const { login, registerTeacher, verify2FA, requires2FA } = useContext(UserContext);
   const navigate = useNavigate();
 
   // Login form handling
@@ -92,10 +113,17 @@ const AuthPage = ({ initialTab = 0 }) => {
     { first_name: "", last_name: "", email: "", password: "" },
     validateRegisterForm
   );
+  
+  // 2FA form handling
+  const twoFactorForm = useFormValidation(
+    { code: "" },
+    validate2FAForm
+  );
 
   // Loading states
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -118,8 +146,13 @@ const AuthPage = ({ initialTab = 0 }) => {
       );
 
       if (result.success) {
-        showSnackbar("Login successful!", "success");
-        navigate("/dashboard");
+        if (result.requiresTwoFactor) {
+          showSnackbar("Please enter your two-factor authentication code", "info");
+          // 2FA dialog is shown automatically based on requires2FA state
+        } else {
+          showSnackbar("Login successful!", "success");
+          navigate("/dashboard");
+        }
       } else {
         showSnackbar(result.message || "Login failed", "error");
       }
@@ -127,6 +160,33 @@ const AuthPage = ({ initialTab = 0 }) => {
       showSnackbar("Error occurred during login", "error");
     } finally {
       setLoginLoading(false);
+    }
+  };
+  
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    
+    // Validate 2FA code
+    if (!twoFactorForm.validateForm()) {
+      showSnackbar("Please enter a valid 6-digit code", "error");
+      return;
+    }
+    
+    setTwoFactorLoading(true);
+    try {
+      const result = await verify2FA(twoFactorForm.values.code);
+      
+      if (result.success) {
+        showSnackbar("Login successful!", "success");
+        twoFactorForm.resetForm();
+        navigate("/dashboard");
+      } else {
+        showSnackbar(result.message || "Verification failed", "error");
+      }
+    } catch (error) {
+      showSnackbar("Error occurred during verification", "error");
+    } finally {
+      setTwoFactorLoading(false);
     }
   };
 
@@ -149,9 +209,26 @@ const AuthPage = ({ initialTab = 0 }) => {
       );
 
       if (result.success) {
-        showSnackbar("Registration successful! Please log in.", "success");
-        setActiveTab(0); // Switch to login tab
-        registerForm.resetForm(); // Clear the registration form
+        showSnackbar("Registration successful!", "success");
+        
+        // Automatically log in with the new credentials
+        const loginResult = await login(
+          registerForm.values.email,
+          registerForm.values.password
+        );
+        
+        if (loginResult.success) {
+          if (loginResult.requiresTwoFactor) {
+            showSnackbar("Please enter your two-factor authentication code", "info");
+            // 2FA dialog is shown automatically based on requires2FA state
+          } else {
+            navigate("/dashboard");
+          }
+        } else {
+          showSnackbar(loginResult.message || "Auto-login failed after registration", "error");
+          setActiveTab(0); // Switch to login tab
+          registerForm.resetForm(); // Clear the registration form
+        }
       } else {
         // Convert object errors to string if needed
         const errorMessage = typeof result.message === 'object' 
@@ -348,12 +425,55 @@ const AuthPage = ({ initialTab = 0 }) => {
               >
                 Register
               </LoadingButton>
-
-              
             </Stack>
           </Box>
         )}
       </Box>
+      
+      {/* Two-Factor Authentication Dialog */}
+      <Dialog open={requires2FA} fullWidth maxWidth="xs">
+        <DialogTitle>Two-Factor Authentication</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Please enter the 6-digit code from your authenticator app to complete login
+          </DialogContentText>
+          
+          <Box component="form" noValidate onSubmit={handleVerify2FA}>
+            <TextField
+              fullWidth
+              id="two-factor-code"
+              name="code"
+              label="Authentication Code"
+              value={twoFactorForm.values.code}
+              onChange={twoFactorForm.handleChange}
+              onBlur={twoFactorForm.handleBlur}
+              error={twoFactorForm.touched.code && Boolean(twoFactorForm.errors.code)}
+              helperText={twoFactorForm.touched.code && twoFactorForm.errors.code}
+              inputProps={{ maxLength: 6 }}
+              required
+              autoFocus
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            twoFactorForm.resetForm();
+            // This would normally trigger a "cancel" action in the UserContext
+            // But for simplicity we just redirect to login
+            window.location.href = '/login';
+          }}>
+            Cancel
+          </Button>
+          <LoadingButton
+            onClick={handleVerify2FA}
+            loading={twoFactorLoading}
+            variant="contained"
+            color="primary"
+          >
+            Verify
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

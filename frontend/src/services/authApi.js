@@ -3,7 +3,7 @@
  */
 
 import httpClient from './httpClient';
-import { API_BASE_URL, getHeaders, handleResponse } from './config';
+import { getHeaders, handleResponse } from './config';
 
 // Token refresh functionality needs special handling outside httpClient
 const _retryRequest = async (url, method, body) => {
@@ -23,6 +23,13 @@ const authApi = {
     return httpClient.post('/api/teachers/login/', { email, password });
   },
   
+  verifyTwoFactor: async (email, twoFactorCode) => {
+    return httpClient.post('/api/teachers/verify-login-2fa/', { 
+      email, 
+      code: twoFactorCode 
+    });
+  },
+  
   register: async (userData) => {
     return httpClient.post('/api/teachers/register/', userData);
   },
@@ -35,7 +42,19 @@ const authApi = {
   },
   
   changePassword: async (data) => {
-    return httpClient.post('/api/teachers/change-password/', data);
+    return httpClient.post('/api/teachers/profile/password/change/', data);
+  },
+  
+  setupTwoFactor: async () => {
+    return httpClient.post('/api/teachers/profile/2fa/setup/');
+  },
+  
+  verifyAndEnableTwoFactor: async (code) => {
+    return httpClient.post('/api/teachers/profile/2fa/verify/', { token: code });
+  },
+  
+  disableTwoFactor: async (code) => {
+    return httpClient.post('/api/teachers/profile/2fa/disable/', { token: code });
   },
   
   // Handle token refresh when we get 401 errors

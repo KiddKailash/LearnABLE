@@ -4,6 +4,7 @@
  *
  * The context handles:
  *  - Logging in a teacher via POST /teachers/login/
+ *  - Two-factor authentication during login
  *  - Logging out by clearing tokens and user info from localStorage
  *  - Registering a teacher via POST /teachers/register/
  *  - Refreshing tokens for future backend enhancements
@@ -18,20 +19,31 @@ import api from "../services/api";
 import authApi from "../services/authApi";
 
 const UserContext = createContext({
-  user: null, // Basic teacher info from the server
+  user: null, // Complete teacher profile info from the server
   isLoggedIn: false, // Whether user is authenticated
   authLoading: true, // While checking if user is auto-logged in
+  requires2FA: false, // Whether 2FA verification is required
+  tempLoginData: null, // Temporary data during 2FA login
   login: async () => {},
+  verify2FA: async () => {}, // Verify 2FA during login
   logout: () => {},
   registerTeacher: async () => {},
   refreshToken: async () => {}, // placeholder if you add a refresh route
   updateUserInfo: (info) => {}, // update user info including theme preference
+  setupTwoFactor: async () => {}, // setup 2FA
+  verifyAndEnableTwoFactor: async () => {}, // verify and enable 2FA
+  disableTwoFactor: async () => {}, // disable 2FA
+  get2FAStatus: async () => {}, // get current 2FA status from the server
+  twoFactorData: null, // Store 2FA setup data (QR code, secret)
 });
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [tempLoginData, setTempLoginData] = useState(null);
+  const [twoFactorData, setTwoFactorData] = useState(null);
   
   const navigate = useNavigate();
 
@@ -56,9 +68,8 @@ export const UserProvider = ({ children }) => {
    *
    * Sends a POST request to /api/teachers/login/ with email and password.
    * On success:
-   *  - Stores access and refresh tokens in localStorage.
-   *  - Stores user info (name and email) in localStorage.
-   *  - Updates context state to reflect logged-in status.
+   *  - If 2FA is enabled, sets requires2FA flag and stores email temporarily
+   *  - If 2FA is not enabled, completes login process
    *
    * @param {string} email - Teacher's email.
    * @param {string} password - Teacher's password.
@@ -68,27 +79,22 @@ export const UserProvider = ({ children }) => {
     try {
       const data = await authApi.login(email, password);
       
-      // Store tokens in localStorage
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-
-      // Also store user info for auto-login
-      localStorage.setItem("user_name", data.first_name);
-      localStorage.setItem("user_email", data.email);
-      
-      // Store theme preference if available
-      if (data.theme_preference) {
-        localStorage.setItem("theme_preference", data.theme_preference);
+      // Check if 2FA is required
+      if (data.two_factor_required) {
+        // Store email temporarily for 2FA verification
+        setRequires2FA(true);
+        setTempLoginData({
+          email,
+          user_id: data.user_id
+        });
+        return { 
+          success: true, 
+          requiresTwoFactor: true 
+        };
       }
-
-      // Update state
-      setUser({
-        first_name: data.first_name,
-        email: data.email,
-        theme_preference: data.theme_preference || 'light',
-      });
-      setIsLoggedIn(true);
-
+      
+      // No 2FA required - complete login process
+      completeLogin(data);
       return { success: true };
     } catch (error) {
       return {
@@ -96,6 +102,69 @@ export const UserProvider = ({ children }) => {
         message: error.message || "Login failed",
       };
     }
+  };
+  
+  /**
+   * Verifies 2FA code during login
+   * 
+   * @param {string} code - Six-digit 2FA code
+   * @returns {Promise<Object>} Result object with success status
+   */
+  const verify2FA = async (code) => {
+    try {
+      if (!tempLoginData || !tempLoginData.email) {
+        throw new Error("Login session expired");
+      }
+      
+      const data = await authApi.verifyTwoFactor(tempLoginData.email, code);
+      
+      // Complete login process with returned data
+      completeLogin(data);
+      
+      // Reset 2FA state
+      setRequires2FA(false);
+      setTempLoginData(null);
+      
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Two-factor verification failed"
+      };
+    }
+  };
+  
+  /**
+   * Completes login process by storing tokens and user data
+   * @param {Object} data - Login response data
+   */
+  const completeLogin = (data) => {
+    // Store tokens in localStorage
+    localStorage.setItem("access_token", data.access);
+    localStorage.setItem("refresh_token", data.refresh);
+
+    // Store user info for auto-login
+    localStorage.setItem("user_id", data.id);
+    localStorage.setItem("user_email", data.email);
+    
+    // Store theme preference if available
+    if (data.theme_preference) {
+      localStorage.setItem("theme_preference", data.theme_preference);
+    }
+
+    // Update state with full profile data
+    setUser({
+      id: data.id,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      email: data.email,
+      theme_preference: data.theme_preference || 'light',
+      two_factor_enabled: data.two_factor_enabled || false,
+      last_password_change: data.last_password_change,
+      // Include other profile fields
+      ...data
+    });
+    setIsLoggedIn(true);
   };
 
   /**
@@ -106,11 +175,14 @@ export const UserProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user_name");
+    localStorage.removeItem("user_id");
     localStorage.removeItem("user_email");
     localStorage.removeItem("theme_preference");
     setUser(null);
     setIsLoggedIn(false);
+    setRequires2FA(false);
+    setTempLoginData(null);
+    setTwoFactorData(null);
     navigate("/login");
   };
 
@@ -191,6 +263,116 @@ export const UserProvider = ({ children }) => {
       };
     }
   };
+  
+  /**
+   * Gets the current 2FA status from the server
+   * @returns {Promise<Object>} Result object with 2FA status
+   */
+  const get2FAStatus = async () => {
+    try {
+      // If we already have 2FA status in the user object, return it
+      if (user && typeof user.two_factor_enabled === 'boolean') {
+        return { 
+          success: true, 
+          two_factor_enabled: user.two_factor_enabled 
+        };
+      }
+      
+      // Otherwise fetch the profile to get the latest 2FA status
+      const profileData = await api.account.getProfile();
+      
+      // Update user with the fresh data
+      setUser(prevUser => ({
+        ...prevUser,
+        ...profileData
+      }));
+      
+      return { 
+        success: true, 
+        two_factor_enabled: profileData.two_factor_enabled || false 
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Failed to get 2FA status",
+        two_factor_enabled: false
+      };
+    }
+  };
+  
+  /**
+   * Sets up two-factor authentication
+   * @returns {Promise<Object>} Result object with QR code data
+   */
+  const setupTwoFactor = async () => {
+    try {
+      // Use account API instead of auth API for 2FA setup
+      const data = await api.account.setupTwoFactor();
+      
+      // Store the 2FA setup data in context
+      setTwoFactorData(data);
+      
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Failed to set up two-factor authentication"
+      };
+    }
+  };
+  
+  /**
+   * Verifies and enables two-factor authentication
+   * @param {string} code - Six-digit verification code
+   * @returns {Promise<Object>} Result object with success status
+   */
+  const verifyAndEnableTwoFactor = async (code) => {
+    try {
+      // Use account API instead of auth API for 2FA verification
+      await api.account.verifyTwoFactor(code);
+      
+      // Update user object to show 2FA is enabled
+      setUser(prevUser => ({
+        ...prevUser,
+        two_factor_enabled: true
+      }));
+      
+      // Clear the 2FA setup data as it's no longer needed
+      setTwoFactorData(null);
+      
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Failed to verify and enable two-factor authentication"
+      };
+    }
+  };
+  
+  /**
+   * Disables two-factor authentication
+   * @param {string} code - Six-digit verification code
+   * @returns {Promise<Object>} Result object with success status
+   */
+  const disableTwoFactor = async (code) => {
+    try {
+      // Use account API instead of auth API for 2FA disable
+      await api.account.disableTwoFactor(code);
+      
+      // Update user object to show 2FA is disabled
+      setUser(prevUser => ({
+        ...prevUser,
+        two_factor_enabled: false
+      }));
+      
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || "Failed to disable two-factor authentication"
+      };
+    }
+  };
 
   /**
    * Auto-login effect:
@@ -209,15 +391,28 @@ export const UserProvider = ({ children }) => {
         const storedTheme = localStorage.getItem("theme_preference") || 'light';
         
         // Set initial user state with minimal data
-        const storedName = localStorage.getItem("user_name");
+        const storedUserId = localStorage.getItem("user_id");
         const storedEmail = localStorage.getItem("user_email");
-        if (storedName && storedEmail) {
+        
+        if (storedUserId && storedEmail) {
+          // Set minimal user data from localStorage
           setUser({ 
-            first_name: storedName, 
+            id: storedUserId,
             email: storedEmail,
             theme_preference: storedTheme
           });
           setIsLoggedIn(true);
+          
+          // Fetch full profile data to update the user object
+          try {
+            const profileData = await api.account.getProfile();
+            setUser(prevUser => ({
+              ...prevUser,
+              ...profileData
+            }));
+          } catch (profileError) {
+            console.warn("Error fetching full profile data:", profileError);
+          }
         }
         
         // Verify token is valid by making a test API call
@@ -255,11 +450,19 @@ export const UserProvider = ({ children }) => {
         user,
         isLoggedIn,
         authLoading,
+        requires2FA,
+        tempLoginData,
         login,
+        verify2FA,
         logout,
         registerTeacher,
         refreshToken,
         updateUserInfo,
+        setupTwoFactor,
+        verifyAndEnableTwoFactor,
+        disableTwoFactor,
+        get2FAStatus,
+        twoFactorData,
       }}
     >
       {children}
