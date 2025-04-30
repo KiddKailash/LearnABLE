@@ -22,6 +22,7 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
+import ListItemButton from '@mui/material/ListItemButton';
 
 // Icons
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -242,8 +243,7 @@ const Dashboard = () => {
               <Typography variant="h6">Quick Actions</Typography>
             </Box>
             <List sx={{ p: 0 }}>
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => handleNavigate("/ai-assistant")}
                 sx={{
                   py: 2,
@@ -259,10 +259,9 @@ const Dashboard = () => {
                   secondary="Generate personalized learning materials"
                 />
                 <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItem>
+              </ListItemButton>
 
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => handleNavigate("/classes")}
                 sx={{
                   py: 2,
@@ -278,10 +277,9 @@ const Dashboard = () => {
                   secondary="View and edit your classes"
                 />
                 <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItem>
+              </ListItemButton>
 
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => handleNavigate("/reporting")}
                 sx={{
                   py: 2,
@@ -297,10 +295,9 @@ const Dashboard = () => {
                   secondary="Manage disability reports and requirements"
                 />
                 <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItem>
+              </ListItemButton>
 
-              <ListItem
-                button
+              <ListItemButton
                 onClick={() => handleNavigate("/analytics")}
                 sx={{ py: 2 }}
               >
@@ -312,7 +309,7 @@ const Dashboard = () => {
                   secondary="View student performance insights"
                 />
                 <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItem>
+              </ListItemButton>
             </List>
           </Paper>
         </Grid>
@@ -354,9 +351,8 @@ const Dashboard = () => {
             <List sx={{ p: 0, flexGrow: 1, overflow: "auto" }}>
               {classes.length > 0 ? (
                 classes.map((classItem) => (
-                  <ListItem
+                  <ListItemButton
                     key={classItem.id}
-                    button
                     onClick={() =>
                       handleNavigate(`/classes/${classItem.id}/students`)
                     }
@@ -381,7 +377,7 @@ const Dashboard = () => {
                       secondary={`${classItem.students?.length || 0} students`}
                     />
                     <ArrowForwardIcon fontSize="small" color="action" />
-                  </ListItem>
+                  </ListItemButton>
                 ))
               ) : (
                 <ListItem>

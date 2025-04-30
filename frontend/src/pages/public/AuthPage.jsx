@@ -153,9 +153,17 @@ const AuthPage = ({ initialTab = 0 }) => {
         setActiveTab(0); // Switch to login tab
         registerForm.resetForm(); // Clear the registration form
       } else {
-        showSnackbar(result.message || "Registration failed", "error");
+        // Convert object errors to string if needed
+        const errorMessage = typeof result.message === 'object' 
+          ? Object.entries(result.message)
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(', ')
+          : result.message;
+          
+        showSnackbar(errorMessage || "Registration failed", "error");
       }
     } catch (error) {
+      console.error("Registration error:", error);
       showSnackbar("Error occurred during registration", "error");
     } finally {
       setRegisterLoading(false);
