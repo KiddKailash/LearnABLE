@@ -10,6 +10,7 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
+import Alert from "@mui/material/Alert";
 
 // Custom components
 import LoadingButton from "../../components/LoadingButton";
@@ -305,6 +306,10 @@ const AuthPage = ({ initialTab = 0 }) => {
                 required
                 autoComplete="email"
               />
+
+              <Alert severity="info" sx={{ mb: 1 }}>
+                Password must be at least 8 characters long and contain at least one special character.
+              </Alert>
 
               <TextField
                 fullWidth
