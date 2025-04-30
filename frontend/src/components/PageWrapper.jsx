@@ -5,7 +5,7 @@ import Container from "@mui/material/Container";
 
 const PageWrapper = ({ children }) => {
   return (
-    <Container maxWidth="lg" sx={{ my: 2 }}>
+    <Container maxWidth="lg" sx={{ mx: 2, my: 3, py: 4 }}>
       {children}
     </Container>
   );
