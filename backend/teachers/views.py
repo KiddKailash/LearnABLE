@@ -130,6 +130,32 @@ def login_teacher(request):
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
             
+            # Create a new device session
+            user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
+            ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
+            
+            # Get device name from user agent
+            device_name = 'Desktop'
+            if 'Mobile' in user_agent:
+                device_name = 'Mobile Device'
+            elif 'Tablet' in user_agent:
+                device_name = 'Tablet'
+            
+            # Create new session
+            from .models import DeviceSession
+            import secrets
+            
+            session = DeviceSession.objects.create(
+                teacher=teacher,
+                session_key=secrets.token_hex(20),
+                device_name=device_name,
+                browser=user_agent,
+                ip_address=ip_address,
+                location='Unknown',  # This could be resolved using a GeoIP service
+                user_agent=user_agent,
+                is_active=True
+            )
+            
             # Return successful response with tokens and user info
             return JsonResponse({
                 "access": str(refresh.access_token),
@@ -140,7 +166,8 @@ def login_teacher(request):
                 "email": user.email,
                 "two_factor_enabled": teacher.two_factor_enabled,
                 "theme_preference": teacher.theme_preference,
-                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None
+                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None,
+                "session_id": session.id
             })
 
         except json.JSONDecodeError:
@@ -319,42 +346,40 @@ def update_theme(request):
 @permission_classes([IsAuthenticated])
 def get_active_sessions(request):
     try:
-        # In a real app, you'd query a sessions table
-        # For demo, return mock data including the current session
-        current_session = {
-            'id': '1',
-            'device_name': 'Current Device',
-            'browser': f'{request.META.get("HTTP_USER_AGENT", "Unknown Browser")}',
-            'ip_address': request.META.get('REMOTE_ADDR', '127.0.0.1'),
-            'location': 'Current Location',
-            'last_active': datetime.datetime.now().isoformat(),
-            'is_current': True
-        }
+        # Get the teacher from the authenticated user
+        teacher = request.user.teacher
         
-        # Add some mock sessions
-        other_sessions = [
-            {
-                'id': '2',
-                'device_name': 'iPhone 13',
-                'browser': 'Mobile Safari',
-                'ip_address': '192.168.1.101',
-                'location': 'Melbourne, Australia',
-                'last_active': (datetime.datetime.now() - datetime.timedelta(days=1)).isoformat(),
-                'is_current': False
-            },
-            {
-                'id': '3',
-                'device_name': 'MacBook Pro',
-                'browser': 'Chrome 98.0.4758.102',
-                'ip_address': '192.168.1.102',
-                'location': 'Sydney, Australia',
-                'last_active': (datetime.datetime.now() - datetime.timedelta(hours=2)).isoformat(),
-                'is_current': False
-            }
-        ]
+        # Get current session info
+        user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
+        ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
         
-        sessions = [current_session] + other_sessions
-        return Response(sessions)
+        # Query all active sessions for this teacher
+        from .models import DeviceSession
+        sessions = DeviceSession.objects.filter(teacher=teacher, is_active=True)
+        
+        result = []
+        for session in sessions:
+            # Determine if this is the current session based on IP and user agent
+            is_current = (
+                session.ip_address == ip_address and 
+                session.user_agent == user_agent
+            )
+            
+            # If this is the current session, update the last_active time
+            if is_current:
+                session.save()  # This will update the last_active field (auto_now=True)
+            
+            result.append({
+                'id': session.id,
+                'device_name': session.device_name,
+                'browser': session.browser,
+                'ip_address': session.ip_address,
+                'location': session.location,
+                'last_active': session.last_active.isoformat(),
+                'is_current': is_current
+            })
+        
+        return Response(result)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
@@ -362,12 +387,33 @@ def get_active_sessions(request):
 @permission_classes([IsAuthenticated])
 def terminate_session(request):
     try:
+        teacher = request.user.teacher
         session_id = request.data.get('session_id')
+        
         if not session_id:
             return Response({"error": "Session ID is required"}, status=400)
         
-        # In a real app, you'd invalidate the session in the database
-        # For demo, just return success
+        # Get the session from the database
+        from .models import DeviceSession
+        try:
+            session = DeviceSession.objects.get(
+                id=session_id, 
+                teacher=teacher,
+                is_active=True
+            )
+        except DeviceSession.DoesNotExist:
+            return Response({"error": "Session not found"}, status=404)
+        
+        # Check if this is the current session
+        user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
+        ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        if session.ip_address == ip_address and session.user_agent == user_agent:
+            return Response({"error": "Cannot terminate your current session"}, status=400)
+        
+        # Deactivate the session
+        session.is_active = False
+        session.save()
+        
         return Response({"message": "Session terminated successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
@@ -376,8 +422,22 @@ def terminate_session(request):
 @permission_classes([IsAuthenticated])
 def terminate_all_sessions(request):
     try:
-        # In a real app, you'd invalidate all sessions except the current one
-        # For demo, just return success
+        teacher = request.user.teacher
+        
+        # Get current session info
+        user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
+        ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        
+        # Terminate all sessions except the current one
+        from .models import DeviceSession
+        DeviceSession.objects.filter(
+            teacher=teacher,
+            is_active=True
+        ).exclude(
+            ip_address=ip_address,
+            user_agent=user_agent
+        ).update(is_active=False)
+        
         return Response({"message": "All other sessions terminated successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
@@ -529,6 +589,32 @@ def verify_login_2fa(request):
             # Authentication successful, generate tokens
             refresh = RefreshToken.for_user(user)
             
+            # Create a new device session
+            user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
+            ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
+            
+            # Get device name from user agent
+            device_name = 'Desktop'
+            if 'Mobile' in user_agent:
+                device_name = 'Mobile Device'
+            elif 'Tablet' in user_agent:
+                device_name = 'Tablet'
+            
+            # Create new session
+            from .models import DeviceSession
+            import secrets
+            
+            session = DeviceSession.objects.create(
+                teacher=teacher,
+                session_key=secrets.token_hex(20),
+                device_name=device_name,
+                browser=user_agent,
+                ip_address=ip_address,
+                location='Unknown',  # This could be resolved using a GeoIP service
+                user_agent=user_agent,
+                is_active=True
+            )
+            
             # Return full login response
             return JsonResponse({
                 "access": str(refresh.access_token),
@@ -539,7 +625,8 @@ def verify_login_2fa(request):
                 "email": user.email,
                 "two_factor_enabled": teacher.two_factor_enabled,
                 "theme_preference": teacher.theme_preference,
-                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None
+                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None,
+                "session_id": session.id
             })
 
         except json.JSONDecodeError:
@@ -554,3 +641,27 @@ def verify_login_2fa(request):
     return JsonResponse({
         "message": "Only POST method is allowed"
     }, status=405)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        # Get the teacher from the authenticated user
+        teacher = request.user.teacher
+        
+        # Get current session info
+        user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
+        ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
+        
+        # Find and deactivate the current session
+        from .models import DeviceSession
+        DeviceSession.objects.filter(
+            teacher=teacher,
+            is_active=True,
+            ip_address=ip_address,
+            user_agent=user_agent
+        ).update(is_active=False)
+        
+        return Response({"message": "Logged out successfully"})
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)

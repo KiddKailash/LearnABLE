@@ -7,6 +7,11 @@ import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 
 // MUI Icons
 import DevicesIcon from "@mui/icons-material/Devices";
@@ -19,6 +24,35 @@ const SessionsTab = ({
   handleTerminateAllSessions,
   handleRefreshSessions,
 }) => {
+  const [confirmDialog, setConfirmDialog] = React.useState({
+    open: false,
+    sessionId: null,
+    deviceName: ''
+  });
+
+  const openConfirmDialog = (sessionId, deviceName) => {
+    setConfirmDialog({
+      open: true,
+      sessionId,
+      deviceName
+    });
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDialog({
+      open: false,
+      sessionId: null,
+      deviceName: ''
+    });
+  };
+
+  const confirmTerminateSession = () => {
+    if (confirmDialog.sessionId) {
+      handleTerminateSession(confirmDialog.sessionId);
+    }
+    closeConfirmDialog();
+  };
+
   return (
     <Box sx={{ px: 3 }}>
       <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
@@ -127,7 +161,7 @@ const SessionsTab = ({
                         variant="outlined"
                         size="small"
                         color="error"
-                        onClick={() => handleTerminateSession(session.id)}
+                        onClick={() => openConfirmDialog(session.id, session.device_name)}
                         disabled={isSaving}
                       >
                         Terminate Session
@@ -150,6 +184,31 @@ const SessionsTab = ({
           </>
         )}
       </Paper>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={closeConfirmDialog}
+        aria-labelledby="terminate-session-dialog-title"
+      >
+        <DialogTitle id="terminate-session-dialog-title">
+          Terminate Session
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to terminate the session on {confirmDialog.deviceName || "this device"}? 
+            This will log out that device immediately.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeConfirmDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={confirmTerminateSession} color="error" autoFocus>
+            Terminate
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

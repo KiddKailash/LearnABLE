@@ -172,18 +172,26 @@ export const UserProvider = ({ children }) => {
    *
    * Clears tokens and user info from localStorage and resets context state.
    */
-  const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user_id");
-    localStorage.removeItem("user_email");
-    localStorage.removeItem("theme_preference");
-    setUser(null);
-    setIsLoggedIn(false);
-    setRequires2FA(false);
-    setTempLoginData(null);
-    setTwoFactorData(null);
-    navigate("/login");
+  const logout = async () => {
+    try {
+      // Call the backend API to terminate the current session
+      await authApi.logout();
+    } catch (error) {
+      console.error("Error logging out:", error);
+    } finally {
+      // Clear localStorage regardless of API success/failure
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("user_id");
+      localStorage.removeItem("user_email");
+      localStorage.removeItem("theme_preference");
+      setUser(null);
+      setIsLoggedIn(false);
+      setRequires2FA(false);
+      setTempLoginData(null);
+      setTwoFactorData(null);
+      navigate("/login");
+    }
   };
 
   /**

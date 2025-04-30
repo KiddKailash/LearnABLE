@@ -79,6 +79,10 @@ const authApi = {
       window.location.href = '/login';
       throw refreshError;
     }
+  },
+  
+  logout: async () => {
+    return httpClient.post('/api/teachers/logout/');
   }
 };
 
