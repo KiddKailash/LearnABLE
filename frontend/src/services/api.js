@@ -33,6 +33,25 @@ const getHeaders = (contentType = 'application/json') => {
 };
 
 /**
+ * Retry a request with fresh authentication
+ * @param {string} url - The original request URL
+ * @param {string} method - The HTTP method
+ * @param {Object|FormData} body - The request body
+ * @returns {Promise} Parsed response data
+ */
+const _retryRequest = async (url, method, body) => {
+  const options = {
+    method,
+    headers: getHeaders(),
+  };
+  
+  if (body) options.body = body;
+  
+  const response = await fetch(url, options);
+  return handleResponse(response);
+};
+
+/**
  * Handles API responses consistently
  * @param {Response} response - Fetch API response
  * @returns {Promise} Parsed response data or error
@@ -126,6 +145,9 @@ const api = {
   put: wrapWithTokenRefresh(httpClient.put),
   patch: wrapWithTokenRefresh(httpClient.patch),
   delete: wrapWithTokenRefresh(httpClient.delete),
+  
+  // Add _retryRequest method
+  _retryRequest,
 
   // Domain-specific APIs
   auth: authApi,
