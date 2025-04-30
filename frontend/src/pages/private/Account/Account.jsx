@@ -5,6 +5,16 @@ import UserContext from "../../../contexts/UserObject";
 import api from "../../../services/api";
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 
+// Local Components
+import TabPanel from "./components/TabPanel";
+import ProfileTab from "./components/ProfileTab";
+import SecurityTab from "./components/SecurityTab";
+import NotificationsTab from "./components/NotificationsTab";
+import AppearanceTab from "./components/AppearanceTab";
+import SessionsTab from "./components/SessionsTab";
+import DataExportTab from "./components/DataExportTab";
+import DeleteAccountTab from "./components/DeleteAccountTab";
+
 // MUI Components
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
@@ -20,18 +30,6 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import DevicesIcon from "@mui/icons-material/Devices";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-// Components
-import {
-  TabPanel,
-  ProfileTab,
-  SecurityTab,
-  NotificationsTab,
-  AppearanceTab,
-  SessionsTab,
-  DataExportTab,
-  DeleteAccountTab,
-} from "./components";
 
 const Account = () => {
   const { user, logout, updateUserInfo } = useContext(UserContext);
