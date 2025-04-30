@@ -10,7 +10,6 @@ import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import TabPanel from "./components/TabPanel";
 import ProfileTab from "./components/ProfileTab";
 import SecurityTab from "./components/SecurityTab";
-import NotificationsTab from "./components/NotificationsTab";
 import AppearanceTab from "./components/AppearanceTab";
 import SessionsTab from "./components/SessionsTab";
 import DataExportTab from "./components/DataExportTab";
@@ -26,7 +25,6 @@ import Typography from "@mui/material/Typography";
 // Icons
 import PersonIcon from "@mui/icons-material/Person";
 import SecurityIcon from "@mui/icons-material/Security";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import PaletteIcon from "@mui/icons-material/Palette";
 import DevicesIcon from "@mui/icons-material/Devices";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
@@ -330,25 +328,6 @@ const Account = () => {
     }
   };
 
-  // Notification handlers
-  const handleSaveNotifications = async () => {
-    try {
-      setIsSaving(true);
-      await accountApi.updateNotifications(notificationSettings);
-
-      // Update local state
-      const updatedProfile = { ...profile };
-      updatedProfile.notification_preferences = notificationSettings;
-      setProfile(updatedProfile);
-
-      showSnackbar("Notification preferences updated successfully", "success");
-    } catch (error) {
-      showSnackbar("Failed to update notification preferences", "error");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   // Appearance handlers
   const handleSaveTheme = async () => {
     try {
@@ -441,10 +420,14 @@ const Account = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
 
       showSnackbar("Account data exported successfully", "success");
     } catch (error) {
       showSnackbar("Failed to export account data", "error");
+      console.error("Export error:", error);
     } finally {
       setIsSaving(false);
     }
@@ -453,7 +436,16 @@ const Account = () => {
   const handleExportSelectedData = async () => {
     try {
       setIsSaving(true);
-      const data = await accountApi.exportAccountData(exportOptions);
+      
+      // Only include options that are selected (true)
+      const selectedOptions = Object.entries(exportOptions)
+        .filter(([key, value]) => value === true)
+        .reduce((obj, [key, value]) => {
+          obj[key] = value;
+          return obj;
+        }, {});
+        
+      const data = await accountApi.exportAccountData(selectedOptions);
 
       // Create a download link
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -466,10 +458,14 @@ const Account = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Clean up the URL object
+      URL.revokeObjectURL(url);
 
       showSnackbar("Data exported successfully", "success");
     } catch (error) {
       showSnackbar("Failed to export data", "error");
+      console.error("Export error:", error);
     } finally {
       setIsSaving(false);
     }
@@ -517,11 +513,6 @@ const Account = () => {
       >
         <Tab icon={<PersonIcon />} label="Profile" iconPosition="start" />
         <Tab icon={<SecurityIcon />} label="Security" iconPosition="start" />
-        <Tab
-          icon={<NotificationsIcon />}
-          label="Notifications"
-          iconPosition="start"
-        />
         <Tab icon={<PaletteIcon />} label="Appearance" iconPosition="start" />
         <Tab icon={<DevicesIcon />} label="Sessions" iconPosition="start" />
         <Tab
@@ -592,14 +583,6 @@ const Account = () => {
             />
           </TabPanel>
           <TabPanel value={tabValue} index={2}>
-            <NotificationsTab
-              notificationSettings={notificationSettings}
-              setNotificationSettings={setNotificationSettings}
-              isSaving={isSaving}
-              handleSaveNotifications={handleSaveNotifications}
-            />
-          </TabPanel>
-          <TabPanel value={tabValue} index={3}>
             <AppearanceTab
               themeMode={themeMode}
               setThemeMode={setThemeMode}
@@ -607,7 +590,7 @@ const Account = () => {
               handleSaveTheme={handleSaveTheme}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={4}>
+          <TabPanel value={tabValue} index={3}>
             <SessionsTab
               sessions={sessions}
               sessionsLoading={sessionsLoading}
@@ -617,7 +600,7 @@ const Account = () => {
               handleRefreshSessions={handleRefreshSessions}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={5}>
+          <TabPanel value={tabValue} index={4}>
             <DataExportTab
               exportOptions={exportOptions}
               setExportOptions={setExportOptions}
@@ -626,7 +609,7 @@ const Account = () => {
               handleExportSelectedData={handleExportSelectedData}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={6}>
+          <TabPanel value={tabValue} index={5}>
             <DeleteAccountTab
               deleteDialogOpen={deleteDialogOpen}
               setDeleteDialogOpen={setDeleteDialogOpen}

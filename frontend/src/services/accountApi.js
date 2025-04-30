@@ -53,8 +53,8 @@ const accountApi = {
     return httpClient.post('/api/teachers/profile/sessions/terminate-all/');
   },
   
-  exportAccountData: async () => {
-    return httpClient.post('/api/teachers/profile/export-data/');
+  exportAccountData: async (exportOptions) => {
+    return httpClient.post('/api/teachers/profile/export-data/', exportOptions || {});
   },
   
   deleteAccount: async (password) => {
