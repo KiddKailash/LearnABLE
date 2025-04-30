@@ -6,7 +6,7 @@ from django.apps import apps
 
 @receiver(post_save, sender=User)
 def create_teacher_profile(sender, instance, created, **kwargs):
-    if created and instance.is_staff:  # or any condition to check teacher
+    if created:  # Remove the instance.is_staff condition
         Teacher.objects.create(user=instance)
 
 @receiver(pre_delete, sender=Teacher)
