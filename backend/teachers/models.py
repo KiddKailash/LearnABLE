@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import FileExtensionValidator
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+from django.core.exceptions import ValidationError
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
@@ -18,11 +21,35 @@ class Teacher(models.Model):
     timezone = models.CharField(max_length=50, default='UTC')
 
     def __str__(self):
-        return self.user.username
+        if self.user:
+            return self.user.username
+        return f"Teacher (no user) #{self.id}"
+
+    def clean(self):
+        # Check if this user already has a teacher profile when creating a new one
+        if self.user_id and not self.pk:
+            if Teacher.objects.filter(user_id=self.user_id).exists():
+                raise ValidationError("This user already has a teacher profile")
+        
+        # If user is None, raise a validation error
+        if self.user is None:
+            raise ValidationError("Teacher must be associated with a user")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Teacher"
         verbose_name_plural = "Teachers"
+
+# Signal to ensure uniqueness of user_id and prevent duplicate teacher profiles
+@receiver(pre_save, sender=Teacher)
+def prevent_duplicate_teacher(sender, instance, **kwargs):
+    if instance.user_id:
+        # Check if there's an existing teacher with this user_id that's not this instance
+        if Teacher.objects.filter(user_id=instance.user_id).exclude(pk=instance.pk).exists():
+            raise ValidationError("This user already has a teacher profile")
 
 class DeviceSession(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, related_name='device_sessions')

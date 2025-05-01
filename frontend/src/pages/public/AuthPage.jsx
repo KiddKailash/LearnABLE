@@ -238,10 +238,62 @@ const AuthPage = ({ initialTab = 0 }) => {
           : result.message;
           
         showSnackbar(errorMessage || "Registration failed", "error");
+        
+        // If we have database constraint errors, set the appropriate field error
+        if ((errorMessage && 
+            (errorMessage.toLowerCase().includes('already exists') || 
+             errorMessage.toLowerCase().includes('teacher profile')))) {
+          // Create a new error object for the form
+          const formErrors = { ...registerForm.errors };
+          
+          if (errorMessage.toLowerCase().includes('email')) {
+            formErrors.email = "This email is already in use";
+          } else if (errorMessage.toLowerCase().includes('teacher profile')) {
+            formErrors.email = "A teacher profile already exists for this email";
+          }
+          
+          // Only attempt to set errors if the function exists
+          if (typeof registerForm.setErrors === 'function') {
+            registerForm.setErrors(formErrors);
+            
+            // Mark relevant fields as touched
+            const touchedFields = { ...registerForm.touched };
+            if (formErrors.email) touchedFields.email = true;
+            registerForm.setTouched(touchedFields);
+          }
+        }
       }
     } catch (error) {
       console.error("Registration error:", error);
-      showSnackbar("Error occurred during registration", "error");
+      
+      // Display the error message from the server
+      const errorMessage = error.message || "Error occurred during registration";
+      showSnackbar(errorMessage, "error");
+      
+      // If we have database constraint errors, set the appropriate field error
+      if ((errorMessage && 
+          (errorMessage.toLowerCase().includes('already exists') || 
+           errorMessage.toLowerCase().includes('teacher profile'))) || 
+          error.field) {
+        // Create a new error object for the form
+        const formErrors = { ...registerForm.errors };
+        
+        if (errorMessage.toLowerCase().includes('email') || error.field === 'email') {
+          formErrors.email = "This email is already in use";
+        } else if (errorMessage.toLowerCase().includes('teacher profile')) {
+          formErrors.email = "A teacher profile already exists for this email";
+        }
+        
+        // Only attempt to set errors if the function exists
+        if (typeof registerForm.setErrors === 'function') {
+          registerForm.setErrors(formErrors);
+          
+          // Mark relevant fields as touched
+          const touchedFields = { ...registerForm.touched };
+          if (formErrors.email) touchedFields.email = true;
+          registerForm.setTouched(touchedFields);
+        }
+      }
     } finally {
       setRegisterLoading(false);
     }

@@ -99,6 +99,28 @@ const useFormValidation = (initialValues = {}, validate = () => ({})) => {
     setTouched({});
   };
 
+  /**
+   * Manually set errors on the form
+   * @param {Object} errorObject - Object with field names as keys and error messages as values
+   */
+  const setFormErrors = (errorObject) => {
+    setErrors({
+      ...errors,
+      ...errorObject
+    });
+  };
+
+  /**
+   * Manually set touch state for form fields
+   * @param {Object} touchedObject - Object with field names as keys and boolean touch state as values
+   */
+  const setFormTouched = (touchedObject) => {
+    setTouched({
+      ...touched,
+      ...touchedObject
+    });
+  };
+
   return {
     values,
     errors,
@@ -108,6 +130,8 @@ const useFormValidation = (initialValues = {}, validate = () => ({})) => {
     setFieldValue,
     validateForm,
     resetForm,
+    setErrors: setFormErrors, // Export the function to set errors manually
+    setTouched: setFormTouched, // Export the function to set touched state manually
   };
 };
 

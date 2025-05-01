@@ -217,22 +217,30 @@ export const UserProvider = ({ children }) => {
       
       return { success: true, data };
     } catch (error) {
+      console.error("Registration error details:", error);
+      
       // Format error message properly for display
       let errorMessage = "Error registering teacher";
       
       if (error.data && typeof error.data === 'object') {
         // Handle structured error responses
         const messages = [];
-        Object.entries(error.data).forEach(([field, fieldErrors]) => {
-          if (Array.isArray(fieldErrors)) {
-            messages.push(`${field}: ${fieldErrors.join(', ')}`);
-          } else if (typeof fieldErrors === 'string') {
-            messages.push(`${field}: ${fieldErrors}`);
+        if (error.data.error) {
+          // Simple error object with a single error message
+          errorMessage = error.data.error;
+        } else {
+          // Complex validation errors with multiple fields
+          Object.entries(error.data).forEach(([field, fieldErrors]) => {
+            if (Array.isArray(fieldErrors)) {
+              messages.push(`${field}: ${fieldErrors.join(', ')}`);
+            } else if (typeof fieldErrors === 'string') {
+              messages.push(`${field}: ${fieldErrors}`);
+            }
+          });
+          
+          if (messages.length > 0) {
+            errorMessage = messages.join('. ');
           }
-        });
-        
-        if (messages.length > 0) {
-          errorMessage = messages.join('. ');
         }
       } else if (error.message) {
         errorMessage = error.message;

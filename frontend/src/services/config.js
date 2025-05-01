@@ -75,6 +75,41 @@ export const handleResponse = async (response) => {
       error.message = 'Something went wrong';
     }
     
+    // Handle database constraint errors (often in the message when status is 500)
+    if (response.status === 500 && error.message) {
+      // Check for common database constraint errors
+      if (error.message.includes('duplicate key value violates unique constraint')) {
+        // Format: Check for 'teachers_teacher_user_id_key' format and extract info
+        if (error.message.includes('teachers_teacher_user_id_key')) {
+          error.message = 'Account creation failed: A teacher profile already exists for this user.';
+          error.field = 'email'; // Indicate which field has the error
+        } else if (error.message.includes('auth_user_email_key')) {
+          error.message = 'A user with this email address already exists.';
+          error.field = 'email';
+        } else if (error.message.includes('auth_user_username_key')) {
+          error.message = 'A user with this username already exists.';
+          error.field = 'email'; // Since username is based on email
+        }
+      } else if (error.message.includes('ValidationError')) {
+        // Handle Django ValidationError
+        if (error.message.includes('already has a teacher profile')) {
+          error.message = 'This user already has a teacher profile.';
+          error.field = 'email';
+        }
+      }
+    }
+    
+    // Handle Bad Request errors with teacher profile information
+    if (response.status === 400 && error.data?.error) {
+      if (error.data.error.includes('teacher profile')) {
+        error.message = error.data.error;
+        error.field = 'email';
+      } else if (error.data.error.includes('email already exists')) {
+        error.message = error.data.error;
+        error.field = 'email';
+      }
+    }
+    
     // Handle token expiration (401 Unauthorized)
     if (response.status === 401 && !window.location.pathname.includes('/login') && !isRefreshing) {
       // Mark for token refresh

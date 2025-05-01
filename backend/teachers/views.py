@@ -15,6 +15,7 @@ import qrcode
 import base64
 from io import BytesIO
 import datetime
+from django.db import transaction
 
 @csrf_exempt
 def register_teacher(request):
@@ -52,17 +53,46 @@ def register_teacher(request):
                     "error": "A user with this email already exists"
                 }, status=400)
             
-            # Create the user
-            user = User.objects.create_user(
-                username=email,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name
-            )
-            
-            # Create the teacher profile
-            teacher = Teacher.objects.create(user=user)
+            # Use a transaction to ensure atomicity
+            with transaction.atomic():
+                # First, clean up any orphaned teacher profiles (where user is null or user doesn't exist)
+                try:
+                    # Find teacher records with null users or users that don't exist
+                    Teacher.objects.filter(user__isnull=True).delete()
+                    
+                    # Get all teacher user_ids
+                    teacher_user_ids = Teacher.objects.values_list('user_id', flat=True)
+                    
+                    # Find user IDs that don't have corresponding users
+                    valid_user_ids = User.objects.filter(id__in=teacher_user_ids).values_list('id', flat=True)
+                    
+                    # Delete teacher records with non-existent users
+                    invalid_teacher_user_ids = set(teacher_user_ids) - set(valid_user_ids)
+                    if invalid_teacher_user_ids:
+                        Teacher.objects.filter(user_id__in=invalid_teacher_user_ids).delete()
+                        print(f"Cleaned up {len(invalid_teacher_user_ids)} orphaned teacher records")
+                except Exception as cleanup_error:
+                    print(f"Error during cleanup: {str(cleanup_error)}")
+                    # Continue with registration, the cleanup is just a precaution
+                
+                # Create the user
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                
+                # Check if a teacher profile already exists with this user_id
+                # This is a final safety check before creating the teacher profile
+                if Teacher.objects.filter(user_id=user.id).exists():
+                    # If it exists, delete it before creating a new one
+                    Teacher.objects.filter(user_id=user.id).delete()
+                    print(f"Deleted existing teacher profile for user_id={user.id}")
+                
+                # Create the teacher profile
+                teacher = Teacher.objects.create(user=user)
             
             return JsonResponse({
                 "message": "Teacher registered successfully!",
