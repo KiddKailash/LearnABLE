@@ -147,7 +147,7 @@ const LearningMaterialUploader = () => {
               ref={fileInputRef}
               onChange={handleFileChange}
               style={{ display: "none" }}
-              accept=".pdf,.doc,.docx,.txt"
+              accept=".pdf,.doc,.docx,.txt,.pptx"
             />
           </Box>
 
