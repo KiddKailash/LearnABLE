@@ -77,7 +77,11 @@ def generate_adapted_lessons(material, students, return_file=False):
 
             if return_file:
                 adapted_text = parsed_response["adapted_content"]
-                output_path = f"adapted_output/student_{student.id}.{file_ext}"
+
+                # Create filename using student's name and material title
+                title_safe = material.title.replace(" ", "_").replace("/", "_")
+                first_last = f"{student.first_name}_{student.last_name}".replace(" ", "_").lower()
+                output_path = f"adapted_output/{first_last}_{title_safe}.{file_ext}"
 
                 if file_ext == "pdf":
                     create_pdf_from_text(adapted_text, output_path)
@@ -87,6 +91,7 @@ def generate_adapted_lessons(material, students, return_file=False):
                     create_pptx_from_text(adapted_text, output_path)
 
                 parsed_response["file"] = output_path
+
 
         except Exception as e:
             adapted_lessons[student.id] = {"error": str(e)}
