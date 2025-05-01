@@ -4,10 +4,9 @@ version = "0.1.0"
 description = ""
 authors = []
 readme = "README.md"
-package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 asgiref = "^3.7.2"
 certifi = "2022.12.7"
 cffi = "1.16.0"
@@ -79,6 +78,8 @@ rest-framework-simplejwt = "^0.0.2"
 djangorestframework-simplejwt = "^5.5.0"
 dotenv = "^0.9.9"
 django = "5.0.3"
+pyotp = "^2.9.0"
+qrcode = "^8.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -91,7 +92,7 @@ line-length = 120
 log_cli = true
 log_cli_level = "INFO"
 addopts = "--capture=no -rw" # show print statements
-DJANGO_SETTINGS_MODULE = "rmproject.settings"
+DJANGO_SETTINGS_MODULE = "backend.settings"
 python_files = ["*test*.py","tests/*.py"]
 
 # ignore polymorphic pkg_resources warning

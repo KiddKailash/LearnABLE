@@ -10,19 +10,18 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 // Webpages - Public
-import Login from "./pages/public/Login";
+import AuthPage from "./pages/public/AuthPage";
 import PageNotFound from "./pages/public/PageNotFound";
-import Register from "./pages/public/Register";
 
 // Webpages - Private
-import Account from "./pages/private/Account";
+import Account from "./pages/private/Account/Account";
 import Activity from "./pages/private/Activity";
 import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
 import Reporting from "./pages/private/NCCDReport/Reporting.jsx";
 import Storage from "./pages/private/Storage";
 import Classes from "./pages/private/Classes";
-import Dashboard from "./pages/private/Dashboard/Dashboard";
+import Dashboard from "./pages/private/Dashboard";
 import Settings from "./pages/private/Settings";
 import StudentListPage from "./pages/private/StudentList.jsx";
 
@@ -30,11 +29,11 @@ import StudentListPage from "./pages/private/StudentList.jsx";
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
 
-function App({ mode, toggleTheme }) {
+function App({ mode }) {
   const pages = [
-    { path: "/", component: <Login /> },
-    { path: "/login", component: <Login /> },
-    { path: "/register", component: <Register /> },
+    { path: "/", component: <AuthPage /> },
+    { path: "/login", component: <AuthPage /> },
+    { path: "/register", component: <AuthPage initialTab={1} /> },
     { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
     { path: "/activity", component: <Activity /> },
@@ -47,14 +46,16 @@ function App({ mode, toggleTheme }) {
     { path: "/settings", component: <Settings /> },
     { path: "*", component: <PageNotFound /> }, // ← move this to the end
   ];
-  
 
   // Define an array of paths that are public.
-  const publicPaths = ["/", "/login", "/register"];
+  const publicPaths = ["/", "/login"];
 
   return (
     <Routes>
-      <Route path="/" element={<Layout mode={mode} toggleTheme={toggleTheme} />}>
+      <Route
+        path="/"
+        element={<Layout mode={mode} />}
+      >
         {pages.map((page, i) => {
           // Determine if the route is public or protected
           const isPublic = publicPaths.includes(page.path) || page.path === "*";
