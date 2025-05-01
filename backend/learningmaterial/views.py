@@ -1,8 +1,12 @@
+from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
 from rest_framework import status, viewsets
+from rest_framework.response import Response
+
 from .models import LearningMaterials
 from .serializers import LearningMaterialsSerializer
+from .services.file_extractors import extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx
+from .services.lesson_adapter import generate_adapted_lessons
 
 class LearningMaterialsViewSet(viewsets.ModelViewSet):
     queryset = LearningMaterials.objects.all()
@@ -11,7 +15,6 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
-
         if hasattr(request.user, 'teacher'):
             data['created_by'] = request.user.teacher.id
         else:
@@ -24,4 +27,11 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
         else:
             return Response(serializer.errors, status=400)
 
+    @action(detail=True, methods=["post"])
+    def adapt(self, request, pk=None):
+        material = self.get_object()
+        students = material.class_assigned.students.all()  # updated to use correct related_name
 
+        adapted_outputs = generate_adapted_lessons(material, students, return_file=True)
+
+        return Response(adapted_outputs)
