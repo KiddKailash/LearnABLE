@@ -32,6 +32,6 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
         material = self.get_object()
         students = material.class_assigned.students.all()  # updated to use correct related_name
 
-        adapted_outputs = generate_adapted_lessons(material, students)
+        adapted_outputs = generate_adapted_lessons(material, students, return_file=True)
 
         return Response(adapted_outputs)

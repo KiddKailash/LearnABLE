@@ -8,6 +8,10 @@ from learningmaterial.services.file_extractors import (
     extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx
 )
 
+from learningmaterial.services.file_creators import (
+    create_pdf_from_text, create_docx_from_text, create_pptx_from_text
+)
+
 # Initialize LLM
 llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
 
@@ -41,45 +45,50 @@ prompt = PromptTemplate(
     template=template
 )
 
-def generate_adapted_lessons(material, students):
-    """
-    Given a LearningMaterials instance and a list of students,
-    generate an AI-adapted lesson for each student.
-    Returns: dict of {student_id: parsed_response_dict}
-    """
-    # 1. Extract text
+def generate_adapted_lessons(material, students, return_file=False):
     file_path = material.file.path
-    if file_path.endswith(".pdf"):
+    file_ext = file_path.split(".")[-1].lower()
+
+    if file_ext == "pdf":
         base_text = extract_text_from_pdf(file_path)
-    elif file_path.endswith(".docx"):
+    elif file_ext == "docx":
         base_text = extract_text_from_docx(file_path)
-    elif file_path.endswith(".pptx"):
+    elif file_ext == "pptx":
         base_text = extract_text_from_pptx(file_path)
     else:
         raise ValueError("Unsupported file type")
 
-    # 2. Generate adaptation only for students with disability_info
     adapted_lessons = {}
     for student in students:
         if not student.disability_info or student.disability_info.strip() == "":
-            continue  # skip this student
+            continue
 
-        # Fill prompt
         student_prompt = prompt.format(
             disability_info=student.disability_info,
             objectives=material.objective or "",
             text=base_text
         )
 
-        # Call LLM
         response = llm.invoke(student_prompt)
 
-        # Parse structured output
         try:
             parsed_response = parser.parse(response.content)
             adapted_lessons[student.id] = parsed_response
+
+            if return_file:
+                adapted_text = parsed_response["adapted_content"]
+                output_path = f"adapted_output/student_{student.id}.{file_ext}"
+
+                if file_ext == "pdf":
+                    create_pdf_from_text(adapted_text, output_path)
+                elif file_ext == "docx":
+                    create_docx_from_text(adapted_text, output_path)
+                elif file_ext == "pptx":
+                    create_pptx_from_text(adapted_text, output_path)
+
+                parsed_response["file"] = output_path
+
         except Exception as e:
-            # Log or store error per student if needed
             adapted_lessons[student.id] = {"error": str(e)}
 
     return adapted_lessons
