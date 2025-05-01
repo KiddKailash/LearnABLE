@@ -30,8 +30,23 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"])
     def adapt(self, request, pk=None):
         material = self.get_object()
-        students = material.class_assigned.students.all()  # updated to use correct related_name
-
+        students = material.class_assigned.students.all()
         adapted_outputs = generate_adapted_lessons(material, students, return_file=True)
 
-        return Response(adapted_outputs)
+        response = {}
+
+        for student in students:
+            result = adapted_outputs.get(student.id)
+            if not result:
+                continue
+
+            if "error" in result:
+                response[student.id] = {"error": result["error"]}
+            else:
+                response[student.id] = {
+                    "first_name": student.first_name,
+                    "last_name": student.last_name,
+                    "file_url": result.get("file_url")
+                }
+
+        return Response(response)

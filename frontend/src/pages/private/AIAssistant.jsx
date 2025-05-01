@@ -25,7 +25,7 @@ const LearningMaterialUploader = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isAdapting, setIsAdapting] = useState(false);
   const [materialId, setMaterialId] = useState(null);
-  const [adaptedContent, setAdaptedContent] = useState("");
+  const [adaptedStudents, setAdaptedStudents] = useState([]);
 
   const fileInputRef = useRef(null);
 
@@ -112,21 +112,20 @@ const LearningMaterialUploader = () => {
 
       if (res.ok) {
         alert("Material adapted successfully!");
-        const updatedRes = await fetch(`${BACKEND}/api/learning-materials/${materialId}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (updatedRes.ok) {
-          const updatedMaterial = await updatedRes.json();
-          setAdaptedContent(updatedMaterial.adapted_content);
 
-          // Reset input fields
-          setTitle("");
-          setFile(null);
-          setLearningObjective("");
-          setMaterialId(null);
-        }
+        const result = await res.json();
+        const studentsWithLinks = Object.entries(result).map(([id, data]) => ({
+          id,
+          first_name: data.first_name,
+          last_name: data.last_name,
+          file_url: data.file_url,
+        }));
+        setAdaptedStudents(studentsWithLinks);
+
+        setTitle("");
+        setFile(null);
+        setLearningObjective("");
+        setMaterialId(null);
       } else {
         const text = await res.text();
         console.error("Adaptation failed:", text);
@@ -142,7 +141,7 @@ const LearningMaterialUploader = () => {
 
   const handleChangeClass = () => {
     setSelectedClass("");
-    setAdaptedContent("");
+    setAdaptedStudents([]);
     setMaterialId(null);
     setTitle("");
     setFile(null);
@@ -238,7 +237,7 @@ const LearningMaterialUploader = () => {
             </CardContent>
           </Card>
 
-          {materialId && !adaptedContent && (
+          {materialId && (
             <Box sx={{ mt: 2 }}>
               <Button
                 variant="contained"
@@ -250,13 +249,46 @@ const LearningMaterialUploader = () => {
             </Box>
           )}
 
-          {adaptedContent && (
-            <Card sx={{ maxWidth: 600, mt: 3 }}>
+          {adaptedStudents.length > 0 && (
+            <Card sx={{ maxWidth: 800, mt: 4 }}>
               <CardContent>
-                <Typography variant="h6">Adapted Content Preview</Typography>
-                <Typography variant="body2" sx={{ whiteSpace: "pre-wrap", mt: 1 }}>
-                  {adaptedContent}
+                <Typography variant="h6" gutterBottom>
+                  Adapted Files Per Student
                 </Typography>
+                <Box sx={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "12px" }}>
+                    <thead style={{ backgroundColor: "#f5f5f5" }}>
+                      <tr>
+                        <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #ccc" }}>Student Name</th>
+                        <th style={{ padding: "12px", textAlign: "left", borderBottom: "1px solid #ccc" }}>Download</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adaptedStudents.map((student) => (
+                        <tr key={student.id}>
+                          <td style={{ padding: "12px", borderBottom: "1px solid #eee" }}>
+                            {student.first_name} {student.last_name}
+                          </td>
+                          <td style={{ padding: "12px", borderBottom: "1px solid #eee" }}>
+                            {student.file_url ? (
+                              <a
+                                href={`${BACKEND}${student.file_url}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: "#1976d2", textDecoration: "none", fontWeight: 500 }}
+                                download
+                              >
+                                Download File
+                              </a>
+                            ) : (
+                              <span style={{ color: "#999" }}>Unavailable</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </Box>
               </CardContent>
             </Card>
           )}

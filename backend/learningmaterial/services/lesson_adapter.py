@@ -2,6 +2,9 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from dotenv import load_dotenv
+from django.conf import settings
+import os
+
 load_dotenv()  # Load API key from .env
 
 from learningmaterial.services.file_extractors import (
@@ -59,6 +62,7 @@ def generate_adapted_lessons(material, students, return_file=False):
         raise ValueError("Unsupported file type")
 
     adapted_lessons = {}
+
     for student in students:
         if not student.disability_info or student.disability_info.strip() == "":
             continue
@@ -78,11 +82,17 @@ def generate_adapted_lessons(material, students, return_file=False):
             if return_file:
                 adapted_text = parsed_response["adapted_content"]
 
-                # Create filename using student's name and material title
+                # Ensure adapted_output folder exists inside MEDIA_ROOT
+                output_dir = os.path.join(settings.MEDIA_ROOT, "adapted_output")
+                os.makedirs(output_dir, exist_ok=True)
+
+                # Build file name
                 title_safe = material.title.replace(" ", "_").replace("/", "_")
                 first_last = f"{student.first_name}_{student.last_name}".replace(" ", "_").lower()
-                output_path = f"adapted_output/{first_last}_{title_safe}.{file_ext}"
+                filename = f"{first_last}_{title_safe}.{file_ext}"
+                output_path = os.path.join(output_dir, filename)
 
+                # Create file
                 if file_ext == "pdf":
                     create_pdf_from_text(adapted_text, output_path)
                 elif file_ext == "docx":
@@ -90,8 +100,9 @@ def generate_adapted_lessons(material, students, return_file=False):
                 elif file_ext == "pptx":
                     create_pptx_from_text(adapted_text, output_path)
 
+                # Store paths
                 parsed_response["file"] = output_path
-
+                parsed_response["file_url"] = f"{settings.MEDIA_URL}adapted_output/{filename}"
 
         except Exception as e:
             adapted_lessons[student.id] = {"error": str(e)}
