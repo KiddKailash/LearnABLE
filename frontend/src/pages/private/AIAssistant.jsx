@@ -212,7 +212,7 @@ const LearningMaterialUploader = () => {
   }, [uploadError]);
 
   return (
-    <Box sx={{ maxWidth: 1000, mx: "auto", p: 3 }}>
+    <>
       <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
         Learning Material Upload
       </Typography>
@@ -453,7 +453,7 @@ const LearningMaterialUploader = () => {
           {uploadError}
         </Alert>
       </Snackbar>
-    </Box>
+    </>
   );
 };
 
