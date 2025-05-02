@@ -20,14 +20,60 @@ const _retryRequest = async (url, method, body) => {
 
 const authApi = {
   login: async (email, password) => {
-    return httpClient.post('/api/teachers/login/', { email, password });
+    const response = await httpClient.post('/api/teachers/login/', { email, password });
+    
+    // If login successful and has tokens, store them
+    if (response.access && response.refresh) {
+      localStorage.setItem('access_token', response.access);
+      localStorage.setItem('refresh_token', response.refresh);
+      
+      // Store session ID for WebSocket monitoring
+      if (response.session_id) {
+        localStorage.setItem('session_id', response.session_id);
+      }
+      
+      // Store user data
+      const userData = {
+        id: response.id,
+        email: response.email,
+        firstName: response.first_name,
+        lastName: response.last_name,
+        twoFactorEnabled: response.two_factor_enabled
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+    
+    return response;
   },
   
   verifyTwoFactor: async (email, twoFactorCode) => {
-    return httpClient.post('/api/teachers/verify-login-2fa/', { 
+    const response = await httpClient.post('/api/teachers/verify-login-2fa/', { 
       email, 
       code: twoFactorCode 
     });
+    
+    // If verification successful and has tokens, store them
+    if (response.access && response.refresh) {
+      localStorage.setItem('access_token', response.access);
+      localStorage.setItem('refresh_token', response.refresh);
+      
+      // Store session ID for WebSocket monitoring
+      if (response.session_id) {
+        localStorage.setItem('session_id', response.session_id);
+      }
+      
+      // Store user data
+      const userData = {
+        id: response.id,
+        email: response.email,
+        firstName: response.first_name,
+        lastName: response.last_name,
+        twoFactorEnabled: response.two_factor_enabled
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+    
+    return response;
   },
   
   register: async (userData) => {
@@ -82,7 +128,15 @@ const authApi = {
   },
   
   logout: async () => {
-    return httpClient.post('/api/teachers/logout/');
+    const response = await httpClient.post('/api/teachers/logout/');
+    
+    // Clear all stored data regardless of response
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('session_id');
+    
+    return response;
   }
 };
 

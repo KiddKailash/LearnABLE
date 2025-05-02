@@ -16,6 +16,8 @@ import base64
 from io import BytesIO
 import datetime
 from django.db import transaction
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 @csrf_exempt
 def register_teacher(request):
@@ -440,6 +442,18 @@ def terminate_session(request):
         if session.ip_address == ip_address and session.user_agent == user_agent:
             return Response({"error": "Cannot terminate your current session"}, status=400)
         
+        # Get channel layer for WebSocket
+        channel_layer = get_channel_layer()
+        
+        # Send notification to the session being terminated
+        async_to_sync(channel_layer.group_send)(
+            f'session_{session_id}',
+            {
+                'type': 'session_terminated',
+                'message': 'Your session has been terminated by the account owner'
+            }
+        )
+        
         # Deactivate the session
         session.is_active = False
         session.save()
@@ -458,15 +472,31 @@ def terminate_all_sessions(request):
         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
         ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
         
-        # Terminate all sessions except the current one
+        # Get channel layer for WebSocket
+        channel_layer = get_channel_layer()
+        
+        # Get all active sessions except current one
         from .models import DeviceSession
-        DeviceSession.objects.filter(
+        other_sessions = DeviceSession.objects.filter(
             teacher=teacher,
             is_active=True
         ).exclude(
             ip_address=ip_address,
             user_agent=user_agent
-        ).update(is_active=False)
+        )
+        
+        # Send notifications to all sessions
+        for session in other_sessions:
+            async_to_sync(channel_layer.group_send)(
+                f'session_{session.id}',
+                {
+                    'type': 'session_terminated',
+                    'message': 'Your session has been terminated by the account owner'
+                }
+            )
+        
+        # Terminate all sessions except the current one
+        other_sessions.update(is_active=False)
         
         return Response({"message": "All other sessions terminated successfully"})
     except Exception as e:

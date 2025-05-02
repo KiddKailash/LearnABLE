@@ -15,6 +15,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 
 // MUI Icons
 import DevicesIcon from "@mui/icons-material/Devices";
+import LogoutIcon from '@mui/icons-material/Devices';
 
 const SessionsTab = ({
   sessions,
@@ -29,6 +30,7 @@ const SessionsTab = ({
     sessionId: null,
     deviceName: ''
   });
+  const [terminatingSessionIds, setTerminatingSessionIds] = React.useState([]);
 
   const openConfirmDialog = (sessionId, deviceName) => {
     setConfirmDialog({
@@ -46,11 +48,43 @@ const SessionsTab = ({
     });
   };
 
-  const confirmTerminateSession = () => {
+  const confirmTerminateSession = async () => {
     if (confirmDialog.sessionId) {
-      handleTerminateSession(confirmDialog.sessionId);
+      // Add the session ID to the list of terminating sessions
+      setTerminatingSessionIds(prev => [...prev, confirmDialog.sessionId]);
+      
+      // Call the handler to terminate the session
+      try {
+        await handleTerminateSession(confirmDialog.sessionId);
+      } finally {
+        // Remove the session ID from the list after a short delay
+        // This keeps the UI feedback visible briefly even after the server responds
+        setTimeout(() => {
+          setTerminatingSessionIds(prev => 
+            prev.filter(id => id !== confirmDialog.sessionId)
+          );
+        }, 500);
+      }
     }
     closeConfirmDialog();
+  };
+
+  const handleTerminateAllClick = async () => {
+    // Mark all other sessions as terminating
+    const otherSessionIds = sessions
+      .filter(session => !session.is_current)
+      .map(session => session.id);
+    
+    setTerminatingSessionIds(otherSessionIds);
+    
+    try {
+      await handleTerminateAllSessions();
+    } finally {
+      // Remove the session IDs after a short delay
+      setTimeout(() => {
+        setTerminatingSessionIds([]);
+      }, 500);
+    }
   };
 
   return (
@@ -75,8 +109,9 @@ const SessionsTab = ({
           <Button
             variant="outlined"
             color="error"
-            onClick={handleTerminateAllSessions}
-            disabled={isSaving || sessions.length <= 1}
+            onClick={handleTerminateAllClick}
+            disabled={isSaving || sessions.length <= 1 || sessions.every(s => s.is_current)}
+            startIcon={<LogoutIcon />}
           >
             Log Out All Other Devices
           </Button>
@@ -100,75 +135,82 @@ const SessionsTab = ({
                   gap: 2,
                 }}
               >
-                {sessions.map((session) => (
-                  <Paper
-                    key={session.id}
-                    variant="outlined"
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      borderColor: session.is_current ? "primary.main" : "divider",
-                      borderWidth: session.is_current ? 2 : 1,
-                      position: "relative",
-                    }}
-                  >
-                    {session.is_current && (
-                      <Box
-                        sx={{
-                          position: "absolute",
-                          top: 10,
-                          right: 10,
-                          bgcolor: "primary.main",
-                          color: "primary.contrastText",
-                          px: 1,
-                          py: 0.5,
-                          borderRadius: 1,
-                          fontSize: "0.75rem",
-                        }}
-                      >
-                        Current
+                {sessions.map((session) => {
+                  const isTerminating = terminatingSessionIds.includes(session.id);
+                  
+                  return (
+                    <Paper
+                      key={session.id}
+                      variant="outlined"
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        borderColor: session.is_current ? "primary.main" : "divider",
+                        borderWidth: session.is_current ? 2 : 1,
+                        position: "relative",
+                        opacity: isTerminating ? 0.6 : 1,
+                        transition: "opacity 0.3s ease",
+                      }}
+                    >
+                      {session.is_current && (
+                        <Box
+                          sx={{
+                            position: "absolute",
+                            top: 10,
+                            right: 10,
+                            bgcolor: "primary.main",
+                            color: "primary.contrastText",
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontSize: "0.75rem",
+                          }}
+                        >
+                          Current
+                        </Box>
+                      )}
+
+                      <Box sx={{ display: "flex", mb: 1, alignItems: "center" }}>
+                        <DevicesIcon sx={{ mr: 1, color: "text.secondary" }} />
+                        <Typography variant="subtitle1">
+                          {session.device_name || "Unknown Device"}
+                        </Typography>
                       </Box>
-                    )}
 
-                    <Box sx={{ display: "flex", mb: 1, alignItems: "center" }}>
-                      <DevicesIcon sx={{ mr: 1, color: "text.secondary" }} />
-                      <Typography variant="subtitle1">
-                        {session.device_name || "Unknown Device"}
+                      <Typography variant="body2" sx={{ mb: 0.5 }}>
+                        <strong>Location:</strong> {session.location || "Unknown"}
                       </Typography>
-                    </Box>
 
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      <strong>Location:</strong> {session.location || "Unknown"}
-                    </Typography>
+                      <Typography variant="body2" sx={{ mb: 0.5 }}>
+                        <strong>IP Address:</strong> {session.ip_address || "Unknown"}
+                      </Typography>
 
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      <strong>IP Address:</strong> {session.ip_address || "Unknown"}
-                    </Typography>
+                      <Typography variant="body2" sx={{ mb: 0.5 }}>
+                        <strong>Last active:</strong>{" "}
+                        {session.last_active
+                          ? new Date(session.last_active).toLocaleString()
+                          : "Unknown"}
+                      </Typography>
 
-                    <Typography variant="body2" sx={{ mb: 0.5 }}>
-                      <strong>Last active:</strong>{" "}
-                      {session.last_active
-                        ? new Date(session.last_active).toLocaleString()
-                        : "Unknown"}
-                    </Typography>
+                      <Typography variant="body2" sx={{ mb: 2 }}>
+                        <strong>Browser:</strong> {session.browser || "Unknown"}
+                      </Typography>
 
-                    <Typography variant="body2" sx={{ mb: 2 }}>
-                      <strong>Browser:</strong> {session.browser || "Unknown"}
-                    </Typography>
-
-                    {!session.is_current && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        color="error"
-                        onClick={() => openConfirmDialog(session.id, session.device_name)}
-                        disabled={isSaving}
-                      >
-                        Terminate Session
-                      </Button>
-                    )}
-                  </Paper>
-                ))}
+                      {!session.is_current && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          color="error"
+                          onClick={() => openConfirmDialog(session.id, session.device_name)}
+                          disabled={isSaving || isTerminating}
+                          startIcon={isTerminating ? <CircularProgress size={14} /> : <LogoutIcon />}
+                        >
+                          {isTerminating ? "Terminating..." : "Terminate Session"}
+                        </Button>
+                      )}
+                    </Paper>
+                  );
+                })}
               </Box>
             )}
 
