@@ -153,11 +153,11 @@ const LearningMaterialUploader = () => {
         class_assigned: selectedClass
       });
       
-      setMaterialId(response.data.id);
+      setMaterialId(response.id);
       handleNext();
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadError("Failed to upload material. Please try again.");
+      setUploadError(error.message || "Failed to upload material. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -174,15 +174,47 @@ const LearningMaterialUploader = () => {
 
     try {
       const response = await api.learningMaterials.adapt(materialId);
-      setAdaptedStudents(Object.entries(response.data).map(([id, data]) => ({
-        id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        file_url: data.file_url,
-      })));
+      
+      // Handle the response based on its structure
+      if (!response) {
+        throw new Error('No response received from adaptation service');
+      }
+
+      // If response is an array, use it directly
+      if (Array.isArray(response)) {
+        setAdaptedStudents(response.map(student => ({
+          id: student.id,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          file_url: student.file_url,
+        })));
+      } 
+      // If response is an object with student data
+      else if (typeof response === 'object' && response !== null) {
+        // If it's a direct object of student data
+        if (response.first_name) {
+          setAdaptedStudents([{
+            id: response.id,
+            first_name: response.first_name,
+            last_name: response.last_name,
+            file_url: response.file_url,
+          }]);
+        }
+        // If it's an object with student entries
+        else {
+          setAdaptedStudents(Object.entries(response).map(([id, data]) => ({
+            id,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            file_url: data.file_url,
+          })));
+        }
+      } else {
+        throw new Error('Invalid response format from adaptation service');
+      }
     } catch (error) {
       console.error("Adaptation error:", error);
-      setUploadError("Failed to adapt material. Please try again.");
+      setUploadError(error.message || "Failed to adapt material. Please try again.");
     } finally {
       setIsAdapting(false);
     }
@@ -447,9 +479,9 @@ const LearningMaterialUploader = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+        <Alert onClose={handleSnackbarClose} severity="error">
           {uploadError}
         </Alert>
       </Snackbar>
