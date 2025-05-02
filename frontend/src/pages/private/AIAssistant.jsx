@@ -88,10 +88,18 @@ const LearningMaterialUploader = () => {
     const fetchClasses = async () => {
       try {
         const response = await api.classes.getAll();
-        setClassList(response.data);
+        console.log('API Response:', response);
+        if (!Array.isArray(response)) {
+          console.error('Invalid API response format:', response);
+          setUploadError("Failed to fetch classes. Invalid response format.");
+          setClassList([]);
+          return;
+        }
+        setClassList(response);
       } catch (error) {
         console.error("Error fetching classes:", error);
         setUploadError("Failed to fetch classes. Please try again.");
+        setClassList([]);
       }
     };
     fetchClasses();
@@ -235,11 +243,15 @@ const LearningMaterialUploader = () => {
                     }}
                     label="Class"
                   >
-                    {classList.map((cls) => (
-                      <MenuItem key={cls.id} value={cls.id}>
-                        {cls.class_name} – {cls.subject}
-                      </MenuItem>
-                    ))}
+                    {classList && classList.length > 0 ? (
+                      classList.map((cls) => (
+                        <MenuItem key={cls.id} value={cls.id}>
+                          {cls.class_name} – {cls.subject}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No classes available</MenuItem>
+                    )}
                   </Select>
                 </FormControl>
               </CardContent>
