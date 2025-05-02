@@ -19,6 +19,7 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Fade from "@mui/material/Fade";
+import Snackbar from "@mui/material/Snackbar";
 
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -65,6 +66,7 @@ const LearningMaterialUploader = () => {
   const [adaptedStudents, setAdaptedStudents] = useState([]);
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const fileInputRef = useRef(null);
 
@@ -187,6 +189,20 @@ const LearningMaterialUploader = () => {
     setLearningObjective("");
   };
 
+  const handleSnackbarClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+    setUploadError("");
+  };
+
+  useEffect(() => {
+    if (uploadError) {
+      setSnackbarOpen(true);
+    }
+  }, [uploadError]);
+
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto", p: 3 }}>
       <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
@@ -295,12 +311,6 @@ const LearningMaterialUploader = () => {
                     </Box>
                   )}
                 </UploadZone>
-
-                {uploadError && (
-                  <Alert severity="error" onClose={() => setUploadError("")}>
-                    {uploadError}
-                  </Alert>
-                )}
 
                 <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
                   <Button onClick={handleBack}>
@@ -420,6 +430,17 @@ const LearningMaterialUploader = () => {
           )}
         </div>
       </Fade>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+          {uploadError}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
