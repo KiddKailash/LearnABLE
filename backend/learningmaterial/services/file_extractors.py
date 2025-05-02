@@ -3,21 +3,39 @@ from docx import Document
 from pptx import Presentation
 
 def extract_text_from_pdf(path):
-    text = ""
     with fitz.open(path) as doc:
+        lines = []
         for page in doc:
-            text += page.get_text()
-    return text
+            blocks = page.get_text("dict")["blocks"]
+            for block in blocks:
+                if "lines" in block:
+                    for line in block["lines"]:
+                        sentence = " ".join([span["text"] for span in line["spans"]])
+                        lines.append(sentence)
+        return "\n".join(lines)
 
 def extract_text_from_docx(path):
     doc = Document(path)
-    return "\n".join(p.text for p in doc.paragraphs)
+    lines = []
+    for para in doc.paragraphs:
+        style = para.style.name.lower()
+        text = para.text.strip()
+        if not text:
+            continue
+        if "heading" in style:
+            # Format headings with clear markup
+            lines.append(f"[{para.style.name}] {text}")
+        else:
+            lines.append(text)
+    return "\n".join(lines)
 
 def extract_text_from_pptx(path):
     prs = Presentation(path)
-    text = ""
+    slide_texts = []
     for slide in prs.slides:
+        text = ""
         for shape in slide.shapes:
             if hasattr(shape, "text"):
-                text += shape.text + "\n"
-    return text
+                text += shape.text.strip() + "\n"
+        slide_texts.append(text.strip())
+    return slide_texts
