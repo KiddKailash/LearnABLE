@@ -1,5 +1,7 @@
+
 from django.db import models
 from django.core.exceptions import ValidationError
+from utils.encryption import encrypt, decrypt
 
 # Allowed year levels (Prep = 0, then 1–12)
 YEAR_LEVEL_CHOICES = [(0, 'Prep')] + [(i, str(i)) for i in range(1, 13)]
@@ -11,8 +13,7 @@ class Student(models.Model):
     year_level = models.IntegerField(choices=YEAR_LEVEL_CHOICES)
 
     student_email = models.EmailField(max_length=100, default='missing', unique=True)
-    disability_info = models.TextField(blank=True)
-
+    _disability_info = models.TextField(db_column='disability_info', blank=True)  # Store encrypted
     guardian_email = models.EmailField(max_length=100)
     guardian_first_name = models.CharField(max_length=50, default='missing')
     guardian_last_name = models.CharField(max_length=50, default='missing')
@@ -26,5 +27,15 @@ class Student(models.Model):
             raise ValidationError({"student_email": "A student with this email already exists (case-insensitive)."})
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Ensures `clean()` is run before saving
+        if self._disability_info:
+            self._disability_info = encrypt(self._disability_info)
+        self.full_clean()
         super().save(*args, **kwargs)
+
+    @property
+    def disability_info(self):
+        return decrypt(self._disability_info) if self._disability_info else ''
+
+    @disability_info.setter
+    def disability_info(self, value):
+        self._disability_info = value
