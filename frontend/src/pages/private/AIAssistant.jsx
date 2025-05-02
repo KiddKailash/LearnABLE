@@ -19,13 +19,15 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Fade from "@mui/material/Fade";
-import useTheme from "@mui/material/styles/useTheme";
 
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
+
+// Services
+import api from "../../services/api";
 
 // Styled components
 const UploadZone = styled(Paper)(({ theme }) => ({
@@ -49,7 +51,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const LearningMaterialUploader = () => {
   const BACKEND = process.env.REACT_APP_SERVER_URL;
-  const theme = useTheme();
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
@@ -83,19 +84,16 @@ const LearningMaterialUploader = () => {
 
   useEffect(() => {
     const fetchClasses = async () => {
-      const token = localStorage.getItem("access_token");
-      const res = await fetch(`${BACKEND}/api/classes/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setClassList(data);
+      try {
+        const response = await api.classes.getAll();
+        setClassList(response.data);
+      } catch (error) {
+        console.error("Error fetching classes:", error);
+        setUploadError("Failed to fetch classes. Please try again.");
       }
     };
     fetchClasses();
-  }, [BACKEND]);
+  }, []);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -130,40 +128,26 @@ const LearningMaterialUploader = () => {
 
   const handleUploadMaterial = async () => {
     if (!title || !file || !learningObjective || !selectedClass) {
-      alert("Please complete all fields.");
+      setUploadError("Please complete all fields.");
       return;
     }
 
-    const token = localStorage.getItem("access_token");
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("file", file);
-    formData.append("objective", learningObjective);
-    formData.append("class_assigned", selectedClass);
-
     setIsUploading(true);
+    setUploadError("");
 
     try {
-      const res = await fetch(`${BACKEND}/api/learning-materials/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
+      const response = await api.learningMaterials.create({
+        title,
+        file,
+        objective: learningObjective,
+        class_assigned: selectedClass
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        setMaterialId(data.id);
-        alert("Material uploaded successfully!");
-      } else {
-        const text = await res.text();
-        console.error("Upload failed:", text);
-        alert("Upload failed. See console.");
-      }
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert("Upload error occurred. See console.");
+      
+      setMaterialId(response.data.id);
+      handleNext();
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload material. Please try again.");
     } finally {
       setIsUploading(false);
     }
@@ -171,45 +155,24 @@ const LearningMaterialUploader = () => {
 
   const handleAdaptMaterial = async () => {
     if (!materialId) {
-      alert("Upload a material first.");
+      setUploadError("Please upload a material first.");
       return;
     }
 
     setIsAdapting(true);
-    const token = localStorage.getItem("access_token");
+    setUploadError("");
 
     try {
-      const res = await fetch(`${BACKEND}/api/learning-materials/${materialId}/adapt/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        alert("Material adapted successfully!");
-
-        const result = await res.json();
-        const studentsWithLinks = Object.entries(result).map(([id, data]) => ({
-          id,
-          first_name: data.first_name,
-          last_name: data.last_name,
-          file_url: data.file_url,
-        }));
-        setAdaptedStudents(studentsWithLinks);
-
-        setTitle("");
-        setFile(null);
-        setLearningObjective("");
-        setMaterialId(null);
-      } else {
-        const text = await res.text();
-        console.error("Adaptation failed:", text);
-        alert("Adaptation failed. See console.");
-      }
-    } catch (err) {
-      console.error("Adaptation error:", err);
-      alert("Error occurred. See console.");
+      const response = await api.learningMaterials.adapt(materialId);
+      setAdaptedStudents(Object.entries(response.data).map(([id, data]) => ({
+        id,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        file_url: data.file_url,
+      })));
+    } catch (error) {
+      console.error("Adaptation error:", error);
+      setUploadError("Failed to adapt material. Please try again.");
     } finally {
       setIsAdapting(false);
     }

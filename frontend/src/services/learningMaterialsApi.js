@@ -27,11 +27,15 @@ const learningMaterialsApi = {
       formData.append(key, materialData[key]);
     });
     
-    return httpClient.post('/api/learning-materials/create/', formData, 'multipart/form-data');
+    return httpClient.post('/api/learning-materials/', formData, 'multipart/form-data');
   },
   
   delete: async (id) => {
     return httpClient.delete(`/api/learning-materials/${id}/`);
+  },
+
+  adapt: async (materialId) => {
+    return httpClient.post(`/api/learning-materials/${materialId}/adapt/`);
   }
 };
 
