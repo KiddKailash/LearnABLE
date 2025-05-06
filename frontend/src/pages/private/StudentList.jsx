@@ -20,6 +20,8 @@ import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid2";
 import Box from "@mui/material/Box";
 import DialogActions from "@mui/material/DialogActions";
+import Divider from "@mui/material/Divider";
+import Chip from "@mui/material/Chip";
 
 // MUI Icons
 import Edit from "@mui/icons-material/Edit";
@@ -304,27 +306,157 @@ const StudentListPage = () => {
         </Table>
       </Paper>
 
-      <Dialog open={!!editingStudent} onClose={() => setEditingStudent(null)} fullWidth maxWidth="sm">
+      <Dialog
+        open={!!editingStudent}
+        onClose={() => setEditingStudent(null)}
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            bgcolor: "background.paper",
+          },
+        }}
+      >
         <DialogTitle>Edit Student</DialogTitle>
         <DialogContent>
-          <Grid container spacing={2}>
-            {Object.entries(form).map(([key, val]) => (
-              <Grid  size={{xs:12, sm:6}} key={key}>
+          <Box my={2}>
+            <Grid container spacing={2}>
+              {/* Student Info */}
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
-                  label={key.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                  value={val || ""}
-                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+                  label="First Name"
+                  value={form.first_name || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      first_name: e.target.value,
+                    }))
+                  }
                 />
               </Grid>
-            ))}
-          </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Last Name"
+                  value={form.last_name || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      last_name: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Year Level"
+                  value={form.year_level || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      year_level: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Student Email"
+                  value={form.student_email || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      student_email: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+
+              {/* Guardian Section */}
+              <Grid size={12}>
+                <Divider sx={{ my: 1 }}>
+                  <Chip label="Guardian Information" />
+                </Divider>
+              </Grid>
+
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Guardian First Name"
+                  value={form.guardian_first_name || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      guardian_first_name: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Guardian Last Name"
+                  value={form.guardian_last_name || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      guardian_last_name: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Guardian Email"
+                  value={form.guardian_email || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      guardian_email: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+
+              {/* Additional Info */}
+              <Grid size={12}>
+                <Divider sx={{ my: 1 }}>
+                  <Chip label="Additional Information" />
+                </Divider>
+              </Grid>
+
+              <Grid size={12}>
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label="Disability Information"
+                  value={form.disability_info || ""}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      disability_info: e.target.value,
+                    }))
+                  }
+                />
+              </Grid>
+            </Grid>
+          </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditingStudent(null)} startIcon={<Cancel />}>Cancel</Button>
-          <Button onClick={handleSave} variant="contained" startIcon={<Save />}>Save</Button>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setEditingStudent(null)} variant="outlined" startIcon={<Cancel />}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} variant="contained" startIcon={<Save />}>
+            Save
+          </Button>
         </DialogActions>
       </Dialog>
+
 
       <Dialog open={newStudentDialog} onClose={() => setNewStudentDialog(false)} fullWidth maxWidth="sm">
         <DialogTitle>Add New Student</DialogTitle>
