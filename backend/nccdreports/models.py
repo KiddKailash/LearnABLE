@@ -20,6 +20,15 @@ class NCCDreport(models.Model):
         default='None'
     )
     evidence = models.FileField(upload_to='nccdreports/')  # Stores files in MEDIA_ROOT/nccdreports/
+     #lesson_effective = models.BooleanField(null=True, blank=True)  # Yes/No if material worked note: moved to new model
 
     def __str__(self):
         return f"{self.student.first_name} {self.student.last_name}"
+
+class LessonEffectivenessRecord(models.Model):
+    report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='effectiveness_records')
+    lesson_date = models.DateField(auto_now_add=True)
+    was_effective = models.BooleanField()
+
+    def __str__(self):
+        return f"{self.report.student} on {self.lesson_date}: {'Yes' if self.was_effective else 'No'}"

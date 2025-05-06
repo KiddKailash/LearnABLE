@@ -17,3 +17,15 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# from django.urls import path, include
+# from rest_framework.routers import DefaultRouter
+# from .views import NCCDreportViewSet
+
+# router = DefaultRouter()
+# router.register(r'', NCCDreportViewSet, basename='nccdreports')
+
+# urlpatterns = router.urls + [
+#     path('create/', NCCDreportViewSet.as_view({'post': 'create'}), name='create_report'),
+# ]
+
