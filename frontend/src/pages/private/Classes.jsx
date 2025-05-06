@@ -34,6 +34,7 @@ import School from "@mui/icons-material/School";
 import UploadFile from "@mui/icons-material/UploadFile";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import Menu from "@mui/icons-material/Menu";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 import api from "../../services/api";
@@ -278,6 +279,15 @@ const Classes = () => {
   return (
     <>
       <Box>
+        <Button
+          size="small"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/dashboard")}
+          sx={{ mb: 2 }}
+        >
+          Back 
+        </Button>
+
         <Box
           display="flex"
           justifyContent="space-between"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -26,6 +27,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // Services
 import api from "../../services/api";
@@ -52,6 +54,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const LearningMaterialUploader = () => {
   const BACKEND = process.env.REACT_APP_SERVER_URL;
+  const navigate = useNavigate();
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
@@ -245,6 +248,15 @@ const LearningMaterialUploader = () => {
 
   return (
     <>
+      <Button
+        size="small"
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/classes")}
+        sx={{ mb: 2 }}
+      >
+        Back
+      </Button>
+
       <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
         Learning Material Upload
       </Typography>

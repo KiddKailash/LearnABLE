@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Local Imports
 import NCCDReportForm from "./NCCDReportForm";
@@ -36,6 +37,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 /**
  * Page for displaying and managing NCCD reports
@@ -60,6 +62,8 @@ const NCCDReports = () => {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [viewingReport, setViewingReport] = useState(null);
+
+  const navigate = useNavigate();
 
   // Fetch all reports and students
   useEffect(() => {
@@ -225,6 +229,14 @@ const NCCDReports = () => {
 
   return (
     <>
+      <Button
+        size="small"
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/dashboard")}
+        sx={{ mb: 2 }}
+      >
+        Back 
+      </Button>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           NCCD Reports
