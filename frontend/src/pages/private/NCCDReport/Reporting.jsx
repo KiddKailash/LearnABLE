@@ -296,7 +296,8 @@ const NCCDReports = () => {
             size={{ xs: 12, md: 3 }}
             sx={{
               display: "flex",
-              justifyContent: { xs: "center", md: "flex-end" },
+              flexDirection: "column",
+              alignItems: { xs: "center", md: "flex-end" },
             }}
           >
             <Button
@@ -306,6 +307,15 @@ const NCCDReports = () => {
               disabled={!students.length}
             >
               New NCCD Report
+            </Button>
+            
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => window.location.href = "/mobile-reporting"}
+              sx={{ mt: 1 }}
+            >
+              Go to Mobile Reporting
             </Button>
           </Grid>
         </Grid>

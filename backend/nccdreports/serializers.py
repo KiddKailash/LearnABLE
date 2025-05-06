@@ -3,6 +3,7 @@ from .models import NCCDreport, LessonEffectivenessRecord
 
 class NCCDreportSerializer(serializers.ModelSerializer):
     evidence_url = serializers.SerializerMethodField()
+    has_diagonsed_disability = serializers.SerializerMethodField()
 
     class Meta:
         model = NCCDreport
@@ -22,6 +23,9 @@ class NCCDreportSerializer(serializers.ModelSerializer):
         if obj.evidence and request:
             return request.build_absolute_uri(obj.evidence.url)
         return None
+    
+    def get_has_diagonsed_disability(self, obj):
+        return obj.has_diagonsed_disability
 
 class LessonEffectivenessRecordSerializer(serializers.ModelSerializer):
     class Meta:

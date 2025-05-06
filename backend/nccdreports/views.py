@@ -191,22 +191,31 @@ def get_reports_by_student(request, student_id):
 @permission_classes([IsAuthenticated])
 def ensure_reports_for_class(request, class_id):
     """
-    Ensure each student in the class has a report for the current term.
-    If not, create one. Return list of reports.
+    Ensure each student in the class who has a non-empty decrypted disability info has a report.
+    Create one if needed. Return list of valid reports.
     """
-    classroom = get_object_or_404(Classes, id=class_id)
-    reports = []
-    
-    for student in classroom.students.all():
-        report, created = NCCDreport.objects.get_or_create(
-            student=student,
-            # add a filter for current school term, maybe later
-            defaults={'status': 'NotStart'}
-        )
-        reports.append(report)
-    
-    # Serialize and return
-    serializer = NCCDreportSerializer(reports, many=True, context={'request': request})
+    from utils.encryption import decrypt
+
+    class_list = get_object_or_404(Classes, id=class_id)
+    valid_reports = []
+
+    for student in class_list.students.all():
+        decrypted_info = decrypt(student._disability_info) if student._disability_info else ''
+        
+        if decrypted_info.strip():
+            #Only create/get report if decrypted disability info is non-empty
+            report, _ = NCCDreport.objects.get_or_create(
+                student=student,
+                defaults={'status': 'NotStart'}
+            )
+            valid_reports.append(report)
+
+    # delete reports for students who no longer qualify
+    NCCDreport.objects.filter(
+        student__in=class_list.students.exclude(id__in=[r.student.id for r in valid_reports])
+    ).delete()
+
+    serializer = NCCDreportSerializer(valid_reports, many=True, context={'request': request})
     return Response(serializer.data)
 
 @api_view(['POST'])

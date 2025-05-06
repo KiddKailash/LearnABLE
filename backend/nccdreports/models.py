@@ -9,7 +9,9 @@ class NCCDreport(models.Model):
         choices=[('InProgress', 'InProgress'), ('Approved', 'Approved'), ('NotStart', 'NotStart')],
         default='NotStarted'
     )
-    has_diagonsed_disability = models.BooleanField(default=False)
+    # REMOVE THIS LINE (no longer stored in DB)
+    # has_diagonsed_disability = models.BooleanField(default=False)
+
     disability_category = models.CharField(
         max_length=20,
         choices=[('Cognitive', 'Cognitive'), ('Physical', 'Physical'), ('Social/Emotional', 'Social/Emotional'), ('Sensory', 'Sensory')],
@@ -20,11 +22,18 @@ class NCCDreport(models.Model):
         choices=[('QDTP', 'QDTP'), ('Supplementary', 'Supplementary'), ('Substantial', 'Substantial'), ('Extensive', 'Extensive')],
         default='None'
     )
-    evidence = models.FileField(upload_to='nccdreports/')  # Stores files in MEDIA_ROOT/nccdreports/
-     #lesson_effective = models.BooleanField(null=True, blank=True)  # Yes/No if material worked note: moved to new model
+    evidence = models.FileField(upload_to='nccdreports/')
 
     def __str__(self):
         return f"{self.student.first_name} {self.student.last_name}"
+
+    @property
+    def has_diagonsed_disability(self):
+        """
+        Dynamically check the linked student's decrypted disability_info.
+        Returns True if non-empty.
+        """
+        return bool(self.student.disability_info.strip())
 
 class LessonEffectivenessRecord(models.Model):
     report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='effectiveness_records')
