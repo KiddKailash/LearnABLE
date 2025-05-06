@@ -1,5 +1,6 @@
 from django.db import models
 from students.models import Student
+from teachers.models import Teacher
 
 class NCCDreport(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
@@ -27,7 +28,7 @@ class NCCDreport(models.Model):
 
 class LessonEffectivenessRecord(models.Model):
     report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='effectiveness_records')
-    teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     lesson_date = models.DateField(auto_now_add=True)
     was_effective = models.BooleanField()
 

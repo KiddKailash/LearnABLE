@@ -234,9 +234,11 @@ def create_lesson_effectiveness(request, report_id):
     )
 
     # Find the next report in the same class (if any)
+    students_in_same_classes = Student.objects.filter(classes__in=report.student.classes.all())
     class_reports = NCCDreport.objects.filter(
-        student__in=report.student.classes.all()
+        student__in=students_in_same_classes
     ).exclude(id=report.id).order_by('id')
+
 
     next_report = class_reports.first()
     next_report_id = next_report.id if next_report else None
