@@ -41,7 +41,6 @@ const Account = () => {
   // Profile state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
   const [school, setSchool] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -59,7 +58,6 @@ const Account = () => {
 
   // Notification state
   const [notificationSettings, setNotificationSettings] = useState({
-    email_notifications: false,
     student_activity: false,
     system_updates: false,
     reminders: false,
@@ -95,7 +93,6 @@ const Account = () => {
         // Set form fields
         setFirstName(data.user?.first_name || "");
         setLastName(data.user?.last_name || "");
-        setEmail(data.user?.email || "");
         setSchool(data.school || "");
         setSpecialty(data.subject_specialty || "");
         setPhoneNumber(data.phone_number || "");
@@ -155,7 +152,6 @@ const Account = () => {
         user: {
           first_name: firstName,
           last_name: lastName,
-          email: email,
         },
         school,
         subject_specialty: specialty,
@@ -177,7 +173,6 @@ const Account = () => {
       try {
         const formData = new FormData();
         formData.append("profile_pic", e.target.files[0]);
-        formData.append("email", email);
 
         setIsSaving(true);
         await accountApi.uploadProfilePicture(formData);
@@ -541,8 +536,6 @@ const Account = () => {
               setFirstName={setFirstName}
               lastName={lastName}
               setLastName={setLastName}
-              email={email}
-              setEmail={setEmail}
               school={school}
               setSchool={setSchool}
               specialty={specialty}

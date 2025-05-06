@@ -18,8 +18,6 @@ const ProfileTab = ({
   setFirstName,
   lastName,
   setLastName,
-  email,
-  setEmail,
   school,
   setSchool,
   specialty,
@@ -41,7 +39,7 @@ const ProfileTab = ({
       </Typography>
 
       <Box component="form" noValidate>
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {/* Profile Photo Upload */}
           <Grid item xs={12}>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -97,17 +95,6 @@ const ProfileTab = ({
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               variant="outlined"
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              variant="outlined"
-              type="email"
             />
           </Grid>
 

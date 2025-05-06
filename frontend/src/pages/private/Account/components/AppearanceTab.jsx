@@ -31,7 +31,7 @@ const AppearanceTab = ({
 
         <Grid container spacing={2}>
           {/* Light Mode Option */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{xs:12, sm:4}}>
             <Paper
               variant="outlined"
               sx={{
@@ -151,7 +151,7 @@ const AppearanceTab = ({
           </Grid>
 
           {/* Dark Mode Option */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{xs:12, sm:4}}>
             <Paper
               variant="outlined"
               sx={{
@@ -271,7 +271,7 @@ const AppearanceTab = ({
           </Grid>
 
           {/* System Mode Option */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{xs:12, sm:4}}>
             <Paper
               variant="outlined"
               sx={{
