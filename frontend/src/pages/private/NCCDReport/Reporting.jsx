@@ -34,7 +34,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DownloadIcon from "@mui/icons-material/Download";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -398,7 +398,7 @@ const NCCDReports = () => {
                           size="small"
                           onClick={() => handleViewReport(report.id)}
                         >
-                          <VisibilityIcon fontSize="small" />
+                          <InfoOutlinedIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Edit Report">

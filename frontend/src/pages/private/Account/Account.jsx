@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useColorScheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import Button from "@mui/material/Button";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 // Contexts and Services
 import UserContext from "../../../contexts/UserObject";
@@ -37,6 +40,7 @@ const Account = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const navigate = useNavigate();
 
   // Profile state
   const [firstName, setFirstName] = useState("");
@@ -488,6 +492,15 @@ const Account = () => {
 
   return (
     <>
+      <Button
+        size="small"
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/dashboard")}
+        sx={{ mb: 2 }}
+      >
+        Back 
+      </Button>
+
       <Typography variant="h4">Account Settings</Typography>
 
       <Tabs
