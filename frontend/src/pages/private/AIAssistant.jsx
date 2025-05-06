@@ -70,6 +70,7 @@ const LearningMaterialUploader = () => {
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const fileInputRef = useRef(null);
 
@@ -157,6 +158,7 @@ const LearningMaterialUploader = () => {
       });
       
       setMaterialId(response.id);
+      setSuccessMessage("Material uploaded successfully!");
       handleNext();
     } catch (error) {
       console.error("Upload error:", error);
@@ -495,6 +497,16 @@ const LearningMaterialUploader = () => {
       >
         <Alert onClose={handleSnackbarClose} severity="error">
           {uploadError}
+        </Alert>
+      </Snackbar>
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={6000}
+        onClose={() => setSuccessMessage('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSuccessMessage('')} severity="success">
+          {successMessage}
         </Alert>
       </Snackbar>
     </>
