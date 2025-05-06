@@ -27,6 +27,7 @@ class NCCDreport(models.Model):
 
 class LessonEffectivenessRecord(models.Model):
     report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='effectiveness_records')
+    teacher = models.ForeignKey('teachers.Teacher', on_delete=models.CASCADE)
     lesson_date = models.DateField(auto_now_add=True)
     was_effective = models.BooleanField()
 
