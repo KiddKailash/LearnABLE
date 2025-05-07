@@ -5,12 +5,13 @@ from langchain.prompts import PromptTemplate
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from dotenv import load_dotenv
 from django.conf import settings
+from utils.encryption import decrypt
 
 from learningmaterial.services.file_extractors import (
     extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx
 )
 from learningmaterial.services.file_creators import (
-    create_pdf_from_text, create_docx_from_text, create_pptx_from_text
+    create_pdf_from_text, create_docx_from_text, create_pptx_from_text, create_audio_from_text
 )
 
 load_dotenv()
@@ -49,7 +50,6 @@ Lesson content:
 {text}
 """
 
-
 prompt = PromptTemplate(
     input_variables=["disability_info", "objectives", "text"],
     partial_variables={"format_instructions": format_instructions},
@@ -73,11 +73,15 @@ def generate_adapted_lessons(material, students, return_file=False):
     adapted_lessons = {}
 
     for student in students:
-        if not student.disability_info or student.disability_info.strip() == "":
+        disability_info = student.disability_info 
+       
+        if not disability_info.strip():
             continue
 
+        print(f"Student: {student.first_name} {student.last_name}, Disability: {disability_info}")
+
         student_prompt = prompt.format(
-            disability_info=student.disability_info,
+            disability_info=disability_info,
             objectives=material.objective or "",
             text=base_text
         )
@@ -88,9 +92,9 @@ def generate_adapted_lessons(material, students, return_file=False):
             parsed_response = parser.parse(response.content)
             adapted_lessons[student.id] = parsed_response
 
+            # Generate output file if requested
             if return_file:
                 adapted_text = parsed_response["adapted_content"]
-
                 output_dir = os.path.join(settings.MEDIA_ROOT, "adapted_output")
                 os.makedirs(output_dir, exist_ok=True)
 
@@ -110,6 +114,31 @@ def generate_adapted_lessons(material, students, return_file=False):
 
                 parsed_response["file"] = output_path
                 parsed_response["file_url"] = f"{settings.MEDIA_URL}adapted_output/{filename}"
+
+            # Always generate audio for blind students
+            if "blind" in disability_info.lower():
+                print(f"Generating audio for: {student.first_name} {student.last_name}")
+                adapted_text = parsed_response.get("adapted_content", "")
+
+                if not adapted_text:
+                    print("Adapted text is empty, skipping audio.")
+                    continue
+
+                output_dir = os.path.join(settings.MEDIA_ROOT, "adapted_output")
+                os.makedirs(output_dir, exist_ok=True)
+
+                title_safe = material.title.replace(" ", "_").replace("/", "_")
+                first_last = f"{student.first_name}_{student.last_name}".replace(" ", "_").lower()
+                audio_filename = f"{first_last}_{title_safe}.mp3"
+                audio_path = os.path.join(output_dir, audio_filename)
+
+                success = create_audio_from_text(adapted_text, audio_path)
+                if success:
+                    print(f"Audio created at {audio_path}")
+                    parsed_response["audio"] = audio_path
+                    parsed_response["audio_url"] = f"{settings.MEDIA_URL}adapted_output/{audio_filename}"
+                else:
+                    print(f"Audio creation failed for {student.first_name} {student.last_name}")
 
         except Exception as e:
             adapted_lessons[student.id] = {"error": str(e)}

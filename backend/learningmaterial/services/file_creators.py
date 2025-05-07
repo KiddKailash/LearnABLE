@@ -6,6 +6,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from gtts import gTTS
+import os
 
 
 def create_docx_from_text(text, path):
@@ -78,3 +80,20 @@ def create_pdf_from_text(text, path):
             y -= line_height
 
     c.save()
+
+
+def create_audio_from_text(text, path):
+    try:
+        print(f"[AUDIO] Generating audio at: {path}")
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tts = gTTS(text)
+        tts.save(path)
+        if os.path.exists(path):
+            print(f"[AUDIO] Verified audio saved at: {path}")
+            return True
+        else:
+            print(f"[AUDIO ERROR] File not found after saving at: {path}")
+            return False
+    except Exception as e:
+        print(f"[AUDIO ERROR] Failed to create audio file: {e}")
+        return False

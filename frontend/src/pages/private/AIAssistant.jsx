@@ -212,7 +212,8 @@ const LearningMaterialUploader = () => {
             first_name: data.first_name,
             last_name: data.last_name,
             file_url: data.file_url,
-          })));
+            audio_url: data.audio_url || null,  // NEW: support audio
+          })));          
         }
       } else {
         throw new Error('Invalid response format from adaptation service');
@@ -426,39 +427,58 @@ const LearningMaterialUploader = () => {
                     <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
                       Adapted Materials Ready for Download
                     </Typography>
+
                     <Paper sx={{ overflowX: "auto" }}>
                       <Box sx={{ minWidth: 650 }}>
-                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                          <thead>
-                            <tr>
-                              <th style={{ ...tableHeaderStyle }}>Student Name</th>
-                              <th style={{ ...tableHeaderStyle }}>Action</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {adaptedStudents.map((student) => (
-                              <tr key={student.id}>
-                                <td style={{ ...tableCellStyle }}>
-                                  {student.first_name} {student.last_name}
-                                </td>
-                                <td style={{ ...tableCellStyle }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr>
+                            <th style={tableHeaderStyle}>Student Name</th>
+                            <th style={tableHeaderStyle}>Adapted File</th>
+                            <th style={tableHeaderStyle}>Audio</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {adaptedStudents.map((student) => (
+                            <tr key={student.id}>
+                              <td style={tableCellStyle}>
+                                {student.first_name} {student.last_name}
+                              </td>
+                              <td style={tableCellStyle}>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  href={`${BACKEND}${student.file_url}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  download
+                                  startIcon={<UploadFileIcon />}
+                                  disabled={!student.file_url}
+                                >
+                                  Download
+                                </Button>
+                              </td>
+                              <td style={{ ...tableCellStyle }}>
+                                {student.audio_url ? (
                                   <Button
                                     variant="outlined"
                                     size="small"
-                                    href={`${BACKEND}${student.file_url}`}
+                                    href={`${BACKEND}${student.audio_url}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     download
                                     startIcon={<UploadFileIcon />}
-                                    disabled={!student.file_url}
                                   >
-                                    Download
+                                    Audio
                                   </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                ) : (
+                                  "—"
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                       </Box>
                     </Paper>
 
