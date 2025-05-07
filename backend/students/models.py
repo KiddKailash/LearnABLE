@@ -27,10 +27,11 @@ class Student(models.Model):
             raise ValidationError({"student_email": "A student with this email already exists (case-insensitive)."})
 
     def save(self, *args, **kwargs):
-        if self._disability_info:
+        if self._disability_info and not self._disability_info.startswith("gAAAA"):
             self._disability_info = encrypt(self._disability_info)
         self.full_clean()
         super().save(*args, **kwargs)
+
 
     @property
     def disability_info(self):
