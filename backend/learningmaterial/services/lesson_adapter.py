@@ -73,13 +73,8 @@ def generate_adapted_lessons(material, students, return_file=False):
     adapted_lessons = {}
 
     for student in students:
-        encrypted = student.disability_info  
-        try:
-            disability_info = decrypt(encrypted)
-        except Exception as e:
-            print(f"Failed to decrypt disability for {student.first_name} {student.last_name}: {e}")
-            continue
-
+        disability_info = student.disability_info 
+       
         if not disability_info.strip():
             continue
 
