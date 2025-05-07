@@ -73,7 +73,7 @@ def generate_adapted_lessons(material, students, return_file=False):
     adapted_lessons = {}
 
     for student in students:
-        encrypted = student.disability_info  # ✅ Fixed this line
+        encrypted = student.disability_info  
         try:
             disability_info = decrypt(encrypted)
         except Exception as e:
