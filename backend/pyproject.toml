@@ -92,6 +92,7 @@ channels = "^4.0.0"
 channels-redis = "^4.1.0"
 fernet = "^1.0.1"
 python-decouple = "^3.8"
+gtts = "^2.5.4"
 
 [build-system]
 requires = ["poetry-core"]

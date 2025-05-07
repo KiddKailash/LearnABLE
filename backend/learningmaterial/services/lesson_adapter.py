@@ -10,7 +10,7 @@ from learningmaterial.services.file_extractors import (
     extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx
 )
 from learningmaterial.services.file_creators import (
-    create_pdf_from_text, create_docx_from_text, create_pptx_from_text
+    create_pdf_from_text, create_docx_from_text, create_pptx_from_text, create_audio_from_text
 )
 
 load_dotenv()
@@ -110,6 +110,15 @@ def generate_adapted_lessons(material, students, return_file=False):
 
                 parsed_response["file"] = output_path
                 parsed_response["file_url"] = f"{settings.MEDIA_URL}adapted_output/{filename}"
+
+                # Audio for blind students
+                if "blind" in student.disability_info.lower():
+                    audio_filename = f"{first_last}_{title_safe}.mp3"
+                    audio_path = os.path.join(output_dir, audio_filename)
+                    success = create_audio_from_text(adapted_text, audio_path)
+                    if success:
+                        parsed_response["audio"] = audio_path
+                        parsed_response["audio_url"] = f"{settings.MEDIA_URL}adapted_output/{audio_filename}"
 
         except Exception as e:
             adapted_lessons[student.id] = {"error": str(e)}
