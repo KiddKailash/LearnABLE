@@ -75,6 +75,7 @@ const SecurityTab = () => {
     };
 
     fetchTwoFactorStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Update local state when user object changes
@@ -189,6 +190,7 @@ const SecurityTab = () => {
     if (setup2FADialogOpen && !twoFactorData) {
       handleSetupTwoFactor();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setup2FADialogOpen, twoFactorData]);
 
   return (
