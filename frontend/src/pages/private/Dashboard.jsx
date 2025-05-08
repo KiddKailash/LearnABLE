@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "@mui/material/styles";
 
 // Services
 import UserContext from "../../contexts/UserObject";
@@ -9,7 +8,7 @@ import api from "../../services/api";
 // MUI Components
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
@@ -23,7 +22,7 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
-import ListItemButton from '@mui/material/ListItemButton';
+import ListItemButton from "@mui/material/ListItemButton";
 
 // Icons
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -44,7 +43,6 @@ const Dashboard = () => {
   const { user } = useContext(UserContext);
   const { showSnackbar } = useContext(SnackbarContext);
   const navigate = useNavigate();
-  const theme = useTheme();
 
   // State management
   const [loading, setLoading] = useState(true);
@@ -166,7 +164,7 @@ const Dashboard = () => {
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 4 }}>
+      <Alert severity="error" sx={{ mb: 2 }}>
         {error}
       </Alert>
     );
@@ -186,7 +184,7 @@ const Dashboard = () => {
   return (
     <>
       {/* Header with greeting and teacher info */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
           Welcome back, {user.first_name}
         </Typography>
@@ -196,9 +194,9 @@ const Dashboard = () => {
       </Box>
 
       {/* Stats cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid container spacing={3} sx={{ mb: 2 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={12} sm={4} key={index}>
+          <Grid size={{ xs: 12, sm: 4 }} key={index}>
             <Paper
               elevation={1}
               sx={{
@@ -208,8 +206,8 @@ const Dashboard = () => {
                 display: "flex",
                 alignItems: "center",
                 transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                backgroundColor: (theme) => 
-                  theme.palette.mode === 'dark' 
+                backgroundColor: (theme) =>
+                  theme.palette.mode === "dark"
                     ? theme.palette.background.paper
                     : stat.color,
                 "&:hover": {
@@ -235,7 +233,7 @@ const Dashboard = () => {
       {/* Main content grid with 3 sections */}
       <Grid container spacing={3}>
         {/* Left Column - Quick Actions */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper
             elevation={1}
             sx={{
@@ -307,7 +305,7 @@ const Dashboard = () => {
 
               <ListItemButton
                 onClick={() => handleNavigate("/analytics")}
-                sx={{ 
+                sx={{
                   py: 2,
                   "&:hover": { bgcolor: "action.hover" },
                 }}
@@ -326,7 +324,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Middle Column - Recent Classes */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper
             elevation={1}
             sx={{
@@ -413,7 +411,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Right Column - Recent Assessments */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper
             elevation={1}
             sx={{
@@ -496,7 +494,7 @@ const Dashboard = () => {
         </Grid>
 
         {/* Full Width - NCCD Reports Summary */}
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Paper
             elevation={1}
             sx={{
@@ -534,12 +532,15 @@ const Dashboard = () => {
                       (s) => s.id === report.student
                     );
                     return (
-                      <Grid item xs={12} md={6} lg={4} key={report.id}>
-                        <Card variant="outlined" sx={{ 
-                          height: "100%",
-                          bgcolor: "background.paper",
-                          borderColor: "divider"
-                        }}>
+                      <Grid size={{ xs: 12, md: 4, lg: 4 }} key={report.id}>
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            height: "100%",
+                            bgcolor: "background.paper",
+                            borderColor: "divider",
+                          }}
+                        >
                           <CardContent>
                             <Box
                               sx={{

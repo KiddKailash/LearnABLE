@@ -1,7 +1,7 @@
 import React from "react";
 
 // MUI Components
-import Box from "@mui/material/Box";    
+import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
@@ -15,7 +15,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 
 // MUI Icons
 import DevicesIcon from "@mui/icons-material/Devices";
-import LogoutIcon from '@mui/icons-material/Devices';
+import LogoutIcon from "@mui/icons-material/Devices";
 
 const SessionsTab = ({
   sessions,
@@ -28,7 +28,7 @@ const SessionsTab = ({
   const [confirmDialog, setConfirmDialog] = React.useState({
     open: false,
     sessionId: null,
-    deviceName: ''
+    deviceName: "",
   });
   const [terminatingSessionIds, setTerminatingSessionIds] = React.useState([]);
 
@@ -36,7 +36,7 @@ const SessionsTab = ({
     setConfirmDialog({
       open: true,
       sessionId,
-      deviceName
+      deviceName,
     });
   };
 
@@ -44,15 +44,15 @@ const SessionsTab = ({
     setConfirmDialog({
       open: false,
       sessionId: null,
-      deviceName: ''
+      deviceName: "",
     });
   };
 
   const confirmTerminateSession = async () => {
     if (confirmDialog.sessionId) {
       // Add the session ID to the list of terminating sessions
-      setTerminatingSessionIds(prev => [...prev, confirmDialog.sessionId]);
-      
+      setTerminatingSessionIds((prev) => [...prev, confirmDialog.sessionId]);
+
       // Call the handler to terminate the session
       try {
         await handleTerminateSession(confirmDialog.sessionId);
@@ -60,8 +60,8 @@ const SessionsTab = ({
         // Remove the session ID from the list after a short delay
         // This keeps the UI feedback visible briefly even after the server responds
         setTimeout(() => {
-          setTerminatingSessionIds(prev => 
-            prev.filter(id => id !== confirmDialog.sessionId)
+          setTerminatingSessionIds((prev) =>
+            prev.filter((id) => id !== confirmDialog.sessionId)
           );
         }, 500);
       }
@@ -72,11 +72,11 @@ const SessionsTab = ({
   const handleTerminateAllClick = async () => {
     // Mark all other sessions as terminating
     const otherSessionIds = sessions
-      .filter(session => !session.is_current)
-      .map(session => session.id);
-    
+      .filter((session) => !session.is_current)
+      .map((session) => session.id);
+
     setTerminatingSessionIds(otherSessionIds);
-    
+
     try {
       await handleTerminateAllSessions();
     } finally {
@@ -88,12 +88,8 @@ const SessionsTab = ({
   };
 
   return (
-    <Box sx={{ px: 3 }}>
-      <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
-        Active Sessions
-      </Typography>
-
-      <Paper variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+    <>
+      <Paper variant="outlined" sx={{ p: 3, mb: 2, borderRadius: 2 }}>
         <Box
           sx={{
             display: "flex",
@@ -110,7 +106,11 @@ const SessionsTab = ({
             variant="outlined"
             color="error"
             onClick={handleTerminateAllClick}
-            disabled={isSaving || sessions.length <= 1 || sessions.every(s => s.is_current)}
+            disabled={
+              isSaving ||
+              sessions.length <= 1 ||
+              sessions.every((s) => s.is_current)
+            }
             startIcon={<LogoutIcon />}
           >
             Log Out All Other Devices
@@ -136,8 +136,10 @@ const SessionsTab = ({
                 }}
               >
                 {sessions.map((session) => {
-                  const isTerminating = terminatingSessionIds.includes(session.id);
-                  
+                  const isTerminating = terminatingSessionIds.includes(
+                    session.id
+                  );
+
                   return (
                     <Paper
                       key={session.id}
@@ -145,7 +147,9 @@ const SessionsTab = ({
                       sx={{
                         p: 2,
                         borderRadius: 2,
-                        borderColor: session.is_current ? "primary.main" : "divider",
+                        borderColor: session.is_current
+                          ? "primary.main"
+                          : "divider",
                         borderWidth: session.is_current ? 2 : 1,
                         position: "relative",
                         opacity: isTerminating ? 0.6 : 1,
@@ -170,7 +174,9 @@ const SessionsTab = ({
                         </Box>
                       )}
 
-                      <Box sx={{ display: "flex", mb: 1, alignItems: "center" }}>
+                      <Box
+                        sx={{ display: "flex", mb: 1, alignItems: "center" }}
+                      >
                         <DevicesIcon sx={{ mr: 1, color: "text.secondary" }} />
                         <Typography variant="subtitle1">
                           {session.device_name || "Unknown Device"}
@@ -178,11 +184,13 @@ const SessionsTab = ({
                       </Box>
 
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
-                        <strong>Location:</strong> {session.location || "Unknown"}
+                        <strong>Location:</strong>{" "}
+                        {session.location || "Unknown"}
                       </Typography>
 
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
-                        <strong>IP Address:</strong> {session.ip_address || "Unknown"}
+                        <strong>IP Address:</strong>{" "}
+                        {session.ip_address || "Unknown"}
                       </Typography>
 
                       <Typography variant="body2" sx={{ mb: 0.5 }}>
@@ -201,11 +209,21 @@ const SessionsTab = ({
                           variant="outlined"
                           size="small"
                           color="error"
-                          onClick={() => openConfirmDialog(session.id, session.device_name)}
+                          onClick={() =>
+                            openConfirmDialog(session.id, session.device_name)
+                          }
                           disabled={isSaving || isTerminating}
-                          startIcon={isTerminating ? <CircularProgress size={14} /> : <LogoutIcon />}
+                          startIcon={
+                            isTerminating ? (
+                              <CircularProgress size={14} />
+                            ) : (
+                              <LogoutIcon />
+                            )
+                          }
                         >
-                          {isTerminating ? "Terminating..." : "Terminate Session"}
+                          {isTerminating
+                            ? "Terminating..."
+                            : "Terminate Session"}
                         </Button>
                       )}
                     </Paper>
@@ -238,8 +256,9 @@ const SessionsTab = ({
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to terminate the session on {confirmDialog.deviceName || "this device"}? 
-            This will log out that device immediately.
+            Are you sure you want to terminate the session on{" "}
+            {confirmDialog.deviceName || "this device"}? This will log out that
+            device immediately.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -251,8 +270,8 @@ const SessionsTab = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 
-export default SessionsTab; 
+export default SessionsTab;

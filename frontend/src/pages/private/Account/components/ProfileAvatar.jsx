@@ -9,8 +9,6 @@ const StyledAvatar = styled(Avatar)(({ theme }) => ({
   height: 120,
   border: `4px solid ${theme.palette.primary.main}`,
   boxShadow: theme.shadows[3],
-  position: "relative",
-  margin: "0 auto",
   transition: "transform 0.3s ease-in-out",
   "&:hover": {
     transform: "scale(1.05)",

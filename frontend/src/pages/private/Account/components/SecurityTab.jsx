@@ -6,7 +6,7 @@ import PasswordField from "./PasswordField";
 // MUI Components
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
+import Grid from "@mui/material/Grid2";
 import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -30,35 +30,37 @@ import api from "../../../../services/api";
 
 const SecurityTab = () => {
   // Get user profile from context
-  const { 
-    user, 
-    updateUserInfo, 
-    setupTwoFactor, 
-    verifyAndEnableTwoFactor, 
-    disableTwoFactor, 
+  const {
+    user,
+    updateUserInfo,
+    setupTwoFactor,
+    verifyAndEnableTwoFactor,
+    disableTwoFactor,
     get2FAStatus,
-    twoFactorData 
+    twoFactorData,
   } = useContext(UserContext);
   const { showSnackbar } = useContext(SnackbarContext);
-  
+
   // Password change states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   // 2FA states
   const [setup2FADialogOpen, setSetup2FADialogOpen] = useState(false);
   const [disable2FADialogOpen, setDisable2FADialogOpen] = useState(false);
   const [qrCodeLoading, setQrCodeLoading] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState("");
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(user?.two_factor_enabled || false);
-  
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(
+    user?.two_factor_enabled || false
+  );
+
   console.log("User is ", user);
   console.log("Two factor data is", twoFactorData);
-  
+
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Effect to fetch the latest 2FA status when component mounts
   useEffect(() => {
     const fetchTwoFactorStatus = async () => {
@@ -71,36 +73,36 @@ const SecurityTab = () => {
         console.error("Error fetching 2FA status:", error);
       }
     };
-    
+
     fetchTwoFactorStatus();
   }, []);
-  
+
   // Update local state when user object changes
   useEffect(() => {
-    if (user && typeof user.two_factor_enabled === 'boolean') {
+    if (user && typeof user.two_factor_enabled === "boolean") {
       setTwoFactorEnabled(user.two_factor_enabled);
     }
   }, [user]);
-  
+
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       showSnackbar("New passwords do not match", "error");
       return;
     }
-    
+
     setIsSaving(true);
     try {
       const result = await api.account.changePassword({
         current_password: currentPassword,
         new_password: newPassword,
       });
-      
+
       if (result.success) {
         showSnackbar("Password changed successfully", "success");
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
-        
+
         // Update last password change in user profile
         updateUserInfo({
           last_password_change: new Date().toISOString(),
@@ -114,13 +116,16 @@ const SecurityTab = () => {
       setIsSaving(false);
     }
   };
-  
+
   const handleSetupTwoFactor = async () => {
     setQrCodeLoading(true);
     try {
       const result = await setupTwoFactor();
       if (!result.success) {
-        showSnackbar(result.message || "Failed to setup two-factor authentication", "error");
+        showSnackbar(
+          result.message || "Failed to setup two-factor authentication",
+          "error"
+        );
         setSetup2FADialogOpen(false);
       }
       // Note: We no longer need to set twoFactorData here as it's managed in the UserContext
@@ -131,13 +136,16 @@ const SecurityTab = () => {
       setQrCodeLoading(false);
     }
   };
-  
+
   const handleVerifyTwoFactor = async () => {
     setIsSaving(true);
     try {
       const result = await verifyAndEnableTwoFactor(twoFactorCode);
       if (result.success) {
-        showSnackbar("Two-factor authentication enabled successfully", "success");
+        showSnackbar(
+          "Two-factor authentication enabled successfully",
+          "success"
+        );
         setSetup2FADialogOpen(false);
         setTwoFactorCode("");
         setTwoFactorEnabled(true);
@@ -150,18 +158,24 @@ const SecurityTab = () => {
       setIsSaving(false);
     }
   };
-  
+
   const handleDisableTwoFactor = async () => {
     setIsSaving(true);
     try {
       const result = await disableTwoFactor(twoFactorCode);
       if (result.success) {
-        showSnackbar("Two-factor authentication disabled successfully", "success");
+        showSnackbar(
+          "Two-factor authentication disabled successfully",
+          "success"
+        );
         setDisable2FADialogOpen(false);
         setTwoFactorCode("");
         setTwoFactorEnabled(false);
       } else {
-        showSnackbar(result.message || "Failed to disable two-factor authentication", "error");
+        showSnackbar(
+          result.message || "Failed to disable two-factor authentication",
+          "error"
+        );
       }
     } catch (error) {
       showSnackbar("Error disabling two-factor authentication", "error");
@@ -169,7 +183,7 @@ const SecurityTab = () => {
       setIsSaving(false);
     }
   };
-  
+
   // Load 2FA QR code when dialog opens
   useEffect(() => {
     if (setup2FADialogOpen && !twoFactorData) {
@@ -178,19 +192,22 @@ const SecurityTab = () => {
   }, [setup2FADialogOpen, twoFactorData]);
 
   return (
-    <Box sx={{ px: 3 }}>
-      <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
-        Security Settings
-      </Typography>
-
+    <>
       {/* Password Change */}
-      <Paper variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "medium" }}>
+      <Paper variant="outlined" sx={{ p: 3, mb: 2, borderRadius: 2 }}>
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{ fontWeight: "bold" }}
+        >
           Change Password
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          Keep your account secure by changing your password regularly
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <PasswordField
               label="Current Password"
               onChange={(value) => setCurrentPassword(value)}
@@ -199,7 +216,7 @@ const SecurityTab = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <PasswordField
               label="New Password"
               onChange={(value) => setNewPassword(value)}
@@ -208,7 +225,7 @@ const SecurityTab = () => {
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <PasswordField
               label="Confirm New Password"
               onChange={(value) => setConfirmPassword(value)}
@@ -223,7 +240,7 @@ const SecurityTab = () => {
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
               <Button
                 variant="contained"
@@ -244,7 +261,7 @@ const SecurityTab = () => {
       </Paper>
 
       {/* Two-Factor Authentication */}
-      <Paper variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+      <Paper variant="outlined" sx={{ p: 3, mb: 2, borderRadius: 2 }}>
         <Box
           sx={{
             display: "flex",
@@ -254,7 +271,11 @@ const SecurityTab = () => {
           }}
         >
           <Box>
-            <Typography variant="subtitle1" sx={{ mb: 0.5, fontWeight: "medium" }}>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: "bold" }}
+            >
               Two-Factor Authentication
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -286,10 +307,12 @@ const SecurityTab = () => {
           </Alert>
         )}
       </Paper>
-    
 
       {/* Two-Factor Authentication Setup Dialog */}
-      <Dialog open={setup2FADialogOpen} onClose={() => setSetup2FADialogOpen(false)}>
+      <Dialog
+        open={setup2FADialogOpen}
+        onClose={() => setSetup2FADialogOpen(false)}
+      >
         <DialogTitle>Set Up Two-Factor Authentication</DialogTitle>
         <DialogContent>
           {qrCodeLoading ? (
@@ -299,7 +322,8 @@ const SecurityTab = () => {
           ) : twoFactorData ? (
             <Box sx={{ textAlign: "center", my: 2 }}>
               <Typography variant="body2" sx={{ mb: 2 }}>
-                Scan this QR code with an authenticator app like Google Authenticator or Authy
+                Scan this QR code with an authenticator app like Google
+                Authenticator or Authy
               </Typography>
 
               <Box sx={{ mb: 3 }}>
@@ -339,8 +363,9 @@ const SecurityTab = () => {
             </Box>
           ) : (
             <DialogContentText>
-              Two-factor authentication adds an extra layer of security to your account by
-              requiring a code from your phone in addition to your password.
+              Two-factor authentication adds an extra layer of security to your
+              account by requiring a code from your phone in addition to your
+              password.
             </DialogContentText>
           )}
         </DialogContent>
@@ -361,7 +386,9 @@ const SecurityTab = () => {
           ) : (
             <Button
               variant="contained"
-              disabled={!twoFactorCode || twoFactorCode.length !== 6 || isSaving}
+              disabled={
+                !twoFactorCode || twoFactorCode.length !== 6 || isSaving
+              }
               onClick={handleVerifyTwoFactor}
             >
               Verify and Enable
@@ -378,8 +405,8 @@ const SecurityTab = () => {
         <DialogTitle>Disable Two-Factor Authentication</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 3 }}>
-            Are you sure you want to disable two-factor authentication? This will make your
-            account less secure.
+            Are you sure you want to disable two-factor authentication? This
+            will make your account less secure.
           </DialogContentText>
 
           <TextField
@@ -412,8 +439,8 @@ const SecurityTab = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 
-export default SecurityTab; 
+export default SecurityTab;

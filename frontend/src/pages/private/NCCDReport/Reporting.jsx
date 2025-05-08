@@ -237,7 +237,7 @@ const NCCDReports = () => {
       >
         Back 
       </Button>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h4" gutterBottom>
           NCCD Reports
         </Typography>

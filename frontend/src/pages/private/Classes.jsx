@@ -313,7 +313,7 @@ const Classes = () => {
             elevation={3}
             sx={{
               p: 3,
-              mb: 4,
+              mb: 2,
               display: addClassFormOpen ? "block" : "none",
               borderRadius: 2,
               bgcolor: "background.paper",

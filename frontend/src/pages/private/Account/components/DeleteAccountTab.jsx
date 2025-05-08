@@ -1,7 +1,7 @@
 import React from "react";
 
 // Local Components
-import PasswordField from "./PasswordField";    
+import PasswordField from "./PasswordField";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -20,7 +20,6 @@ import DialogActions from "@mui/material/DialogActions";
 // MUI Icons
 import DeleteIcon from "@mui/icons-material/Delete";
 
-
 const DeleteAccountTab = ({
   deleteDialogOpen,
   setDeleteDialogOpen,
@@ -31,16 +30,12 @@ const DeleteAccountTab = ({
   onNavigateToTab,
 }) => {
   return (
-    <Box sx={{ px: 3 }}>
-      <Typography variant="h6" component="h2" sx={{ mb: 3 }}>
-        Delete Account
-      </Typography>
-
+    <>
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
         <Alert severity="warning" sx={{ mb: 3 }}>
           <AlertTitle>Warning: This action is permanent</AlertTitle>
-          Deleting your account will permanently remove all your data including classes,
-          students, assessments, and personal information.
+          Deleting your account will permanently remove all your data including
+          classes, students, assessments, and personal information.
         </Alert>
 
         <Typography variant="body1" sx={{ mb: 3 }}>
@@ -67,7 +62,7 @@ const DeleteAccountTab = ({
 
         <Divider sx={{ my: 3 }} />
 
-        <Typography variant="subtitle1" sx={{ fontWeight: "medium", mb: 3 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold" }}>
           I understand the consequences and want to delete my account
         </Typography>
 
@@ -82,12 +77,15 @@ const DeleteAccountTab = ({
       </Paper>
 
       {/* Delete Account Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Delete Your Account?</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 3 }}>
-            This action cannot be undone. All your data will be permanently deleted. Please
-            enter your password to confirm.
+            This action cannot be undone. All your data will be permanently
+            deleted. Please enter your password to confirm.
           </DialogContentText>
 
           <PasswordField
@@ -117,8 +115,8 @@ const DeleteAccountTab = ({
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </>
   );
 };
 
-export default DeleteAccountTab; 
+export default DeleteAccountTab;
