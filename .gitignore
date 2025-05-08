@@ -33,15 +33,8 @@ yarn-error.log*
 # Ignore Python cache directories and files
 **/__pycache__/
 *.py[cod]
-**/migrations/
 *.pyc
 ./backend/*/__pycache__
-
-# Ignore all migration files in any app
-**./backend/*/migrations/*.py
-
-# But do NOT ignore __init__.py
-!**./backend/*/migrations/__init__.py
 
 # Ignore media files
 backend/media/
