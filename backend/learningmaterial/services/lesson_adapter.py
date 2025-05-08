@@ -73,13 +73,43 @@ def generate_adapted_lessons(material, students, return_file=False):
     adapted_lessons = {}
 
     for student in students:
-        disability_info = student.disability_info 
-       
+        disability_info = decrypt(student.disability_info)
+
         if not disability_info.strip():
             continue
 
         print(f"Student: {student.first_name} {student.last_name}, Disability: {disability_info}")
+        is_blind = any(term in disability_info.lower() for term in ["blind", "visually impaired", "low vision"])
 
+        if is_blind:
+            # Only generate audio from original content
+            output_dir = os.path.join(settings.MEDIA_ROOT, "adapted_output")
+            os.makedirs(output_dir, exist_ok=True)
+
+            title_safe = material.title.replace(" ", "_").replace("/", "_")
+            first_last = f"{student.first_name}_{student.last_name}".replace(" ", "_").lower()
+            audio_filename = f"{first_last}_{title_safe}.mp3"
+            audio_path = os.path.join(output_dir, audio_filename)
+
+            success = create_audio_from_text(base_text, audio_path)
+            if success:
+                print(f"Audio created at {audio_path}")
+                adapted_lessons[student.id] = {
+                    "disability": disability_info,
+                    "adapted_title": material.title,
+                    "adapted_objectives": [],
+                    "adapted_content": "",
+                    "file": None,
+                    "file_url": None,
+                    "audio": audio_path,
+                    "audio_url": f"{settings.MEDIA_URL}adapted_output/{audio_filename}"
+                }
+            else:
+                print(f"Audio creation failed for {student.first_name} {student.last_name}")
+                adapted_lessons[student.id] = {"error": "Audio generation failed"}
+            continue  # Skip rest of loop for blind students
+
+        # Proceed with LLM adaptation for non-blind students
         student_prompt = prompt.format(
             disability_info=disability_info,
             objectives=material.objective or "",
@@ -92,7 +122,6 @@ def generate_adapted_lessons(material, students, return_file=False):
             parsed_response = parser.parse(response.content)
             adapted_lessons[student.id] = parsed_response
 
-            # Generate output file if requested
             if return_file:
                 adapted_text = parsed_response["adapted_content"]
                 output_dir = os.path.join(settings.MEDIA_ROOT, "adapted_output")
@@ -114,31 +143,6 @@ def generate_adapted_lessons(material, students, return_file=False):
 
                 parsed_response["file"] = output_path
                 parsed_response["file_url"] = f"{settings.MEDIA_URL}adapted_output/{filename}"
-
-            # Always generate audio for blind students
-            if "blind" in disability_info.lower():
-                print(f"Generating audio for: {student.first_name} {student.last_name}")
-                adapted_text = parsed_response.get("adapted_content", "")
-
-                if not adapted_text:
-                    print("Adapted text is empty, skipping audio.")
-                    continue
-
-                output_dir = os.path.join(settings.MEDIA_ROOT, "adapted_output")
-                os.makedirs(output_dir, exist_ok=True)
-
-                title_safe = material.title.replace(" ", "_").replace("/", "_")
-                first_last = f"{student.first_name}_{student.last_name}".replace(" ", "_").lower()
-                audio_filename = f"{first_last}_{title_safe}.mp3"
-                audio_path = os.path.join(output_dir, audio_filename)
-
-                success = create_audio_from_text(adapted_text, audio_path)
-                if success:
-                    print(f"Audio created at {audio_path}")
-                    parsed_response["audio"] = audio_path
-                    parsed_response["audio_url"] = f"{settings.MEDIA_URL}adapted_output/{audio_filename}"
-                else:
-                    print(f"Audio creation failed for {student.first_name} {student.last_name}")
 
         except Exception as e:
             adapted_lessons[student.id] = {"error": str(e)}

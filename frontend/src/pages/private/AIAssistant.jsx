@@ -459,7 +459,12 @@ const LearningMaterialUploader = () => {
                                 </Button>
                               </td>
                               <td style={{ ...tableCellStyle }}>
-                                {student.audio_url ? (
+                              {student.audio_url ? (
+                                <>
+                                  <audio controls>
+                                    <source src={`${BACKEND}${student.audio_url}`} type="audio/mpeg" />
+                                    Your browser does not support the audio element.
+                                  </audio>
                                   <Button
                                     variant="outlined"
                                     size="small"
@@ -468,12 +473,14 @@ const LearningMaterialUploader = () => {
                                     rel="noopener noreferrer"
                                     download
                                     startIcon={<UploadFileIcon />}
+                                    sx={{ mt: 1 }}
                                   >
-                                    Audio
+                                    Download
                                   </Button>
-                                ) : (
-                                  "—"
-                                )}
+                                </>
+                              ) : (
+                                "—"
+                              )}
                               </td>
                             </tr>
                           ))}

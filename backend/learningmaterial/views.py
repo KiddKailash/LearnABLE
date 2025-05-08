@@ -46,7 +46,8 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
                 response[student.id] = {
                     "first_name": student.first_name,
                     "last_name": student.last_name,
-                    "file_url": result.get("file_url")
+                    "file_url": result.get("file_url"),
+                    "audio_url": result.get("audio_url")
                 }
 
         return Response(response)

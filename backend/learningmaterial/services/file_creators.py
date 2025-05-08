@@ -8,6 +8,9 @@ from reportlab.lib.units import inch
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from gtts import gTTS
 import os
+import requests
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 def create_docx_from_text(text, path):
@@ -82,18 +85,43 @@ def create_pdf_from_text(text, path):
     c.save()
 
 
-def create_audio_from_text(text, path):
+
+
+
+# nova – female, natural and calm
+
+# shimmer – female, bright and expressive
+
+# echo – male, neutral and smooth
+
+# onyx – male, deeper tone
+
+# fable – male, slightly theatrical
+
+def create_audio_from_text(text, path, voice="nova", speed=1.0):
     try:
-        print(f"[AUDIO] Generating audio at: {path}")
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        tts = gTTS(text)
-        tts.save(path)
-        if os.path.exists(path):
-            print(f"[AUDIO] Verified audio saved at: {path}")
-            return True
-        else:
-            print(f"[AUDIO ERROR] File not found after saving at: {path}")
-            return False
+        
+        url = "https://api.openai.com/v1/audio/speech"
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": "tts-1",
+            "voice": voice,
+            "input": text,
+            "speed": speed
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+
+        with open(path, "wb") as f:
+            f.write(response.content)
+
+        print(f"[AUDIO] Audio saved at {path}")
+        return True
     except Exception as e:
-        print(f"[AUDIO ERROR] Failed to create audio file: {e}")
+        print(f"[AUDIO ERROR] {e}")
         return False
