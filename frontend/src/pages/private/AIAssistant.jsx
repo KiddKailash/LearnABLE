@@ -52,7 +52,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
 }));
 
-const LearningMaterialUploader = () => {
+const AIAssistantUpload = () => {
   const BACKEND = process.env.REACT_APP_SERVER_URL;
   const navigate = useNavigate();
 
@@ -552,4 +552,4 @@ const tableCellStyle = {
   borderBottom: "1px solid #e0e0e0",
 };
 
-export default LearningMaterialUploader;
+export default AIAssistantUpload;
