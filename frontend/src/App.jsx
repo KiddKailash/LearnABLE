@@ -25,7 +25,7 @@ import Dashboard from "./pages/private/Dashboard";
 import MobileReporting from "./pages/private/NCCDReport/MobileReporting";
 import AIAssistantTutorial from "./pages/private/AIAssistantTutorial";
 import AIAssistantUpload from "./pages/private/AIAssistant";
-
+import StudentsList from "./pages/private/StudentList.jsx";
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
@@ -41,6 +41,7 @@ const App = ({ mode }) => {
     { path: "/ai-assistant/upload", component: <AIAssistantUpload /> },
     { path: "/reporting", component: <Reporting /> },
     { path: "/classes", component: <Classes /> },
+    { path: "/classes/:id/students", component: <StudentsList /> }, 
     { path: "/mobile-reporting", component: <MobileReporting /> },
     { path: "*", component: <PageNotFound /> },
   ];
