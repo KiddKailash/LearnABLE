@@ -434,7 +434,9 @@ const Classes = () => {
                             variant="outlined"
                             fullWidth
                             size="medium"
-                            onClick={() => console.log("Create content")}
+                            onClick={() =>
+                              navigate(`/classes/${cls.id}/content`)
+                            }
                             sx={{
                               justifyContent: "flex-start",
                               textTransform: "none",

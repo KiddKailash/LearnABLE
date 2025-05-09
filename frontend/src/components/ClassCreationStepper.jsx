@@ -16,6 +16,7 @@ import TextField from "@mui/material/TextField";
 import Grid from "@mui/material/Grid2";
 import Stack from "@mui/material/Stack";
 import LinearProgress from "@mui/material/LinearProgress";
+import Alert from "@mui/material/Alert";
 
 // MUI Icons
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
@@ -125,19 +126,19 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
         // Create the class if it hasn't been created yet
         if (!createdClassId) {
           console.log("Creating new class:", classData);
-          
+
           try {
             const result = await api.classes.create(classData);
             console.log("Class creation response:", result);
-            
+
             // Check for various ways the ID might be returned
             let classId = null;
-            
+
             // The backend specifically returns class_id at the top level
             if (result && result.class_id) {
               classId = result.class_id;
               console.log("Found class_id in response:", classId);
-            } 
+            }
             // Fallback checks for other formats
             else if (result && result.id) {
               classId = result.id;
@@ -146,9 +147,9 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
             } else if (result && result.class_data && result.class_data.id) {
               classId = result.class_data.id;
               console.log("Found ID in class_data:", classId);
-            } else if (typeof result === 'object') {
+            } else if (typeof result === "object") {
               // Try to find any property that looks like an ID
-              const possibleIds = ['id', 'class_id', 'classId', 'pk'];
+              const possibleIds = ["id", "class_id", "classId", "pk"];
               for (const idField of possibleIds) {
                 if (result[idField]) {
                   classId = result[idField];
@@ -157,20 +158,20 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                 }
               }
             }
-            
+
             if (!classId) {
               console.error("Could not find class ID in response:", result);
               throw new Error("Failed to get class ID from server response");
             }
-            
+
             console.log("Class created with ID:", classId);
-            
+
             // Immediately save the ID
             setCreatedClassId(classId);
-            
+
             // Store in localStorage as backup
-            localStorage.setItem('temp_created_class_id', classId);
-            
+            localStorage.setItem("temp_created_class_id", classId);
+
             showSnackbar("Class created successfully", "success");
           } catch (error) {
             console.error("Error creating class:", error);
@@ -193,16 +194,18 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
         // Try to get class ID from state or localStorage
         let classId = createdClassId;
         if (!classId) {
-          classId = localStorage.getItem('temp_created_class_id');
+          classId = localStorage.getItem("temp_created_class_id");
           if (classId) {
             console.log("Retrieved class ID from localStorage:", classId);
             setCreatedClassId(parseInt(classId, 10));
           }
         }
-        
+
         // Verify we have a class ID before proceeding
         if (!classId) {
-          setError("Missing class ID. Please go back and create a class first.");
+          setError(
+            "Missing class ID. Please go back and create a class first."
+          );
           setLoading(false);
           return;
         }
@@ -235,88 +238,113 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
         // Try to get class ID from state or localStorage
         let classId = createdClassId;
         if (!classId) {
-          classId = localStorage.getItem('temp_created_class_id');
+          classId = localStorage.getItem("temp_created_class_id");
           if (classId) {
             console.log("Retrieved class ID from localStorage:", classId);
             setCreatedClassId(parseInt(classId, 10));
           }
         }
-        
+
         // Final verification of class ID
         if (!classId) {
-          setError("Missing class ID. Class creation may have failed. Please restart the process.");
+          setError(
+            "Missing class ID. Class creation may have failed. Please restart the process."
+          );
           setLoading(false);
           return;
         }
 
         if (unitPlanFile) {
           try {
-            console.log('Creating unit plan with class ID:', classId);
-            console.log('Unit plan file:', unitPlanFile.name, unitPlanFile.type, unitPlanFile.size);
-            
+            console.log("Creating unit plan with class ID:", classId);
+            console.log(
+              "Unit plan file:",
+              unitPlanFile.name,
+              unitPlanFile.type,
+              unitPlanFile.size
+            );
+
             // Validate the file is accepted type
-            const validFileTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 
-                                    'application/msword', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                                    'application/vnd.ms-excel'];
-            
+            const validFileTypes = [
+              "application/pdf",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "application/msword",
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "application/vnd.ms-excel",
+            ];
+
             if (!validFileTypes.includes(unitPlanFile.type)) {
-              console.warn('File type may not be supported:', unitPlanFile.type);
+              console.warn(
+                "File type may not be supported:",
+                unitPlanFile.type
+              );
               // Continue anyway, just log the warning
             }
-            
+
             // Create FormData with explicit values
             const formData = new FormData();
-            
+
             // Add file first to ensure it's at the beginning of the form
-            formData.append('document', unitPlanFile);
-            
+            formData.append("document", unitPlanFile);
+
             // Ensure class_instance is a string and not undefined
             const classIdString = String(classId);
-            formData.append('class_instance', classIdString);
-            
+            formData.append("class_instance", classIdString);
+
             // Add title and description with default values if empty
-            formData.append('title', unitPlanTitle || "Unit Plan");
-            formData.append('description', unitPlanDescription || "");
-            
+            formData.append("title", unitPlanTitle || "Unit Plan");
+            formData.append("description", unitPlanDescription || "");
+
             // Add from_creation_flow as a string "true" not a boolean to avoid serialization issues
-            formData.append('from_creation_flow', 'true');
-            
+            formData.append("from_creation_flow", "true");
+
             // Log the form data for debugging
-            console.log('Unit plan form data keys:', [...formData.keys()]);
-            console.log('Class ID in form:', formData.get('class_instance'));
-            console.log('Title in form:', formData.get('title'));
-            
+            console.log("Unit plan form data keys:", [...formData.keys()]);
+            console.log("Class ID in form:", formData.get("class_instance"));
+            console.log("Title in form:", formData.get("title"));
+
             // First try the direct API method
             try {
-              console.log('Calling unitPlans.create API...');
+              console.log("Calling unitPlans.create API...");
               await api.unitPlans.create(formData);
-              console.log('Unit plan uploaded successfully through API');
+              console.log("Unit plan uploaded successfully through API");
               showSnackbar("Unit plan uploaded successfully", "success");
             } catch (apiError) {
               console.error("Error with unitPlans.create:", apiError);
-              
+
               // Try with a direct HTTP request as fallback
               try {
-                console.log('Trying direct HTTP request as fallback...');
-                const token = localStorage.getItem('access_token');
-                const response = await fetch(`${API_BASE_URL}/api/unit-plans/unitplans/`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${token}`
-                  },
-                  body: formData
-                });
-                
+                console.log("Trying direct HTTP request as fallback...");
+                const token = localStorage.getItem("access_token");
+                const response = await fetch(
+                  `${API_BASE_URL}/api/unit-plans/unitplans/`,
+                  {
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: formData,
+                  }
+                );
+
                 if (!response.ok) {
                   const errorText = await response.text();
-                  throw new Error(`HTTP error ${response.status}: ${errorText}`);
+                  throw new Error(
+                    `HTTP error ${response.status}: ${errorText}`
+                  );
                 }
-                
-                console.log('Unit plan uploaded successfully through direct fetch');
+
+                console.log(
+                  "Unit plan uploaded successfully through direct fetch"
+                );
                 showSnackbar("Unit plan uploaded successfully", "success");
               } catch (fetchError) {
                 console.error("Error with direct fetch:", fetchError);
-                throw new Error(`Failed to upload unit plan: ${fetchError.message || apiError.message}`);
+                throw new Error(
+                  `Failed to upload unit plan: ${
+                    fetchError.message || apiError.message
+                  }`
+                );
               }
             }
           } catch (uploadError) {
@@ -326,7 +354,7 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
             return;
           }
         }
-        
+
         // Only proceed to completion if everything was successful
         completeProcess();
       }
@@ -353,7 +381,7 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
     setLoading(false);
 
     // Clean up localStorage
-    localStorage.removeItem('temp_created_class_id');
+    localStorage.removeItem("temp_created_class_id");
 
     // Show final success message
     showSnackbar("Class setup completed successfully", "success");
@@ -458,7 +486,7 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
               <StepContent>
                 {/* Step 1: Create Class */}
                 {index === 0 && (
-                  <Box sx={{ my: 2 }}>
+                  <Box>
                     <Grid container spacing={2}>
                       <Grid size={12}>
                         <TextField
@@ -494,7 +522,11 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
 
                 {/* Step 2: Upload Students */}
                 {index === 1 && (
-                  <Box sx={{ my: 2 }}>
+                  <Box>
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      A CSV file containing this information may be download
+                      from OneSchool {'  >  '} Classes {'  >  '} Students.
+                    </Alert>
                     <Paper
                       variant="outlined"
                       sx={{
@@ -532,7 +564,11 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                       ) : (
                         <Box sx={{ py: 1 }}>
                           <CloudUploadIcon
-                            sx={{ fontSize: 48, mb: 1, color: "action.active" }}
+                            sx={{
+                              fontSize: 48,
+                              mb: 1,
+                              color: "action.active",
+                            }}
                           />
                           <Typography variant="body1" gutterBottom>
                             Click to upload student roster
@@ -566,7 +602,7 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
 
                 {/* Step 3: Upload Unit Plan */}
                 {index === 2 && (
-                  <Box sx={{ my: 2 }}>
+                  <Box>
                     <Grid container spacing={2}>
                       <Grid size={12}>
                         <TextField

@@ -24,6 +24,7 @@ import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard";
 import AIAssistantUpload from "./pages/private/AIAssistant";
 import StudentListPage from "./pages/private/StudentList.jsx";
+import ClassContent from "./pages/private/ClassContent";
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
@@ -40,6 +41,7 @@ const App = ({ mode }) => {
     { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },
     { path: "/classes/:classId/students", component: <StudentListPage /> }, 
+    { path: "/classes/:classId/content", component: <ClassContent /> },
     { path: "*", component: <PageNotFound /> },
   ];
 
