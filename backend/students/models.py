@@ -14,9 +14,7 @@ class Student(models.Model):
 
     student_email = models.EmailField(max_length=100, default='missing', unique=True)
     _disability_info = models.TextField(db_column='disability_info', blank=True)  # Store encrypted
-    guardian_email = models.EmailField(max_length=100)
-    guardian_first_name = models.CharField(max_length=50, default='missing')
-    guardian_last_name = models.CharField(max_length=50, default='missing')
+
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
