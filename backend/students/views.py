@@ -12,13 +12,30 @@ from classes.serializers import ClassSerializer
 from classes.models import Classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import permission_classes
+from teachers.models import Teacher
 
 #Get all students
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_all_students(request):
-    students = Student.objects.all()
-    serializer = StudentSerializer(students, many=True)
-    return Response(serializer.data)
+    try:
+        # Get the teacher linked to the current user
+        teacher = Teacher.objects.get(user=request.user)
+        
+        # Find all classes taught by this teacher
+        classes = Classes.objects.filter(teacher=teacher)
+        
+        # Get students from these classes (distinct to avoid duplicates)
+        students = Student.objects.filter(classes__in=classes).distinct()
+        
+        serializer = StudentSerializer(students, many=True)
+        return Response(serializer.data)
+    
+    except Teacher.DoesNotExist:
+        return Response(
+            {"error": "No teacher profile found for this user"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 # Create a student
 @api_view(['POST'])
