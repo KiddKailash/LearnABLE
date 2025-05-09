@@ -19,6 +19,7 @@ import reportWebVitals from "./tests/reportWebVitals";
 // Context/Providers
 import { SnackbarProvider } from "./contexts/SnackbarContext";
 import { UserProvider, default as UserContext } from "./contexts/UserObject";
+import { TutorialProvider } from "./contexts/TutorialContext";
 
 // MUI imports
 import { 
@@ -27,10 +28,7 @@ import {
   getInitColorSchemeScript
 } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { getTheme } from "./global-styling";
-
-// Error Boundary
-import ErrorBoundary from "./components/ErrorBoundary";
+import { getTheme } from "./styles/global-styling";
 
 const ThemeWrapper = () => {
   const { user } = useContext(UserContext);
@@ -58,22 +56,22 @@ const Root = () => {
   const theme = getTheme();
   
   return (
-    <ErrorBoundary>
       <Router>
-        <UserProvider>
-          {getInitColorSchemeScript({ defaultMode: "system" })}
-          <ThemeProvider 
-            theme={theme}
-            defaultMode="system"
-            colorSchemeSelector=".mode-$mode" 
-            modeStorageKey="theme_preference"
-          >
-            <CssBaseline />
-            <ThemeWrapper />
-          </ThemeProvider>
-        </UserProvider>
+        <ThemeProvider 
+          theme={theme}
+          defaultMode="system"
+          colorSchemeSelector=".mode-$mode" 
+          modeStorageKey="theme_preference"
+        >
+          <CssBaseline />
+          <TutorialProvider>
+            <UserProvider>
+              {getInitColorSchemeScript({ defaultMode: "system" })}
+              <ThemeWrapper />
+            </UserProvider>
+          </TutorialProvider>
+        </ThemeProvider>
       </Router>
-    </ErrorBoundary>
   );
 };
 

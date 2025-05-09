@@ -4,20 +4,21 @@
 
 import React, { Component } from "react";
 import PropTypes from "prop-types";
-import {
-  Box,
-  Typography,
-  Button,
-  Paper,
-  Alert,
-  AlertTitle,
-  Divider,
-  Fade,
-} from "@mui/material";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import RefreshIcon from "@mui/icons-material/Refresh";
+
+// MUI Components
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Alert from "@mui/material/Alert";
+import Divider from "@mui/material/Divider";
+import Fade from "@mui/material/Fade";
+
+// MUI Icons
 import HomeIcon from "@mui/icons-material/Home";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+
+// Utils
 import { getErrorInfo } from "../utils/errorHandling";
 
 /**

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
@@ -12,9 +12,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Alert from "@mui/material/Alert";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
@@ -87,8 +85,8 @@ const validateRegisterForm = (values) => {
 const validate2FAForm = (values) => {
   const errors = {};
 
-  if (!values.code) {
-    errors.code = "Authentication code is required";
+  if (!values.code || values.code.length !== 6) {
+    errors.code = "Authentication code must be 6 digits";
   } else if (!/^\d{6}$/.test(values.code)) {
     errors.code = "Code must be 6 digits";
   }
@@ -99,7 +97,8 @@ const validate2FAForm = (values) => {
 const AuthPage = ({ initialTab = 0 }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { showSnackbar } = useContext(SnackbarContext);
-  const { login, registerTeacher, verify2FA, requires2FA } = useContext(UserContext);
+  const { login, registerTeacher, verify2FA, requires2FA } =
+    useContext(UserContext);
   const navigate = useNavigate();
 
   // Login form handling
@@ -113,17 +112,82 @@ const AuthPage = ({ initialTab = 0 }) => {
     { first_name: "", last_name: "", email: "", password: "" },
     validateRegisterForm
   );
-  
+
   // 2FA form handling
-  const twoFactorForm = useFormValidation(
-    { code: "" },
-    validate2FAForm
-  );
+  const twoFactorForm = useFormValidation({ code: "" }, validate2FAForm);
 
   // Loading states
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+
+  // Refs for the 2FA input boxes
+  const inputRefs = [
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+  ];
+
+  // Effect to auto-verify when the code is complete
+  useEffect(() => {
+    if (
+      twoFactorForm.values.code &&
+      twoFactorForm.values.code.length === 6 &&
+      !twoFactorForm.errors.code
+    ) {
+      handleVerify2FA();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [twoFactorForm.values.code]);
+
+  // Handle individual digit input
+  const handleDigitChange = (e, index) => {
+    const value = e.target.value;
+    if (value === "" || /^\d$/.test(value)) {
+      // Update the code in the form
+      const newCode = twoFactorForm.values.code
+        ? twoFactorForm.values.code.split("")
+        : Array(6).fill("");
+      newCode[index] = value;
+      const updatedCode = newCode.join("");
+
+      twoFactorForm.setFieldValue("code", updatedCode);
+
+      // Move to next input if a digit was entered
+      if (value !== "" && index < 5) {
+        inputRefs[index + 1].current.focus();
+      }
+    }
+  };
+
+  // Handle backspace key
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && index > 0 && !e.target.value) {
+      inputRefs[index - 1].current.focus();
+    }
+  };
+
+  // Handle paste event
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    if (/^\d{6}$/.test(pastedData)) {
+      twoFactorForm.setFieldValue("code", pastedData);
+
+      // Fill all inputs
+      inputRefs.forEach((ref, index) => {
+        if (ref.current) {
+          ref.current.value = pastedData[index] || "";
+        }
+      });
+
+      // Focus the last input
+      inputRefs[5].current.focus();
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -147,7 +211,10 @@ const AuthPage = ({ initialTab = 0 }) => {
 
       if (result.success) {
         if (result.requiresTwoFactor) {
-          showSnackbar("Please enter your two-factor authentication code", "info");
+          showSnackbar(
+            "Please enter your two-factor authentication code",
+            "info"
+          );
           // 2FA dialog is shown automatically based on requires2FA state
         } else {
           showSnackbar("Login successful!", "success");
@@ -162,20 +229,23 @@ const AuthPage = ({ initialTab = 0 }) => {
       setLoginLoading(false);
     }
   };
-  
+
   const handleVerify2FA = async (e) => {
-    e.preventDefault();
-    
+    if (e) e.preventDefault();
+
+    // Don't proceed if already loading
+    if (twoFactorLoading) return;
+
     // Validate 2FA code
     if (!twoFactorForm.validateForm()) {
       showSnackbar("Please enter a valid 6-digit code", "error");
       return;
     }
-    
+
     setTwoFactorLoading(true);
     try {
       const result = await verify2FA(twoFactorForm.values.code);
-      
+
       if (result.success) {
         showSnackbar("Login successful!", "success");
         twoFactorForm.resetForm();
@@ -210,52 +280,62 @@ const AuthPage = ({ initialTab = 0 }) => {
 
       if (result.success) {
         showSnackbar("Registration successful!", "success");
-        
+
         // Automatically log in with the new credentials
         const loginResult = await login(
           registerForm.values.email,
           registerForm.values.password
         );
-        
+
         if (loginResult.success) {
           if (loginResult.requiresTwoFactor) {
-            showSnackbar("Please enter your two-factor authentication code", "info");
+            showSnackbar(
+              "Please enter your two-factor authentication code",
+              "info"
+            );
             // 2FA dialog is shown automatically based on requires2FA state
           } else {
             navigate("/dashboard");
           }
         } else {
-          showSnackbar(loginResult.message || "Auto-login failed after registration", "error");
+          showSnackbar(
+            loginResult.message || "Auto-login failed after registration",
+            "error"
+          );
           setActiveTab(0); // Switch to login tab
           registerForm.resetForm(); // Clear the registration form
         }
       } else {
         // Convert object errors to string if needed
-        const errorMessage = typeof result.message === 'object' 
-          ? Object.entries(result.message)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(', ')
-          : result.message;
-          
+        const errorMessage =
+          typeof result.message === "object"
+            ? Object.entries(result.message)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join(", ")
+            : result.message;
+
         showSnackbar(errorMessage || "Registration failed", "error");
-        
+
         // If we have database constraint errors, set the appropriate field error
-        if ((errorMessage && 
-            (errorMessage.toLowerCase().includes('already exists') || 
-             errorMessage.toLowerCase().includes('teacher profile')))) {
+        if (
+          errorMessage &&
+          (errorMessage.toLowerCase().includes("already exists") ||
+            errorMessage.toLowerCase().includes("teacher profile"))
+        ) {
           // Create a new error object for the form
           const formErrors = { ...registerForm.errors };
-          
-          if (errorMessage.toLowerCase().includes('email')) {
+
+          if (errorMessage.toLowerCase().includes("email")) {
             formErrors.email = "This email is already in use";
-          } else if (errorMessage.toLowerCase().includes('teacher profile')) {
-            formErrors.email = "A teacher profile already exists for this email";
+          } else if (errorMessage.toLowerCase().includes("teacher profile")) {
+            formErrors.email =
+              "A teacher profile already exists for this email";
           }
-          
+
           // Only attempt to set errors if the function exists
-          if (typeof registerForm.setErrors === 'function') {
+          if (typeof registerForm.setErrors === "function") {
             registerForm.setErrors(formErrors);
-            
+
             // Mark relevant fields as touched
             const touchedFields = { ...registerForm.touched };
             if (formErrors.email) touchedFields.email = true;
@@ -265,29 +345,35 @@ const AuthPage = ({ initialTab = 0 }) => {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      
+
       // Display the error message from the server
-      const errorMessage = error.message || "Error occurred during registration";
+      const errorMessage =
+        error.message || "Error occurred during registration";
       showSnackbar(errorMessage, "error");
-      
+
       // If we have database constraint errors, set the appropriate field error
-      if ((errorMessage && 
-          (errorMessage.toLowerCase().includes('already exists') || 
-           errorMessage.toLowerCase().includes('teacher profile'))) || 
-          error.field) {
+      if (
+        (errorMessage &&
+          (errorMessage.toLowerCase().includes("already exists") ||
+            errorMessage.toLowerCase().includes("teacher profile"))) ||
+        error.field
+      ) {
         // Create a new error object for the form
         const formErrors = { ...registerForm.errors };
-        
-        if (errorMessage.toLowerCase().includes('email') || error.field === 'email') {
+
+        if (
+          errorMessage.toLowerCase().includes("email") ||
+          error.field === "email"
+        ) {
           formErrors.email = "This email is already in use";
-        } else if (errorMessage.toLowerCase().includes('teacher profile')) {
+        } else if (errorMessage.toLowerCase().includes("teacher profile")) {
           formErrors.email = "A teacher profile already exists for this email";
         }
-        
+
         // Only attempt to set errors if the function exists
-        if (typeof registerForm.setErrors === 'function') {
+        if (typeof registerForm.setErrors === "function") {
           registerForm.setErrors(formErrors);
-          
+
           // Mark relevant fields as touched
           const touchedFields = { ...registerForm.touched };
           if (formErrors.email) touchedFields.email = true;
@@ -304,10 +390,7 @@ const AuthPage = ({ initialTab = 0 }) => {
       <Box
         sx={(theme) => ({
           padding: theme.spacing(4),
-          marginTop: theme.spacing(4),
-          bgcolor: theme.palette.background.paper,
-          boxShadow: theme.shadows[22],
-          borderRadius: theme.shape.borderRadius,
+          borderRadius: 2,
           border: `1px solid ${theme.palette.divider}`,
         })}
       >
@@ -319,7 +402,7 @@ const AuthPage = ({ initialTab = 0 }) => {
           value={activeTab}
           onChange={handleTabChange}
           centered
-          sx={{ mb: 3 }}
+          sx={{ mb: 2 }}
         >
           <Tab label="Login" />
           <Tab label="Register" />
@@ -386,6 +469,50 @@ const AuthPage = ({ initialTab = 0 }) => {
             <Stack direction="column" spacing={2}>
               <TextField
                 fullWidth
+                id="register-email"
+                name="email"
+                label="Email"
+                type="email"
+                value={registerForm.values.email}
+                onChange={registerForm.handleChange}
+                onBlur={registerForm.handleBlur}
+                error={
+                  registerForm.touched.email &&
+                  Boolean(registerForm.errors.email)
+                }
+                helperText={
+                  registerForm.touched.email && registerForm.errors.email
+                }
+                required
+                autoComplete="email"
+              />
+
+              <TextField
+                fullWidth
+                id="register-password"
+                name="password"
+                label="Password"
+                type="password"
+                value={registerForm.values.password}
+                onChange={registerForm.handleChange}
+                onBlur={registerForm.handleBlur}
+                error={
+                  registerForm.touched.password &&
+                  Boolean(registerForm.errors.password)
+                }
+                helperText={
+                  registerForm.touched.password && registerForm.errors.password
+                }
+                required
+              />
+
+              <Alert severity="info" sx={{ mb: 1 }}>
+                Password must be at least 8 characters long and contain at least
+                one special character.
+              </Alert>
+
+              <TextField
+                fullWidth
                 id="register-first-name"
                 name="first_name"
                 label="First Name"
@@ -424,49 +551,6 @@ const AuthPage = ({ initialTab = 0 }) => {
                 required
               />
 
-              <TextField
-                fullWidth
-                id="register-email"
-                name="email"
-                label="Email"
-                type="email"
-                value={registerForm.values.email}
-                onChange={registerForm.handleChange}
-                onBlur={registerForm.handleBlur}
-                error={
-                  registerForm.touched.email &&
-                  Boolean(registerForm.errors.email)
-                }
-                helperText={
-                  registerForm.touched.email && registerForm.errors.email
-                }
-                required
-                autoComplete="email"
-              />
-
-              <Alert severity="info" sx={{ mb: 1 }}>
-                Password must be at least 8 characters long and contain at least one special character.
-              </Alert>
-
-              <TextField
-                fullWidth
-                id="register-password"
-                name="password"
-                label="Password"
-                type="password"
-                value={registerForm.values.password}
-                onChange={registerForm.handleChange}
-                onBlur={registerForm.handleBlur}
-                error={
-                  registerForm.touched.password &&
-                  Boolean(registerForm.errors.password)
-                }
-                helperText={
-                  registerForm.touched.password && registerForm.errors.password
-                }
-                required
-              />
-
               <LoadingButton
                 fullWidth
                 type="submit"
@@ -481,49 +565,68 @@ const AuthPage = ({ initialTab = 0 }) => {
           </Box>
         )}
       </Box>
-      
+
       {/* Two-Factor Authentication Dialog */}
       <Dialog open={requires2FA} fullWidth maxWidth="xs">
-        <DialogTitle>Two-Factor Authentication</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Please enter the 6-digit code from your authenticator app to complete login
-          </DialogContentText>
-          
+        <DialogContent sx={{ p: 4 }}>
+          <Typography variant="h5" gutterBottom align="center">
+            Two-Factor Authentication
+          </Typography>
           <Box component="form" noValidate onSubmit={handleVerify2FA}>
-            <TextField
-              fullWidth
-              id="two-factor-code"
-              name="code"
-              label="Authentication Code"
-              value={twoFactorForm.values.code}
-              onChange={twoFactorForm.handleChange}
-              onBlur={twoFactorForm.handleBlur}
-              error={twoFactorForm.touched.code && Boolean(twoFactorForm.errors.code)}
-              helperText={twoFactorForm.touched.code && twoFactorForm.errors.code}
-              inputProps={{ maxLength: 6 }}
-              required
-              autoFocus
-            />
+            <Stack
+              direction="row"
+              spacing={1}
+              justifyContent="center"
+              sx={{ mb: 2 }}
+              onPaste={handlePaste}
+            >
+              {[0, 1, 2, 3, 4, 5].map((index) => (
+                <TextField
+                  key={index}
+                  inputRef={inputRefs[index]}
+                  value={
+                    twoFactorForm.values.code
+                      ? twoFactorForm.values.code[index] || ""
+                      : ""
+                  }
+                  sx={{
+                    width: "40px",
+                    "& input": {
+                      textAlign: "center",
+                      fontSize: "1.5rem",
+                      p: 1,
+                    },
+                  }}
+                  inputProps={{
+                    maxLength: 1,
+                    inputMode: "numeric",
+                    pattern: "[0-9]",
+                  }}
+                  variant="outlined"
+                  onChange={(e) => handleDigitChange(e, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  autoFocus={index === 0}
+                />
+              ))}
+            </Stack>
+            {twoFactorForm.errors.code && (
+              <Typography color="error" variant="body2" textAlign="center">
+                {twoFactorForm.errors.code}
+              </Typography>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => {
-            twoFactorForm.resetForm();
-            // This would normally trigger a "cancel" action in the UserContext
-            // But for simplicity we just redirect to login
-            window.location.href = '/login';
-          }}>
+          <Button
+            onClick={() => {
+              twoFactorForm.resetForm();
+              // This would normally trigger a "cancel" action in the UserContext
+              // But for simplicity we just redirect to login
+              window.location.href = "/login";
+            }}
+          >
             Cancel
           </Button>
-          <LoadingButton
-            onClick={handleVerify2FA}
-            loading={twoFactorLoading}
-            variant="contained"
-            color="primary"
-          >
-            Verify
-          </LoadingButton>
         </DialogActions>
       </Dialog>
     </Container>

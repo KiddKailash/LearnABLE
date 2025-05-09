@@ -17,6 +17,7 @@ import React, { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import authApi from "../services/authApi";
+import { useTutorial } from "./TutorialContext";
 
 const UserContext = createContext({
   user: null, // Complete teacher profile info from the server
@@ -46,6 +47,7 @@ export const UserProvider = ({ children }) => {
   const [twoFactorData, setTwoFactorData] = useState(null);
   
   const navigate = useNavigate();
+  const tutorialContext = useTutorial();
 
   /**
    * Updates user information in context
@@ -161,10 +163,15 @@ export const UserProvider = ({ children }) => {
       theme_preference: data.theme_preference || 'light',
       two_factor_enabled: data.two_factor_enabled || false,
       last_password_change: data.last_password_change,
-      // Include other profile fields
+      is_first_login: data.is_first_login,
       ...data
     });
     setIsLoggedIn(true);
+
+    // Start tutorial if this is the first login
+    if (data.is_first_login && tutorialContext?.startTutorial) {
+      tutorialContext.startTutorial();
+    }
   };
 
   /**
@@ -458,6 +465,7 @@ export const UserProvider = ({ children }) => {
     };
     
     autoLogin();
+    //eslint-disable-next-line
   }, []);
 
   return (

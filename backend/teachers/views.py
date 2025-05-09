@@ -193,13 +193,13 @@ def login_teacher(request):
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
                 "id": user.id,
+                "email": user.email,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
-                "email": user.email,
                 "two_factor_enabled": teacher.two_factor_enabled,
+                "is_first_login": teacher.is_first_login,
                 "theme_preference": teacher.theme_preference,
-                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None,
-                "session_id": session.id
+                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None
             })
 
         except json.JSONDecodeError:
@@ -685,7 +685,7 @@ def verify_login_2fa(request):
                 "email": user.email,
                 "two_factor_enabled": teacher.two_factor_enabled,
                 "theme_preference": teacher.theme_preference,
-                "last_password_change": teacher.last_password_change.isoformat() if teacher.last_password_change else None,
+                "is_first_login": teacher.is_first_login,
                 "session_id": session.id
             })
 
@@ -725,3 +725,23 @@ def logout(request):
         return Response({"message": "Logged out successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_first_login_status(request):
+    """
+    Update the first login status of a teacher.
+    This endpoint should be called after the tutorial is completed.
+    """
+    try:
+        teacher = request.user.teacher
+        teacher.is_first_login = False
+        teacher.save()
+        return Response({
+            "message": "First login status updated successfully",
+            "is_first_login": False
+        })
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=400)

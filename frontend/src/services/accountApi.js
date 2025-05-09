@@ -67,6 +67,10 @@ const accountApi = {
   
   disconnectGoogleAccount: async () => {
     return httpClient.post('/api/teachers/profile/disconnect-google/');
+  },
+
+  updateFirstLoginStatus: async () => {
+    return httpClient.post('/api/teachers/profile/first-login/');
   }
 };
 
