@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 
@@ -12,9 +12,7 @@ import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Alert from "@mui/material/Alert";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 
@@ -87,8 +85,8 @@ const validateRegisterForm = (values) => {
 const validate2FAForm = (values) => {
   const errors = {};
 
-  if (!values.code) {
-    errors.code = "Authentication code is required";
+  if (!values.code || values.code.length !== 6) {
+    errors.code = "Authentication code must be 6 digits";
   } else if (!/^\d{6}$/.test(values.code)) {
     errors.code = "Code must be 6 digits";
   }
@@ -122,6 +120,74 @@ const AuthPage = ({ initialTab = 0 }) => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+
+  // Refs for the 2FA input boxes
+  const inputRefs = [
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+    useRef(null),
+  ];
+
+  // Effect to auto-verify when the code is complete
+  useEffect(() => {
+    if (
+      twoFactorForm.values.code &&
+      twoFactorForm.values.code.length === 6 &&
+      !twoFactorForm.errors.code
+    ) {
+      handleVerify2FA();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [twoFactorForm.values.code]);
+
+  // Handle individual digit input
+  const handleDigitChange = (e, index) => {
+    const value = e.target.value;
+    if (value === "" || /^\d$/.test(value)) {
+      // Update the code in the form
+      const newCode = twoFactorForm.values.code
+        ? twoFactorForm.values.code.split("")
+        : Array(6).fill("");
+      newCode[index] = value;
+      const updatedCode = newCode.join("");
+
+      twoFactorForm.setFieldValue("code", updatedCode);
+
+      // Move to next input if a digit was entered
+      if (value !== "" && index < 5) {
+        inputRefs[index + 1].current.focus();
+      }
+    }
+  };
+
+  // Handle backspace key
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && index > 0 && !e.target.value) {
+      inputRefs[index - 1].current.focus();
+    }
+  };
+
+  // Handle paste event
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    if (/^\d{6}$/.test(pastedData)) {
+      twoFactorForm.setFieldValue("code", pastedData);
+
+      // Fill all inputs
+      inputRefs.forEach((ref, index) => {
+        if (ref.current) {
+          ref.current.value = pastedData[index] || "";
+        }
+      });
+
+      // Focus the last input
+      inputRefs[5].current.focus();
+    }
+  };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -165,7 +231,10 @@ const AuthPage = ({ initialTab = 0 }) => {
   };
 
   const handleVerify2FA = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+
+    // Don't proceed if already loading
+    if (twoFactorLoading) return;
 
     // Validate 2FA code
     if (!twoFactorForm.validateForm()) {
@@ -333,7 +402,7 @@ const AuthPage = ({ initialTab = 0 }) => {
           value={activeTab}
           onChange={handleTabChange}
           centered
-          sx={{ mb: 3 }}
+          sx={{ mb: 2 }}
         >
           <Tab label="Login" />
           <Tab label="Register" />
@@ -499,32 +568,52 @@ const AuthPage = ({ initialTab = 0 }) => {
 
       {/* Two-Factor Authentication Dialog */}
       <Dialog open={requires2FA} fullWidth maxWidth="xs">
-        <DialogTitle>Two-Factor Authentication</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Please enter the 6-digit code from your authenticator app to
-            complete login
-          </DialogContentText>
-
+        <DialogContent sx={{ p: 4 }}>
+          <Typography variant="h5" gutterBottom align="center">
+            Two-Factor Authentication
+          </Typography>
           <Box component="form" noValidate onSubmit={handleVerify2FA}>
-            <TextField
-              fullWidth
-              id="two-factor-code"
-              name="code"
-              label="Authentication Code"
-              value={twoFactorForm.values.code}
-              onChange={twoFactorForm.handleChange}
-              onBlur={twoFactorForm.handleBlur}
-              error={
-                twoFactorForm.touched.code && Boolean(twoFactorForm.errors.code)
-              }
-              helperText={
-                twoFactorForm.touched.code && twoFactorForm.errors.code
-              }
-              inputProps={{ maxLength: 6 }}
-              required
-              autoFocus
-            />
+            <Stack
+              direction="row"
+              spacing={1}
+              justifyContent="center"
+              sx={{ mb: 2 }}
+              onPaste={handlePaste}
+            >
+              {[0, 1, 2, 3, 4, 5].map((index) => (
+                <TextField
+                  key={index}
+                  inputRef={inputRefs[index]}
+                  value={
+                    twoFactorForm.values.code
+                      ? twoFactorForm.values.code[index] || ""
+                      : ""
+                  }
+                  sx={{
+                    width: "40px",
+                    "& input": {
+                      textAlign: "center",
+                      fontSize: "1.5rem",
+                      p: 1,
+                    },
+                  }}
+                  inputProps={{
+                    maxLength: 1,
+                    inputMode: "numeric",
+                    pattern: "[0-9]",
+                  }}
+                  variant="outlined"
+                  onChange={(e) => handleDigitChange(e, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  autoFocus={index === 0}
+                />
+              ))}
+            </Stack>
+            {twoFactorForm.errors.code && (
+              <Typography color="error" variant="body2" textAlign="center">
+                {twoFactorForm.errors.code}
+              </Typography>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -538,14 +627,6 @@ const AuthPage = ({ initialTab = 0 }) => {
           >
             Cancel
           </Button>
-          <LoadingButton
-            onClick={handleVerify2FA}
-            loading={twoFactorLoading}
-            variant="contained"
-            color="primary"
-          >
-            Verify
-          </LoadingButton>
         </DialogActions>
       </Dialog>
     </Container>
