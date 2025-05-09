@@ -673,52 +673,6 @@ const Classes = () => {
 
               <Grid size={12}>
                 <Divider sx={{ my: 1 }}>
-                  <Chip label="Guardian Information" />
-                </Divider>
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Guardian First Name"
-                  value={studentForm.guardian_first_name}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      guardian_first_name: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Guardian Last Name"
-                  value={studentForm.guardian_last_name}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      guardian_last_name: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Guardian Email"
-                  value={studentForm.guardian_email}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      guardian_email: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <Divider sx={{ my: 1 }}>
                   <Chip label="Additional Information" />
                 </Divider>
               </Grid>

@@ -19,10 +19,9 @@ import PageNotFound from "./pages/public/PageNotFound";
 
 // Webpages - Private
 import Account from "./pages/private/Account/Account";
-import Reporting from "./pages/private/NCCDReport/Reporting.jsx";
+import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
 import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard";
-import MobileReporting from "./pages/private/NCCDReport/MobileReporting";
 import AIAssistantTutorial from "./pages/private/AIAssistantTutorial";
 import AIAssistantUpload from "./pages/private/AIAssistant";
 import StudentsList from "./pages/private/StudentList.jsx";
@@ -39,10 +38,9 @@ const App = ({ mode }) => {
     { path: "/account", component: <Account /> },
     { path: "/ai-assistant", component: <AIAssistantTutorial /> },
     { path: "/ai-assistant/upload", component: <AIAssistantUpload /> },
-    { path: "/reporting", component: <Reporting /> },
+    { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },
     { path: "/classes/:id/students", component: <StudentsList /> }, 
-    { path: "/mobile-reporting", component: <MobileReporting /> },
     { path: "*", component: <PageNotFound /> },
   ];
 

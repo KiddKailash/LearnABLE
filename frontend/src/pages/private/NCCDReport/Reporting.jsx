@@ -235,7 +235,7 @@ const NCCDReports = () => {
         onClick={() => navigate("/dashboard")}
         sx={{ mb: 2 }}
       >
-        Back 
+        Back
       </Button>
       <Box sx={{ mb: 2 }}>
         <Typography variant="h4" gutterBottom>
@@ -319,15 +319,6 @@ const NCCDReports = () => {
               disabled={!students.length}
             >
               New NCCD Report
-            </Button>
-            
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => window.location.href = "/mobile-reporting"}
-              sx={{ mt: 1 }}
-            >
-              Go to Mobile Reporting
             </Button>
           </Grid>
         </Grid>
