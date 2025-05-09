@@ -73,7 +73,7 @@ def generate_adapted_lessons(material, students, return_file=False):
     adapted_lessons = {}
 
     for student in students:
-        disability_info = decrypt(student.disability_info)
+        disability_info = student.disability_info
 
         if not disability_info.strip():
             continue
