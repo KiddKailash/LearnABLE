@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -18,6 +18,8 @@ import Paper from "@mui/material/Paper";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid2";
 import DialogActions from "@mui/material/DialogActions";
+import Breadcrumbs from "@mui/material/Breadcrumbs";
+import Link from "@mui/material/Link";
 
 // MUI Icons
 import Edit from "@mui/icons-material/Edit";
@@ -25,6 +27,7 @@ import Delete from "@mui/icons-material/Delete";
 import UploadFile from "@mui/icons-material/UploadFile";
 import Add from "@mui/icons-material/Add";
 import Save from "@mui/icons-material/Save";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 // Local Imports
 import { SnackbarContext } from "../../contexts/SnackbarContext";
@@ -32,7 +35,6 @@ import StudentFormDialog from "../../components/StudentFormDialog";
 
 const StudentListPage = () => {
   const { classId } = useParams();
-  const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
 
   const [className, setClassName] = useState("");
@@ -272,13 +274,42 @@ const StudentListPage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ pt: 4 }}>
-      <Button variant="text" onClick={() => navigate("/classes")}>
-        ← Back
-      </Button>
+      <Breadcrumbs
+        separator={<NavigateNextIcon fontSize="small" />}
+        aria-label="breadcrumb"
+        sx={{ mb: 2 }}
+      >
+        <Link
+          component={RouterLink}
+          to="/dashboard"
+          underline="none"
+          color="inherit"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Dashboard
+        </Link>
+        <Link
+          component={RouterLink}
+          to="/classes"
+          underline="none"
+          color="inherit"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          Classes
+        </Link>
+        <Typography
+          color="text.primary"
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          {className}
+        </Typography>
+      </Breadcrumbs>
 
-      <Typography variant="h4">Students in {className}</Typography>
+      <Typography variant="h4" gutterBottom>
+        Students in {className}
+      </Typography>
 
-      <Grid container spacing={2} mb={4}>
+      <Grid container spacing={2} mb={2}>
         <Grid>
           <Button
             variant="contained"
@@ -328,28 +359,42 @@ const StudentListPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {students.map((s) => (
-              <TableRow key={s.id}>
-                <TableCell>
-                  {s.first_name} {s.last_name}
-                </TableCell>
-                <TableCell>{s.student_email}</TableCell>
-                <TableCell>{s.year_level}</TableCell>
-                <TableCell>{s.disability_info || "—"}</TableCell>
-                <TableCell>
-                  <Tooltip title="Edit Student">
-                    <IconButton onClick={() => handleEdit(s)}>
-                      <Edit />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete Student">
-                    <IconButton onClick={() => promptDelete(s)}>
-                      <Delete />
-                    </IconButton>
-                  </Tooltip>
+            {students.length > 0 ? (
+              students.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell>
+                    {s.first_name} {s.last_name}
+                  </TableCell>
+                  <TableCell>{s.student_email}</TableCell>
+                  <TableCell>{s.year_level}</TableCell>
+                  <TableCell>{s.disability_info || "—"}</TableCell>
+                  <TableCell>
+                    <Tooltip title="Edit Student">
+                      <IconButton onClick={() => handleEdit(s)}>
+                        <Edit />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Delete Student">
+                      <IconButton onClick={() => promptDelete(s)}>
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    gutterBottom
+                  >
+                    No students in this class yet
+                  </Typography>
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </Paper>
