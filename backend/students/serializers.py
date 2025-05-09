@@ -14,7 +14,7 @@ class StudentSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         try:
-            data['disability_info'] = fernet.decrypt(instance.disability_info.encode()).decode()
+            data['disability_info'] = instance.disability_info
         except Exception:
             data['disability_info'] = ""  # In case decryption fails
         return data
