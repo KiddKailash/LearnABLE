@@ -465,6 +465,7 @@ export const UserProvider = ({ children }) => {
     };
     
     autoLogin();
+    //eslint-disable-next-line
   }, []);
 
   return (
