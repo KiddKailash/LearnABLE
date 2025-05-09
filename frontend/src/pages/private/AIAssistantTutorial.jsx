@@ -2,14 +2,12 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // MUI Components
-import {
-  Box,
-  Typography,
-  Button,
-  Container,
-  Paper,
-  Stack,
-} from '@mui/material';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 
 // MUI Icons
 import SmartToyIcon from '@mui/icons-material/SmartToy';
