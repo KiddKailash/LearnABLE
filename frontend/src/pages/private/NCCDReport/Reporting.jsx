@@ -228,14 +228,24 @@ const NCCDReports = () => {
 
   return (
     <>
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h4" gutterBottom>
-          NCCD Reports
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Manage Nationally Consistent Collection of Data on School Students
-          with Disability reports
-        </Typography>
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            NCCD Reports
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage Nationally Consistent Collection of Data on School Students
+            with Disability reports
+          </Typography>
+        </Box>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setFormDialogOpen(true)}
+          disabled={!students.length}
+        >
+          New NCCD Report
+        </Button>
       </Box>
 
       {error && (
@@ -295,21 +305,17 @@ const NCCDReports = () => {
             </FormControl>
           </Grid>
 
-          <Grid
-            size={{ xs: 12, md: 3 }}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: { xs: "center", md: "flex-end" },
-            }}
-          >
+          <Grid size={{ xs: 12, sm: 12, md: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setFormDialogOpen(true)}
-              disabled={!students.length}
+              variant="outlined"
+              color="error"
+              onClick={() => {
+                setNameSearch('');
+                setStatusFilter('');
+                setStudentFilter('');
+              }}
             >
-              New NCCD Report
+              Clear Filters
             </Button>
           </Grid>
         </Grid>
