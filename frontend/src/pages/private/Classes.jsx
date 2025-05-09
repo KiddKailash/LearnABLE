@@ -69,6 +69,7 @@ const Classes = () => {
 
   useEffect(() => {
     fetchClasses();
+    //eslint-disable-next-line
   }, []);
 
   const handleAuthError = () => {

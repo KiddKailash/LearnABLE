@@ -62,8 +62,6 @@ const NCCDReports = () => {
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [viewingReport, setViewingReport] = useState(null);
 
-  const navigate = useNavigate();
-
   // Fetch all reports and students
   useEffect(() => {
     const fetchData = async () => {

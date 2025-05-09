@@ -22,7 +22,6 @@ import Account from "./pages/private/Account/Account";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
 import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard";
-import AIAssistantTutorial from "./pages/private/AIAssistantTutorial";
 import AIAssistantUpload from "./pages/private/AIAssistant";
 import StudentListPage from "./pages/private/StudentList.jsx";
 // Components

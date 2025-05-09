@@ -17,7 +17,6 @@ import Tooltip from "@mui/material/Tooltip";
 import Paper from "@mui/material/Paper";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid2";
-import Box from "@mui/material/Box";
 import DialogActions from "@mui/material/DialogActions";
 
 // MUI Icons
@@ -82,6 +81,7 @@ const StudentListPage = () => {
 
   useEffect(() => {
     fetchStudents();
+    //eslint-disable-next-line
   }, [classId]);
 
   const handleDelete = async () => {
