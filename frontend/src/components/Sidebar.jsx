@@ -39,15 +39,15 @@ import MenuIcon from "@mui/icons-material/Menu";
 
 // Navigation items for main section of the sidebar
 const navItems = [
-  { text: "Dashboard", icon: <DashboardIcon /> },
-  { text: "Classes", icon: <PeopleIcon /> },
-  { text: "Reporting", icon: <EventAvailableIcon /> },
-  { text: "AI Assistant", icon: <SmartToyIcon />},
+  { text: "Dashboard", icon: <DashboardIcon />, tutorialId: "dashboard" },
+  { text: "Classes", icon: <PeopleIcon />, tutorialId: "classes" },
+  { text: "Reporting", icon: <EventAvailableIcon />, tutorialId: "reporting" },
+  { text: "AI Assistant", icon: <SmartToyIcon />, tutorialId: "ai-assistant" },
 ];
 
 // Navigation items for settings section of the sidebar
 const settingsItems = [
-  { text: "Account", icon: <AccountCircleIcon /> },
+  { text: "Account", icon: <AccountCircleIcon />, tutorialId: "account" },
   { text: "Logout", icon: <LogoutIcon />, isLogout: true },
 ];
 
@@ -133,7 +133,7 @@ const Sidebar = () => {
 
       {/* Navigation list */}
       <List sx={{ flexGrow: 1 }}>
-        {navItems.map(({ text, icon, highlight }) => {
+        {navItems.map(({ text, icon, tutorialId }) => {
           const path = `/${text.toLowerCase().replace(" ", "-")}`;
           const selected = isActive(text);
           return (
@@ -145,6 +145,7 @@ const Sidebar = () => {
               disableHoverListener={!collapsed || isMobile}
             >
               <ListItemButton
+                data-tutorial={tutorialId}
                 onClick={() => {
                   navigate(path);
                   if (isMobile) {
@@ -190,7 +191,7 @@ const Sidebar = () => {
           </Typography>
         )}
         <List>
-          {settingsItems.map(({ text, icon, isLogout }) => (
+          {settingsItems.map(({ text, icon, isLogout, tutorialId }) => (
             <Tooltip
               key={text}
               title={collapsed && !isMobile ? text : ""}
@@ -199,6 +200,7 @@ const Sidebar = () => {
               disableHoverListener={!collapsed || isMobile}
             >
               <ListItemButton
+                data-tutorial={tutorialId}
                 onClick={() => {
                   if (isLogout) {
                     handleLogout();

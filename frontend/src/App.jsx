@@ -8,6 +8,10 @@
 
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import { TutorialProvider } from './contexts/TutorialContext';
+import { UserProvider } from './contexts/UserObject';
+import Tutorial from './components/Tutorial.jsx';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Webpages - Public
 import AuthPage from "./pages/public/AuthPage";
@@ -16,7 +20,6 @@ import PageNotFound from "./pages/public/PageNotFound";
 // Webpages - Private
 import Account from "./pages/private/Account/Account";
 import Activity from "./pages/private/Activity";
-import AIAssistant from "./pages/private/AIAssistant";
 import Analytics from "./pages/private/Analytics";
 import Reporting from "./pages/private/NCCDReport/Reporting.jsx";
 import Storage from "./pages/private/Storage";
@@ -32,7 +35,7 @@ import AIAssistantUpload from "./pages/private/AIAssistant";
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
 
-function App({ mode }) {
+const App = ({ mode }) => {
   const pages = [
     { path: "/", component: <AuthPage /> },
     { path: "/login", component: <AuthPage /> },
@@ -49,39 +52,48 @@ function App({ mode }) {
     { path: "/classes/:classId/students", component: <StudentListPage /> },
     { path: "/settings", component: <Settings /> },
     { path: "/mobile-reporting", component: <MobileReporting /> },
-    { path: "*", component: <PageNotFound /> }, // ← move this to the end
+    { path: "*", component: <PageNotFound /> },
   ];
 
   // Define an array of paths that are public.
   const publicPaths = ["/", "/login"];
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Layout mode={mode} />}
-      >
-        {pages.map((page, i) => {
-          // Determine if the route is public or protected
-          const isPublic = publicPaths.includes(page.path) || page.path === "*";
+    <ErrorBoundary>
+      <TutorialProvider>
+        <UserProvider>
+          <Tutorial />
+          <div className="app">
+            <Routes>
+              <Route
+                path="/"
+                element={<Layout mode={mode} />}
+              >
+                {pages.map((page, i) => {
+                  // Determine if the route is public or protected
+                  const isPublic = publicPaths.includes(page.path) || page.path === "*";
 
-          return (
-            <Route
-              key={i}
-              path={page.path}
-              element={
-                isPublic ? (
-                  page.component
-                ) : (
-                  <ProtectRoute>{page.component}</ProtectRoute>
-                )
-              }
-            />
-          );
-        })}
-      </Route>
-    </Routes>
+                  return (
+                    <Route
+                      key={i}
+                      path={page.path}
+                      element={
+                        isPublic ? (
+                          page.component
+                        ) : (
+                          <ProtectRoute>{page.component}</ProtectRoute>
+                        )
+                      }
+                    />
+                  );
+                })}
+              </Route>
+            </Routes>
+          </div>
+        </UserProvider>
+      </TutorialProvider>
+    </ErrorBoundary>
   );
-}
+};
 
 export default App;
