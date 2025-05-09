@@ -11,7 +11,8 @@
 
 import React, { useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 // Contexts
 import UserContext from "../contexts/UserObject";
 
@@ -65,6 +66,8 @@ const settingsItems = [
 const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // Track whether the sidebar is collapsed
   const [collapsed, setCollapsed] = React.useState(false);
@@ -85,8 +88,8 @@ const Sidebar = () => {
   const isActive = (path) =>
     location.pathname === `/${path.toLowerCase().replace(" ", "-")}`;
 
-  // Compute dynamic sidebar width based on collapsed state.
-  const SIDEBAR_WIDTH = collapsed ? 72 : 240;
+  // Compute dynamic sidebar width based on collapsed state and device type
+  const SIDEBAR_WIDTH = isMobile ? 240 : (collapsed ? 72 : 240);
 
   return (
     <Box
@@ -95,8 +98,9 @@ const Sidebar = () => {
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        borderRadius: 5,
-        p: 1,
+        borderRadius: { xs: 0, sm: 5 },
+        p: { xs: 2, sm: 1 },
+        bgcolor: "background.paper",
       }}
     >
       {/* Top section with toggle button and logo */}
@@ -105,20 +109,22 @@ const Sidebar = () => {
           display: "flex",
           alignItems: "center",
           mb: 1,
-          pl: collapsed ? 0 : 1.5,
-          justifyContent: collapsed ? "center" : "flex-start",
+          pl: collapsed && !isMobile ? 0 : 1.5,
+          justifyContent: collapsed && !isMobile ? "center" : "flex-start",
         }}
       >
-        <IconButton
-          onClick={() => setCollapsed(!collapsed)}
-          size="small"
-          sx={{ mr: collapsed ? 0 : 1, borderRadius: 2 }}
-        >
-          {collapsed ? <MenuIcon /> : <MenuOpenIcon />}
-        </IconButton>
+        {!isMobile && (
+          <IconButton
+            onClick={() => setCollapsed(!collapsed)}
+            size="small"
+            sx={{ mr: collapsed ? 0 : 1, borderRadius: 2 }}
+          >
+            {collapsed ? <MenuIcon /> : <MenuOpenIcon />}
+          </IconButton>
+        )}
 
-        {/* Display logo text only when expanded */}
-        {!collapsed && (
+        {/* Display logo text when expanded or on mobile */}
+        {(!collapsed || isMobile) && (
           <Typography variant="h6" fontWeight="bold" color="primary">
             LearnABLE
           </Typography>
@@ -133,32 +139,37 @@ const Sidebar = () => {
           return (
             <Tooltip
               key={text}
-              title={collapsed ? text : ""}
+              title={collapsed && !isMobile ? text : ""}
               placement="right"
               arrow
-              disableHoverListener={!collapsed} // Only show tooltip if collapsed
+              disableHoverListener={!collapsed || isMobile}
             >
               <ListItemButton
-                onClick={() => navigate(path)}
+                onClick={() => {
+                  navigate(path);
+                  if (isMobile) {
+                    // Close mobile drawer after navigation
+                    window.dispatchEvent(new CustomEvent('closeMobileDrawer'));
+                  }
+                }}
                 selected={selected}
                 sx={{
                   mb: 1,
                   borderRadius: 2,
-                  // Highlight styling for designated items (e.g., AI Assistant)
-                  justifyContent: collapsed ? "center" : "flex-start",
+                  justifyContent: collapsed && !isMobile ? "center" : "flex-start",
                 }}
               >
                 <ListItemIcon
                   sx={{
                     color: "text.primary",
-                    minWidth: collapsed ? "auto" : "40px",
+                    minWidth: collapsed && !isMobile ? "auto" : "40px",
                   }}
                 >
                   {icon}
                 </ListItemIcon>
 
-                {/* Show text only when sidebar is expanded */}
-                {!collapsed && <ListItemText primary={text} sx={{color: 'text.secondary'}}/>}
+                {/* Show text when sidebar is expanded or on mobile */}
+                {(!collapsed || isMobile) && <ListItemText primary={text} sx={{color: 'text.secondary'}}/>}
               </ListItemButton>
             </Tooltip>
           );
@@ -169,8 +180,8 @@ const Sidebar = () => {
 
       {/* Settings section */}
       <Box>
-        {/* Show "SETTINGS" label only if sidebar is expanded */}
-        {!collapsed && (
+        {/* Show user name if sidebar is expanded or on mobile */}
+        {(!collapsed || isMobile) && (
           <Typography
             variant="caption"
             sx={{ color: "gray", fontWeight: "bold", px: 2 }}
@@ -182,21 +193,27 @@ const Sidebar = () => {
           {settingsItems.map(({ text, icon, isLogout }) => (
             <Tooltip
               key={text}
-              title={collapsed ? text : ""}
+              title={collapsed && !isMobile ? text : ""}
               placement="right"
               arrow
-              disableHoverListener={!collapsed}
+              disableHoverListener={!collapsed || isMobile}
             >
               <ListItemButton
-                onClick={() =>
-                  isLogout
-                    ? handleLogout()
-                    : navigate(`/${text.toLowerCase()}`)
-                }
+                onClick={() => {
+                  if (isLogout) {
+                    handleLogout();
+                  } else {
+                    navigate(`/${text.toLowerCase()}`);
+                    if (isMobile) {
+                      // Close mobile drawer after navigation
+                      window.dispatchEvent(new CustomEvent('closeMobileDrawer'));
+                    }
+                  }
+                }}
                 sx={{
                   borderRadius: 2,
                   color: isLogout ? "error.main" : "inherit",
-                  justifyContent: collapsed ? "center" : "flex-start",
+                  justifyContent: collapsed && !isMobile ? "center" : "flex-start",
                   "&:hover": {
                     bgcolor: "action.hover",
                   },
@@ -205,12 +222,12 @@ const Sidebar = () => {
                 <ListItemIcon
                   sx={{
                     color: isLogout ? "error.main" : "inherit",
-                    minWidth: collapsed ? "auto" : "40px",
+                    minWidth: collapsed && !isMobile ? "auto" : "40px",
                   }}
                 >
                   {icon}
                 </ListItemIcon>
-                {!collapsed && <ListItemText primary={text} />}
+                {(!collapsed || isMobile) && <ListItemText primary={text} />}
               </ListItemButton>
             </Tooltip>
           ))}

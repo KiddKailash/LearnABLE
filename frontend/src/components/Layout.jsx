@@ -11,7 +11,7 @@
  * @module Layout
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 
 // Components
@@ -20,6 +20,11 @@ import PageWrapper from "./PageWrapper";
 // MUI Components
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { useTheme } from "@mui/material/styles";
+import IconButton from "@mui/material/IconButton";
+import MenuIcon from "@mui/icons-material/Menu";
+import Drawer from "@mui/material/Drawer";
 
 /**
  * Dashboard component that provides the main layout for the application.
@@ -34,6 +39,25 @@ import Container from "@mui/material/Container";
  */
 const Layout = ({ mode }) => {
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  // Add event listener for mobile drawer closing
+  React.useEffect(() => {
+    const handleCloseDrawer = () => {
+      setMobileOpen(false);
+    };
+
+    window.addEventListener('closeMobileDrawer', handleCloseDrawer);
+    return () => {
+      window.removeEventListener('closeMobileDrawer', handleCloseDrawer);
+    };
+  }, []);
 
   /**
    * Determines if the sidebar should be hidden based on the current path.
@@ -59,28 +83,77 @@ const Layout = ({ mode }) => {
         height: "100vh", // fill viewport height
         width: "100%", // fill viewport width
         bgcolor: "background.default",
-        p: doNotDisplaySidebar ? 0 : 1,
-        gap: 1,
+        p: doNotDisplaySidebar ? 0 : { xs: 0, sm: 1 },
+        gap: { xs: 0, sm: 1 },
       }}
     >
       {!doNotDisplaySidebar && (
-        <Box
-          sx={{
-            flexShrink: 0,
-            overflow: "auto",
-          }}
-        >
-          <Sidebar mode={mode} />
-        </Box>
+        <>
+          {/* Mobile menu button */}
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{
+                position: "fixed",
+                top: 16,
+                left: 16,
+                zIndex: 1200,
+                bgcolor: "background.paper",
+                "&:hover": {
+                  bgcolor: "action.hover",
+                },
+              }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
+          {/* Mobile drawer */}
+          {isMobile ? (
+            <Drawer
+              variant="temporary"
+              anchor="left"
+              open={mobileOpen}
+              onClose={handleDrawerToggle}
+              ModalProps={{
+                keepMounted: true, // Better open performance on mobile
+              }}
+              sx={{
+                display: { xs: "block", md: "none" },
+                "& .MuiDrawer-paper": {
+                  boxSizing: "border-box",
+                  width: 240,
+                },
+              }}
+            >
+              <Sidebar mode={mode} />
+            </Drawer>
+          ) : (
+            // Desktop sidebar
+            <Box
+              sx={{
+                flexShrink: 0,
+                overflow: "auto",
+                display: { xs: "none", md: "block" },
+              }}
+            >
+              <Sidebar mode={mode} />
+            </Box>
+          )}
+        </>
       )}
 
       {/* Outer box that holds secondary sidebar + main content */}
       <Box
         sx={{
           bgcolor: "background.paper",
-          borderRadius: 5,
+          borderRadius: { xs: 0, sm: 5 },
           display: "flex",
           flexGrow: 1, // let this box expand to fill leftover space
+          width: "100%",
         }}
       >
         {/* MAIN CONTENT AREA */}
@@ -91,6 +164,7 @@ const Layout = ({ mode }) => {
             display: "flex", // we use a flex container to position the <Container>
             width: "100%",
             height: "100%",
+            p: { xs: 2, sm: 3 },
           }}
         >
           <PageWrapper>
