@@ -38,6 +38,7 @@ import Menu from "@mui/icons-material/Menu";
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 import api from "../../services/api";
 import StudentFormDialog from "../../components/StudentFormDialog";
+import ClassCreationStepper from "../../components/ClassCreationStepper";
 
 const Classes = () => {
   const navigate = useNavigate();
@@ -45,7 +46,6 @@ const Classes = () => {
   const theme = useTheme();
 
   const [classes, setClasses] = useState([]);
-  const [newClass, setNewClass] = useState({ class_name: "", year_level: "" });
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [editModeId, setEditModeId] = useState(null);
   const [editClassData, setEditClassData] = useState({
@@ -64,7 +64,7 @@ const Classes = () => {
 
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [addClassFormOpen, setAddClassFormOpen] = useState(false);
+  const [classCreationOpen, setClassCreationOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -90,30 +90,6 @@ const Classes = () => {
           "Failed to fetch classes: " + (error.message || "Unknown error"),
           "error"
         );
-      }
-    }
-  };
-
-  const handleCreateClass = async () => {
-    try {
-      await api.classes.create(newClass);
-      setNewClass({ class_name: "", year_level: "" });
-      setAddClassFormOpen(false);
-      fetchClasses();
-      showSnackbar("Class created successfully", "success");
-    } catch (error) {
-      console.error("Create class error:", error);
-      if (error.status === 401) {
-        handleAuthError();
-      } else {
-        const errorMsg =
-          error.data && typeof error.data === "object"
-            ? Object.entries(error.data)
-                .map(([key, value]) => `${key}: ${value}`)
-                .join(", ")
-            : error.message || "Unknown error";
-
-        showSnackbar("Failed to create class: " + errorMsg, "error");
       }
     }
   };
@@ -297,6 +273,14 @@ const Classes = () => {
     return colors[hash % colors.length];
   };
 
+  const handleClassCreationSuccess = async (classId) => {
+    await fetchClasses();
+    
+    if (classId) {
+      console.log('New class created with ID:', classId);
+    }
+  };
+
   return (
     <>
       <Box>
@@ -313,73 +297,12 @@ const Classes = () => {
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => setAddClassFormOpen(true)}
+            onClick={() => setClassCreationOpen(true)}
             sx={{ borderRadius: 2 }}
           >
             New Class
           </Button>
         </Box>
-
-        <Fade in={addClassFormOpen}>
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              mb: 2,
-              display: addClassFormOpen ? "block" : "none",
-              borderRadius: 2,
-              bgcolor: "background.paper",
-            }}
-          >
-            <Typography variant="h6" mb={2}>
-              Create New Class
-            </Typography>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleCreateClass();
-              }}
-            >
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Year Level"
-                    value={newClass.class_name}
-                    onChange={(e) =>
-                      setNewClass({ ...newClass, class_name: e.target.value })
-                    }
-                    required
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField
-                    fullWidth
-                    label="Year Level"
-                    value={newClass.year_level}
-                    onChange={(e) =>
-                      setNewClass({ ...newClass, year_level: e.target.value })
-                    }
-                  />
-                </Grid>
-                <Grid size={3} display="flex" alignItems="center">
-                  <Stack direction="row" spacing={1}>
-                    <Button type="submit" variant="contained" fullWidth>
-                      Create
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      onClick={() => setAddClassFormOpen(false)}
-                      fullWidth
-                    >
-                      Cancel
-                    </Button>
-                  </Stack>
-                </Grid>
-              </Grid>
-            </form>
-          </Paper>
-        </Fade>
 
         {classes.length === 0 ? (
           <Paper
@@ -405,7 +328,7 @@ const Classes = () => {
         ) : (
           <Grid container spacing={3}>
             {classes.map((cls) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={cls.id}>
+              <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={cls.id}>
                 <Card
                   elevation={3}
                   sx={{
@@ -581,6 +504,12 @@ const Classes = () => {
           </Grid>
         )}
       </Box>
+
+      <ClassCreationStepper
+        open={classCreationOpen}
+        onClose={() => setClassCreationOpen(false)}
+        onSuccess={handleClassCreationSuccess}
+      />
 
       <input
         type="file"

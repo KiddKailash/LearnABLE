@@ -32,6 +32,7 @@ urlpatterns = [
     path("api/studentgrades/", include("studentgrades.urls")), 
     path("api/nccdreports/", include("nccdreports.urls")), 
     path("api/learning-materials/", include("learningmaterial.urls")),
+    path("api/unit-plans/", include("unitplan.urls")),
 ]
 
 # Serve media files in dev mode

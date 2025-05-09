@@ -12,6 +12,7 @@ import assessmentsApi from './assessmentsApi';
 import studentGradesApi from './studentGradesApi';
 import attendanceApi from './attendanceApi';
 import learningMaterialsApi from './learningMaterialsApi';
+import unitPlansApi from './unitPlansApi';
 import aiApi from './aiApi';
 import accountApi from './accountApi';
 
@@ -158,6 +159,7 @@ const api = {
   studentGrades: studentGradesApi,
   attendance: attendanceApi,
   learningMaterials: learningMaterialsApi,
+  unitPlans: unitPlansApi,
   ai: aiApi,
   account: accountApi
 };

@@ -73,7 +73,8 @@ INSTALLED_APPS = [
     'assessments',
     'studentgrades',
     'learningmaterial',
-    'nccdreports'
+    'nccdreports',
+    'unitplan'
 ]
 
 MIDDLEWARE = [
