@@ -163,6 +163,16 @@ const Account = () => {
         bio,
       });
 
+      // Update website state
+      updateUserInfo({
+        first_name: firstName,
+        last_name: lastName,
+        school,
+        subject_specialty: specialty,
+        phone_number: phoneNumber,
+        bio,
+      });
+
       showSnackbar("Profile updated successfully", "success");
     } catch (error) {
       showSnackbar("Failed to update profile", "error");

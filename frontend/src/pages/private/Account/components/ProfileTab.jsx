@@ -62,7 +62,7 @@ const ProfileTab = ({
               sx={{ width: 100, height: 100 }}
             >
               {!profile?.profile_picture &&
-                (user?.first_name?.charAt(0) || "U")}
+                (user?.first_name?.charAt(0) || "P")}
             </ProfileAvatar>
           </Box>
 
