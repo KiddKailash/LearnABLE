@@ -19,6 +19,7 @@ class Teacher(models.Model):
     two_factor_enabled = models.BooleanField(default=False)
     two_factor_secret = models.CharField(max_length=32, blank=True)
     timezone = models.CharField(max_length=50, default='UTC')
+    is_first_login = models.BooleanField(default=True)
 
     def __str__(self):
         if self.user:

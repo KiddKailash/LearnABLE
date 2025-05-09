@@ -26,6 +26,7 @@ urlpatterns = [
     path('profile/delete-account/', views.delete_account, name='delete_account'),
     path('profile/connect-google/', views.connect_google_account, name='connect_google_account'),
     path('profile/disconnect-google/', views.disconnect_google_account, name='disconnect_google_account'),
+    path('profile/first-login/', views.update_first_login_status, name='update_first_login_status'),
 ]
 
 if settings.DEBUG:

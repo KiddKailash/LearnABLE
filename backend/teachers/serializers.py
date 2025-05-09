@@ -17,7 +17,8 @@ class TeacherSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'user', 'school', 'subject_specialty', 'profile_picture',
             'phone_number', 'bio', 'preferred_language', 'notification_preferences',
-            'theme_preference', 'timezone', 'two_factor_enabled', 'last_password_change'
+            'theme_preference', 'timezone', 'two_factor_enabled', 'last_password_change',
+            'is_first_login'
         ]
         read_only_fields = ['id']
 
