@@ -22,7 +22,6 @@ import Paper from "@mui/material/Paper";
 import Divider from "@mui/material/Divider";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
-import Fade from "@mui/material/Fade";
 
 // MUI Icons
 import Add from "@mui/icons-material/Add";
@@ -31,7 +30,6 @@ import Delete from "@mui/icons-material/Delete";
 import Save from "@mui/icons-material/Save";
 import Cancel from "@mui/icons-material/Cancel";
 import School from "@mui/icons-material/School";
-import UploadFile from "@mui/icons-material/UploadFile";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import Menu from "@mui/icons-material/Menu";
 
@@ -145,16 +143,6 @@ const Classes = () => {
     }
   };
 
-  const handleDeleteStudent = (id) => {
-    // This part is placeholder, modify as needed
-    console.log("Delete student", id);
-  };
-
-  const handleFileUpload = (classId) => {
-    setSelectedClassId(classId);
-    fileInputRef.current.click();
-  };
-
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !selectedClassId) return;
@@ -177,11 +165,6 @@ const Classes = () => {
         );
       }
     }
-  };
-
-  const handleAddStudent = (classId) => {
-    setSelectedClassId(classId);
-    setOpenDialog(true);
   };
 
   const handleStudentSubmit = async () => {
@@ -275,9 +258,9 @@ const Classes = () => {
 
   const handleClassCreationSuccess = async (classId) => {
     await fetchClasses();
-    
+
     if (classId) {
-      console.log('New class created with ID:', classId);
+      console.log("New class created with ID:", classId);
     }
   };
 
@@ -451,50 +434,48 @@ const Classes = () => {
                             variant="outlined"
                             fullWidth
                             size="medium"
-                            onClick={() => handleAddStudent(cls.id)}
+                            onClick={() => console.log("Create content")}
                             sx={{
                               justifyContent: "flex-start",
                               textTransform: "none",
                             }}
                           >
-                            <PersonAdd sx={{ mr: 1 }} /> Add Student
-                          </Button>
-
-                          <Button
-                            variant="outlined"
-                            fullWidth
-                            size="medium"
-                            onClick={() => handleFileUpload(cls.id)}
-                            sx={{
-                              justifyContent: "flex-start",
-                              textTransform: "none",
-                            }}
-                          >
-                            <UploadFile sx={{ mr: 1 }} /> Import Students
+                            <PersonAdd sx={{ mr: 1 }} /> Create Content
                           </Button>
                         </Stack>
                       </CardContent>
 
                       <Divider />
 
-                      <CardActions sx={{ p: 2, justifyContent: "flex-end" }}>
-                        <Tooltip title="Edit Class">
-                          <IconButton
-                            onClick={() => handleEditClass(cls)}
-                            size="small"
-                          >
-                            <Edit />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Delete Class">
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDeleteClass(cls.id)}
-                            size="small"
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Tooltip>
+                      <CardActions
+                        sx={{ p: 2, justifyContent: "space-between" }}
+                      >
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          gutterBottom
+                        >
+                          Students: {cls.students.length}
+                        </Typography>
+                        <Box>
+                          <Tooltip title="Edit Class">
+                            <IconButton
+                              onClick={() => handleEditClass(cls)}
+                              size="small"
+                            >
+                              <Edit />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete Class">
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteClass(cls.id)}
+                              size="small"
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                       </CardActions>
                     </>
                   )}
