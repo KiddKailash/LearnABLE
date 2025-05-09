@@ -19,14 +19,9 @@ import PageNotFound from "./pages/public/PageNotFound";
 
 // Webpages - Private
 import Account from "./pages/private/Account/Account";
-import Activity from "./pages/private/Activity";
-import Analytics from "./pages/private/Analytics";
 import Reporting from "./pages/private/NCCDReport/Reporting.jsx";
-import Storage from "./pages/private/Storage";
 import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard";
-import Settings from "./pages/private/Settings";
-import StudentListPage from "./pages/private/StudentList.jsx";
 import MobileReporting from "./pages/private/NCCDReport/MobileReporting";
 import AIAssistantTutorial from "./pages/private/AIAssistantTutorial";
 import AIAssistantUpload from "./pages/private/AIAssistant";
@@ -42,15 +37,10 @@ const App = ({ mode }) => {
     { path: "/register", component: <AuthPage initialTab={1} /> },
     { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
-    { path: "/activity", component: <Activity /> },
     { path: "/ai-assistant", component: <AIAssistantTutorial /> },
     { path: "/ai-assistant/upload", component: <AIAssistantUpload /> },
-    { path: "/analytics", component: <Analytics /> },
     { path: "/reporting", component: <Reporting /> },
-    { path: "/storage", component: <Storage /> },
     { path: "/classes", component: <Classes /> },
-    { path: "/classes/:classId/students", component: <StudentListPage /> },
-    { path: "/settings", component: <Settings /> },
     { path: "/mobile-reporting", component: <MobileReporting /> },
     { path: "*", component: <PageNotFound /> },
   ];
