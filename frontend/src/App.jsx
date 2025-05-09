@@ -36,7 +36,7 @@ const App = ({ mode }) => {
     { path: "/register", component: <AuthPage initialTab={1} /> },
     { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
-    { path: "/ai-assistant", component: <AIAssistantTutorial /> },
+    { path: "/ai-assistant", component: <AIAssistantUpload /> },
     { path: "/ai-assistant/upload", component: <AIAssistantUpload /> },
     { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },

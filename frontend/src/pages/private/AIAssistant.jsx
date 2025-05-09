@@ -27,7 +27,6 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // Services
 import api from "../../services/api";
@@ -70,15 +69,11 @@ const AIAssistantUpload = () => {
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
 
   const fileInputRef = useRef(null);
 
-  const steps = [
-    "Select Class",
-    "Upload Material",
-    "Review & Adapt"
-  ];
+  const steps = ["Select Class", "Upload Material", "Review & Adapt"];
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -92,9 +87,9 @@ const AIAssistantUpload = () => {
     const fetchClasses = async () => {
       try {
         const response = await api.classes.getAll();
-        console.log('API Response:', response);
+        console.log("API Response:", response);
         if (!Array.isArray(response)) {
-          console.error('Invalid API response format:', response);
+          console.error("Invalid API response format:", response);
           setUploadError("Failed to fetch classes. Invalid response format.");
           setClassList([]);
           return;
@@ -154,15 +149,17 @@ const AIAssistantUpload = () => {
         title,
         file,
         objective: learningObjective,
-        class_assigned: selectedClass
+        class_assigned: selectedClass,
       });
-      
+
       setMaterialId(response.id);
       setSuccessMessage("Material uploaded successfully!");
       handleNext();
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadError(error.message || "Failed to upload material. Please try again.");
+      setUploadError(
+        error.message || "Failed to upload material. Please try again."
+      );
     } finally {
       setIsUploading(false);
     }
@@ -179,48 +176,56 @@ const AIAssistantUpload = () => {
 
     try {
       const response = await api.learningMaterials.adapt(materialId);
-      
+
       // Handle the response based on its structure
       if (!response) {
-        throw new Error('No response received from adaptation service');
+        throw new Error("No response received from adaptation service");
       }
 
       // If response is an array, use it directly
       if (Array.isArray(response)) {
-        setAdaptedStudents(response.map(student => ({
-          id: student.id,
-          first_name: student.first_name,
-          last_name: student.last_name,
-          file_url: student.file_url,
-        })));
-      } 
+        setAdaptedStudents(
+          response.map((student) => ({
+            id: student.id,
+            first_name: student.first_name,
+            last_name: student.last_name,
+            file_url: student.file_url,
+          }))
+        );
+      }
       // If response is an object with student data
-      else if (typeof response === 'object' && response !== null) {
+      else if (typeof response === "object" && response !== null) {
         // If it's a direct object of student data
         if (response.first_name) {
-          setAdaptedStudents([{
-            id: response.id,
-            first_name: response.first_name,
-            last_name: response.last_name,
-            file_url: response.file_url,
-          }]);
+          setAdaptedStudents([
+            {
+              id: response.id,
+              first_name: response.first_name,
+              last_name: response.last_name,
+              file_url: response.file_url,
+            },
+          ]);
         }
         // If it's an object with student entries
         else {
-          setAdaptedStudents(Object.entries(response).map(([id, data]) => ({
-            id,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            file_url: data.file_url,
-            audio_url: data.audio_url || null,  // NEW: support audio
-          })));          
+          setAdaptedStudents(
+            Object.entries(response).map(([id, data]) => ({
+              id,
+              first_name: data.first_name,
+              last_name: data.last_name,
+              file_url: data.file_url,
+              audio_url: data.audio_url || null, // NEW: support audio
+            }))
+          );
         }
       } else {
-        throw new Error('Invalid response format from adaptation service');
+        throw new Error("Invalid response format from adaptation service");
       }
     } catch (error) {
       console.error("Adaptation error:", error);
-      setUploadError(error.message || "Failed to adapt material. Please try again.");
+      setUploadError(
+        error.message || "Failed to adapt material. Please try again."
+      );
     } finally {
       setIsAdapting(false);
     }
@@ -236,7 +241,7 @@ const AIAssistantUpload = () => {
   };
 
   const handleSnackbarClose = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setSnackbarOpen(false);
@@ -251,15 +256,6 @@ const AIAssistantUpload = () => {
 
   return (
     <>
-      <Button
-        size="small"
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/classes")}
-        sx={{ mb: 2 }}
-      >
-        Back
-      </Button>
-
       <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
         Learning Material Upload
       </Typography>
@@ -307,7 +303,9 @@ const AIAssistantUpload = () => {
 
           {activeStep === 1 && (
             <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <CardContent
+                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+              >
                 <Typography variant="h6" gutterBottom>
                   Material Details
                 </Typography>
@@ -336,7 +334,9 @@ const AIAssistantUpload = () => {
                   onDrop={handleDrop}
                   onClick={handleFileClick}
                   sx={{
-                    backgroundColor: isDragging ? "action.hover" : "background.default",
+                    backgroundColor: isDragging
+                      ? "action.hover"
+                      : "background.default",
                   }}
                 >
                   <input
@@ -346,21 +346,33 @@ const AIAssistantUpload = () => {
                     style={{ display: "none" }}
                     accept=".pdf,.doc,.docx,.txt,.pptx"
                   />
-                  
+
                   {file ? (
-                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 2,
+                      }}
+                    >
                       <CheckCircleIcon color="success" />
                       <Typography>{file.name}</Typography>
-                      <IconButton size="small" onClick={(e) => {
-                        e.stopPropagation();
-                        clearFile();
-                      }}>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearFile();
+                        }}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </Box>
                   ) : (
                     <Box>
-                      <UploadFileIcon sx={{ fontSize: 40, color: "primary.main", mb: 1 }} />
+                      <UploadFileIcon
+                        sx={{ fontSize: 40, color: "primary.main", mb: 1 }}
+                      />
                       <Typography>
                         Drag and drop your file here or click to browse
                       </Typography>
@@ -371,20 +383,28 @@ const AIAssistantUpload = () => {
                   )}
                 </UploadZone>
 
-                <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-                  <Button onClick={handleBack}>
-                    Back
-                  </Button>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mt: 2,
+                  }}
+                >
+                  <Button onClick={handleBack}>Back</Button>
                   <Button
                     variant="contained"
                     onClick={async () => {
                       await handleUploadMaterial();
                       if (materialId) handleNext();
                     }}
-                    disabled={isUploading || !title || !file || !learningObjective}
+                    disabled={
+                      isUploading || !title || !file || !learningObjective
+                    }
                   >
                     {isUploading ? (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <CircularProgress size={20} color="inherit" />
                         Uploading...
                       </Box>
@@ -413,7 +433,9 @@ const AIAssistantUpload = () => {
                       size="large"
                     >
                       {isAdapting ? (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                        >
                           <CircularProgress size={20} color="inherit" />
                           Adapting Material...
                         </Box>
@@ -430,69 +452,79 @@ const AIAssistantUpload = () => {
 
                     <Paper sx={{ overflowX: "auto" }}>
                       <Box sx={{ minWidth: 650 }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead>
-                          <tr>
-                            <th style={tableHeaderStyle}>Student Name</th>
-                            <th style={tableHeaderStyle}>Adapted File</th>
-                            <th style={tableHeaderStyle}>Audio</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {adaptedStudents.map((student) => (
-                            <tr key={student.id}>
-                              <td style={tableCellStyle}>
-                                {student.first_name} {student.last_name}
-                              </td>
-                              <td style={tableCellStyle}>
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  href={`${BACKEND}${student.file_url}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  download
-                                  startIcon={<UploadFileIcon />}
-                                  disabled={!student.file_url}
-                                >
-                                  Download
-                                </Button>
-                              </td>
-                              <td style={{ ...tableCellStyle }}>
-                              {student.audio_url ? (
-                                <>
-                                  <audio controls>
-                                    <source src={`${BACKEND}${student.audio_url}`} type="audio/mpeg" />
-                                    Your browser does not support the audio element.
-                                  </audio>
+                        <table
+                          style={{ width: "100%", borderCollapse: "collapse" }}
+                        >
+                          <thead>
+                            <tr>
+                              <th style={tableHeaderStyle}>Student Name</th>
+                              <th style={tableHeaderStyle}>Adapted File</th>
+                              <th style={tableHeaderStyle}>Audio</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {adaptedStudents.map((student) => (
+                              <tr key={student.id}>
+                                <td style={tableCellStyle}>
+                                  {student.first_name} {student.last_name}
+                                </td>
+                                <td style={tableCellStyle}>
                                   <Button
                                     variant="outlined"
                                     size="small"
-                                    href={`${BACKEND}${student.audio_url}`}
+                                    href={`${BACKEND}${student.file_url}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     download
                                     startIcon={<UploadFileIcon />}
-                                    sx={{ mt: 1 }}
+                                    disabled={!student.file_url}
                                   >
                                     Download
                                   </Button>
-                                </>
-                              ) : (
-                                "—"
-                              )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                                </td>
+                                <td style={{ ...tableCellStyle }}>
+                                  {student.audio_url ? (
+                                    <>
+                                      <audio controls>
+                                        <source
+                                          src={`${BACKEND}${student.audio_url}`}
+                                          type="audio/mpeg"
+                                        />
+                                        Your browser does not support the audio
+                                        element.
+                                      </audio>
+                                      <Button
+                                        variant="outlined"
+                                        size="small"
+                                        href={`${BACKEND}${student.audio_url}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        download
+                                        startIcon={<UploadFileIcon />}
+                                        sx={{ mt: 1 }}
+                                      >
+                                        Download
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    "—"
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </Box>
                     </Paper>
 
-                    <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between" }}>
-                      <Button onClick={handleBack}>
-                        Back
-                      </Button>
+                    <Box
+                      sx={{
+                        mt: 3,
+                        display: "flex",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Button onClick={handleBack}>Back</Button>
                       <Button
                         variant="contained"
                         onClick={() => {
@@ -520,7 +552,7 @@ const AIAssistantUpload = () => {
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert onClose={handleSnackbarClose} severity="error">
           {uploadError}
@@ -529,10 +561,10 @@ const AIAssistantUpload = () => {
       <Snackbar
         open={!!successMessage}
         autoHideDuration={6000}
-        onClose={() => setSuccessMessage('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        onClose={() => setSuccessMessage("")}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={() => setSuccessMessage('')} severity="success">
+        <Alert onClose={() => setSuccessMessage("")} severity="success">
           {successMessage}
         </Alert>
       </Snackbar>

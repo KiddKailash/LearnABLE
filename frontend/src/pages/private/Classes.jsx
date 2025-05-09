@@ -34,10 +34,10 @@ import School from "@mui/icons-material/School";
 import UploadFile from "@mui/icons-material/UploadFile";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import Menu from "@mui/icons-material/Menu";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 import api from "../../services/api";
+import StudentFormDialog from "../../components/StudentFormDialog";
 
 const Classes = () => {
   const navigate = useNavigate();
@@ -304,15 +304,6 @@ const Classes = () => {
   return (
     <>
       <Box>
-        <Button
-          size="small"
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate("/dashboard")}
-          sx={{ mb: 2 }}
-        >
-          Back
-        </Button>
-
         <Box
           display="flex"
           justifyContent="space-between"
@@ -603,111 +594,16 @@ const Classes = () => {
         onChange={handleFileChange}
       />
 
-      <Dialog
+      <StudentFormDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        fullWidth
-        maxWidth="md"
-        PaperProps={{
-          sx: {
-            bgcolor: "background.paper",
-          },
-        }}
-      >
-        <DialogTitle>Add Student</DialogTitle>
-        <DialogContent>
-          <Box my={2}>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="First Name"
-                  value={studentForm.first_name}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      first_name: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  value={studentForm.last_name}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      last_name: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Year Level"
-                  value={studentForm.year_level}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      year_level: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Student Email"
-                  value={studentForm.student_email}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      student_email: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-
-              <Grid size={12}>
-                <Divider sx={{ my: 1 }}>
-                  <Chip label="Additional Information" />
-                </Divider>
-              </Grid>
-
-              <Grid size={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Disability Information"
-                  value={studentForm.disability_info}
-                  onChange={(e) =>
-                    setStudentForm((prev) => ({
-                      ...prev,
-                      disability_info: e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => setOpenDialog(false)} variant="outlined">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleStudentSubmit}
-            variant="contained"
-            startIcon={<Add />}
-          >
-            Add Student
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onSubmit={handleStudentSubmit}
+        formData={studentForm}
+        setFormData={setStudentForm}
+        title="Add Student"
+        submitLabel="Add Student"
+        submitIcon={<Add />}
+      />
 
       <Dialog
         open={deleteDialogOpen}
