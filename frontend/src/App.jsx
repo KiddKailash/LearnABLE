@@ -25,6 +25,8 @@ import Dashboard from "./pages/private/Dashboard";
 import Settings from "./pages/private/Settings";
 import StudentListPage from "./pages/private/StudentList.jsx";
 import MobileReporting from "./pages/private/NCCDReport/MobileReporting";
+import AIAssistantTutorial from "./pages/private/AIAssistantTutorial";
+import AIAssistantUpload from "./pages/private/AIAssistant";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
@@ -38,7 +40,8 @@ function App({ mode }) {
     { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
     { path: "/activity", component: <Activity /> },
-    { path: "/ai-assistant", component: <AIAssistant /> },
+    { path: "/ai-assistant", component: <AIAssistantTutorial /> },
+    { path: "/ai-assistant/upload", component: <AIAssistantUpload /> },
     { path: "/analytics", component: <Analytics /> },
     { path: "/reporting", component: <Reporting /> },
     { path: "/storage", component: <Storage /> },
