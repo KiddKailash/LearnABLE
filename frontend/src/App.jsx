@@ -24,6 +24,7 @@ import Classes from "./pages/private/Classes";
 import Dashboard from "./pages/private/Dashboard";
 import Settings from "./pages/private/Settings";
 import StudentListPage from "./pages/private/StudentList.jsx";
+import MobileReporting from "./pages/private/NCCDReport/MobileReporting";
 
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
@@ -44,6 +45,7 @@ function App({ mode }) {
     { path: "/classes", component: <Classes /> },
     { path: "/classes/:classId/students", component: <StudentListPage /> },
     { path: "/settings", component: <Settings /> },
+    { path: "/mobile-reporting", component: <MobileReporting /> },
     { path: "*", component: <PageNotFound /> }, // ← move this to the end
   ];
 
