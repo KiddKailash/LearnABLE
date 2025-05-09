@@ -34,15 +34,27 @@ You are an educational assistant helping create adapted lesson materials.
 Please output in the following JSON format:
 {format_instructions}
 
-If this is a PDF or DOCX lesson and it includes clear headings or titles, preserve those in the adapted output.
+---
 
-If this is a PowerPoint lesson, format each slide like this:
+If this is a PowerPoint lesson, you MUST return each slide in the following format **exactly**:
 
 [Slide]
 Title: <Slide title>
-Content: <Slide body>
+Content: <Slide body text that appears on the slide)
 
-Use double line breaks between slides.
+Use **double line breaks between slides**. Do not include any explanation or headings outside of this format.
+
+Example:
+
+[Slide]
+Title: Introduction to Energy
+Content: Energy is the ability to do work. It exists in many forms, such as light, heat, and motion.
+
+[Slide]
+Title: Forms of Energy
+Content: Common forms of energy include kinetic energy, potential energy, thermal energy, and more.
+
+---
 
 Student need: {disability_info}
 Original objectives: {objectives}
@@ -137,8 +149,21 @@ def generate_adapted_lessons(material, students, return_file=False):
                 elif file_ext == "docx":
                     create_docx_from_text(adapted_text, output_path)
                 elif file_ext == "pptx":
-                    slides = re.findall(r"\[Slide\]\s*Title:(.*?)\s*Content:(.*?)(?=\n\n\[Slide\]|\Z)", adapted_text, re.DOTALL)
+                    # Use improved regex to extract slide chunks
+                    slides = re.findall(
+                        r"\[Slide\]\s*Title:\s*(.*?)\s*Content:\s*(.*?)(?=\n\s*\[Slide\]|\Z)",
+                        adapted_text,
+                        re.DOTALL
+                    )
                     slide_chunks = [(title.strip(), content.strip()) for title, content in slides]
+
+                    if not slide_chunks:
+                        print("[ERROR] No slide chunks extracted from adapted text.")
+                        print("[DEBUG] Adapted text:\n", adapted_text)
+                        adapted_lessons[student.id] = {"error": "Adapted content did not contain valid slide format."}
+                        continue
+
+                    # Generate and save PowerPoint file
                     create_pptx_from_text(slide_chunks, output_path)
 
                 parsed_response["file"] = output_path
