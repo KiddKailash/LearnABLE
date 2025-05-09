@@ -255,19 +255,44 @@ const Classes = () => {
   const getRandomColor = (str) => {
     // For dark mode, use brighter colors with better contrast
     const lightModeColors = [
-      "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5",
-      "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50",
-      "#8BC34A", "#CDDC39", "#FFC107", "#FF9800", "#FF5722",
+      "#F44336",
+      "#E91E63",
+      "#9C27B0",
+      "#673AB7",
+      "#3F51B5",
+      "#2196F3",
+      "#03A9F4",
+      "#00BCD4",
+      "#009688",
+      "#4CAF50",
+      "#8BC34A",
+      "#CDDC39",
+      "#FFC107",
+      "#FF9800",
+      "#FF5722",
     ];
-    
+
     const darkModeColors = [
-      "#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE",
-      "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA", "#69F0AE",
-      "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40",
+      "#FF5252",
+      "#FF4081",
+      "#E040FB",
+      "#7C4DFF",
+      "#536DFE",
+      "#448AFF",
+      "#40C4FF",
+      "#18FFFF",
+      "#64FFDA",
+      "#69F0AE",
+      "#B2FF59",
+      "#EEFF41",
+      "#FFFF00",
+      "#FFD740",
+      "#FFAB40",
     ];
-    
-    const colors = theme.palette.mode === 'dark' ? darkModeColors : lightModeColors;
-    
+
+    const colors =
+      theme.palette.mode === "dark" ? darkModeColors : lightModeColors;
+
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -285,7 +310,7 @@ const Classes = () => {
           onClick={() => navigate("/dashboard")}
           sx={{ mb: 2 }}
         >
-          Back 
+          Back
         </Button>
 
         <Box
@@ -329,10 +354,10 @@ const Classes = () => {
               }}
             >
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 5 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="Class Name"
+                    label="Subject"
                     value={newClass.class_name}
                     onChange={(e) =>
                       setNewClass({ ...newClass, class_name: e.target.value })
@@ -340,10 +365,10 @@ const Classes = () => {
                     required
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 5 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="Subject"
+                    label="Year Level"
                     value={newClass.subject}
                     onChange={(e) =>
                       setNewClass({ ...newClass, subject: e.target.value })
@@ -351,11 +376,11 @@ const Classes = () => {
                   />
                 </Grid>
                 <Grid
-                  size={{ xs: 12, md: 2 }}
+                  size={3}
                   display="flex"
                   alignItems="center"
                 >
-                  <Box display="flex" gap={1}>
+                  <Stack direction="row" spacing={1}>
                     <Button type="submit" variant="contained" fullWidth>
                       Create
                     </Button>
@@ -366,7 +391,7 @@ const Classes = () => {
                     >
                       Cancel
                     </Button>
-                  </Box>
+                  </Stack>
                 </Grid>
               </Grid>
             </form>
@@ -379,7 +404,10 @@ const Classes = () => {
             sx={{
               p: 5,
               textAlign: "center",
-              backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : '#f5f5f5',
+              backgroundColor: (theme) =>
+                theme.palette.mode === "dark"
+                  ? "rgba(255, 255, 255, 0.05)"
+                  : "#f5f5f5",
               borderRadius: 2,
             }}
           >
@@ -390,18 +418,11 @@ const Classes = () => {
             <Typography variant="body1" color="text.secondary" mb={3}>
               Create your first class to get started
             </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => setAddClassFormOpen(true)}
-            >
-              Create Class
-            </Button>
           </Paper>
         ) : (
           <Grid container spacing={3}>
             {classes.map((cls) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={cls.id}>
+              <Grid item xs={12} sm={6} md={4} key={cls.id}>
                 <Card
                   elevation={3}
                   sx={{
@@ -484,7 +505,7 @@ const Classes = () => {
                             {cls.class_name}
                           </Typography>
                           <Chip
-                            label={cls.subject || "No subject"}
+                            label={cls.subject || "No grade"}
                             size="small"
                             sx={{
                               bgcolor: "rgba(255, 255, 255, 0.2)",
@@ -594,14 +615,14 @@ const Classes = () => {
         PaperProps={{
           sx: {
             bgcolor: "background.paper",
-          }
+          },
         }}
       >
         <DialogTitle>Add Student</DialogTitle>
         <DialogContent>
           <Box my={2}>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="First Name"
@@ -614,7 +635,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Last Name"
@@ -627,7 +648,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Year Level"
@@ -640,7 +661,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Student Email"
@@ -654,13 +675,13 @@ const Classes = () => {
                 />
               </Grid>
 
-              <Grid size={12}>
+              <Grid item xs={12}>
                 <Divider sx={{ my: 1 }}>
                   <Chip label="Guardian Information" />
                 </Divider>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Guardian First Name"
@@ -673,7 +694,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Guardian Last Name"
@@ -686,7 +707,7 @@ const Classes = () => {
                   }
                 />
               </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
                   label="Guardian Email"
@@ -700,13 +721,13 @@ const Classes = () => {
                 />
               </Grid>
 
-              <Grid size={12}>
+              <Grid item xs={12}>
                 <Divider sx={{ my: 1 }}>
                   <Chip label="Additional Information" />
                 </Divider>
               </Grid>
 
-              <Grid size={12}>
+              <Grid item xs={12}>
                 <TextField
                   fullWidth
                   multiline
@@ -744,7 +765,7 @@ const Classes = () => {
         PaperProps={{
           sx: {
             bgcolor: "background.paper",
-          }
+          },
         }}
       >
         <DialogTitle>Delete Class</DialogTitle>
