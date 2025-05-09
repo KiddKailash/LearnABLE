@@ -28,7 +28,7 @@ import {
   getInitColorSchemeScript
 } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { getTheme } from "./global-styling";
+import { getTheme } from "./styles/global-styling";
 
 const ThemeWrapper = () => {
   const { user } = useContext(UserContext);
