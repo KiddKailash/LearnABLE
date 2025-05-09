@@ -13,22 +13,17 @@ import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import Paper from "@mui/material/Paper";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid2";
-import Box from "@mui/material/Box";
 import DialogActions from "@mui/material/DialogActions";
-import Divider from "@mui/material/Divider";
-import Chip from "@mui/material/Chip";
 
 // MUI Icons
 import Edit from "@mui/icons-material/Edit";
 import Delete from "@mui/icons-material/Delete";
 import UploadFile from "@mui/icons-material/UploadFile";
 import Add from "@mui/icons-material/Add";
-import Cancel from "@mui/icons-material/Cancel";
 import Save from "@mui/icons-material/Save";
 
 // Local Imports
@@ -50,9 +45,6 @@ const StudentListPage = () => {
     last_name: "",
     year_level: "",
     student_email: "",
-    guardian_email: "",
-    guardian_first_name: "",
-    guardian_last_name: "",
     disability_info: "",
   });
 
@@ -72,9 +64,13 @@ const StudentListPage = () => {
   };
 
   const fetchStudents = async () => {
-    const res = await fetch(`http://localhost:8000/api/students/classes/${classId}/`, { //confusing url
-      headers: authHeader(),
-    });
+    const res = await fetch(
+      `http://localhost:8000/api/students/classes/${classId}/`,
+      {
+        //confusing url
+        headers: authHeader(),
+      }
+    );
 
     if (res.status === 401) return handleAuthError();
 
@@ -85,15 +81,19 @@ const StudentListPage = () => {
 
   useEffect(() => {
     fetchStudents();
+    //eslint-disable-next-line
   }, [classId]);
 
   const handleDelete = async () => {
     if (!studentToDelete) return;
 
-    const res = await fetch(`http://localhost:8000/api/students/${studentToDelete.id}/delete/`, {
-      method: "DELETE",
-      headers: authHeader(),
-    });
+    const res = await fetch(
+      `http://localhost:8000/api/students/${studentToDelete.id}/delete/`,
+      {
+        method: "DELETE",
+        headers: authHeader(),
+      }
+    );
 
     if (res.status === 401) return handleAuthError();
 
@@ -119,11 +119,14 @@ const StudentListPage = () => {
   };
 
   const handleSave = async () => {
-    const res = await fetch(`http://localhost:8000/api/students/${editingStudent}/patch/`, {
-      method: "PATCH",
-      headers: authHeader(),
-      body: JSON.stringify(form),
-    });
+    const res = await fetch(
+      `http://localhost:8000/api/students/${editingStudent}/patch/`,
+      {
+        method: "PATCH",
+        headers: authHeader(),
+        body: JSON.stringify(form),
+      }
+    );
 
     if (res.status === 401) return handleAuthError();
 
@@ -159,41 +162,54 @@ const StudentListPage = () => {
     if (res.ok) {
       await fetchStudents();
       if (result.duplicates?.length > 0) {
-        showSnackbar("CSV uploaded. Some students were already in the class.", "warning");
+        showSnackbar(
+          "CSV uploaded. Some students were already in the class.",
+          "warning"
+        );
       } else {
         showSnackbar("CSV uploaded successfully", "success");
       }
     } else {
-      showSnackbar(`CSV upload failed: ${result.error || "Unknown error"}`, "error");
+      showSnackbar(
+        `CSV upload failed: ${result.error || "Unknown error"}`,
+        "error"
+      );
     }
   };
 
   const handleAddStudent = async () => {
     const alreadyInClass = students.some(
-      (s) => s.student_email.toLowerCase() === newStudent.student_email.toLowerCase()
+      (s) =>
+        s.student_email.toLowerCase() === newStudent.student_email.toLowerCase()
     );
-  
+
     if (alreadyInClass) {
       showSnackbar("Student already exists in this class", "warning");
       return;
     }
-  
-    const existingStudentRes = await fetch("http://localhost:8000/api/students/by-email/", {
-      method: "POST",
-      headers: authHeader(),
-      body: JSON.stringify({ student_email: newStudent.student_email }),
-    });
-  
-    if (existingStudentRes.status === 401) return handleAuthError();
-    const existingStudent = await existingStudentRes.json();
-  
-    if (existingStudent && existingStudent.id) {
-      const linkRes = await fetch(`http://localhost:8000/api/classes/${classId}/add-student/`, {
+
+    const existingStudentRes = await fetch(
+      "http://localhost:8000/api/students/by-email/",
+      {
         method: "POST",
         headers: authHeader(),
-        body: JSON.stringify({ student_id: existingStudent.id }),
-      });
-  
+        body: JSON.stringify({ student_email: newStudent.student_email }),
+      }
+    );
+
+    if (existingStudentRes.status === 401) return handleAuthError();
+    const existingStudent = await existingStudentRes.json();
+
+    if (existingStudent && existingStudent.id) {
+      const linkRes = await fetch(
+        `http://localhost:8000/api/classes/${classId}/add-student/`,
+        {
+          method: "POST",
+          headers: authHeader(),
+          body: JSON.stringify({ student_id: existingStudent.id }),
+        }
+      );
+
       if (linkRes.ok) {
         // ✅ Clear form before closing
         setNewStudent({
@@ -201,9 +217,6 @@ const StudentListPage = () => {
           last_name: "",
           year_level: "",
           student_email: "",
-          guardian_email: "",
-          guardian_first_name: "",
-          guardian_last_name: "",
           disability_info: "",
         });
         setNewStudentDialog(false);
@@ -214,23 +227,29 @@ const StudentListPage = () => {
       }
       return;
     }
-  
-    const createRes = await fetch("http://localhost:8000/api/students/create/", {
-      method: "POST",
-      headers: authHeader(),
-      body: JSON.stringify(newStudent),
-    });
-  
-    if (createRes.status === 401) return handleAuthError();
-    const newStudentData = await createRes.json();
-  
-    if (createRes.ok) {
-      const linkRes = await fetch(`http://localhost:8000/api/classes/${classId}/add-student/`, {
+
+    const createRes = await fetch(
+      "http://localhost:8000/api/students/create/",
+      {
         method: "POST",
         headers: authHeader(),
-        body: JSON.stringify({ student_id: newStudentData.id }),
-      });
-  
+        body: JSON.stringify(newStudent),
+      }
+    );
+
+    if (createRes.status === 401) return handleAuthError();
+    const newStudentData = await createRes.json();
+
+    if (createRes.ok) {
+      const linkRes = await fetch(
+        `http://localhost:8000/api/classes/${classId}/add-student/`,
+        {
+          method: "POST",
+          headers: authHeader(),
+          body: JSON.stringify({ student_id: newStudentData.id }),
+        }
+      );
+
       if (linkRes.ok) {
         // ✅ Clear form before closing
         setNewStudent({
@@ -238,9 +257,6 @@ const StudentListPage = () => {
           last_name: "",
           year_level: "",
           student_email: "",
-          guardian_email: "",
-          guardian_first_name: "",
-          guardian_last_name: "",
           disability_info: "",
         });
         setNewStudentDialog(false);
@@ -252,24 +268,39 @@ const StudentListPage = () => {
     } else {
       showSnackbar("Error creating student", "error");
     }
-  };  
+  };
 
   return (
     <Container maxWidth="xl" sx={{ pt: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4">Students in {className}</Typography>
-        <Button variant="outlined" onClick={() => navigate("/classes")}>← Back to Classes</Button>
-      </Box>
+      <Button variant="text" onClick={() => navigate("/classes")}>
+        ← Back
+      </Button>
+
+      <Typography variant="h4">Students in {className}</Typography>
 
       <Grid container spacing={2} mb={4}>
         <Grid>
-          <Button variant="contained" startIcon={<Add />} onClick={() => setNewStudentDialog(true)}>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setNewStudentDialog(true)}
+          >
             Add Student
           </Button>
         </Grid>
         <Grid>
-          <input type="file" accept=".csv" hidden ref={fileInputRef} onChange={handleFileChange} />
-          <Button variant="outlined" startIcon={<UploadFile />} onClick={() => fileInputRef.current.click()}>
+          <input
+            type="file"
+            accept=".csv"
+            hidden
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+          <Button
+            variant="outlined"
+            startIcon={<UploadFile />}
+            onClick={() => fileInputRef.current.click()}
+          >
             Upload CSV
           </Button>
         </Grid>
@@ -279,26 +310,42 @@ const StudentListPage = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell><strong>Name</strong></TableCell>
-              <TableCell><strong>Email</strong></TableCell>
-              <TableCell><strong>Year</strong></TableCell>
-              <TableCell><strong>Disability Info</strong></TableCell>
-              <TableCell><strong>Actions</strong></TableCell>
+              <TableCell>
+                <strong>Name</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Email</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Year</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Disability Info</strong>
+              </TableCell>
+              <TableCell>
+                <strong>Actions</strong>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {students.map((s) => (
               <TableRow key={s.id}>
-                <TableCell>{s.first_name} {s.last_name}</TableCell>
+                <TableCell>
+                  {s.first_name} {s.last_name}
+                </TableCell>
                 <TableCell>{s.student_email}</TableCell>
                 <TableCell>{s.year_level}</TableCell>
                 <TableCell>{s.disability_info || "—"}</TableCell>
                 <TableCell>
                   <Tooltip title="Edit Student">
-                    <IconButton onClick={() => handleEdit(s)}><Edit /></IconButton>
+                    <IconButton onClick={() => handleEdit(s)}>
+                      <Edit />
+                    </IconButton>
                   </Tooltip>
                   <Tooltip title="Delete Student">
-                    <IconButton onClick={() => promptDelete(s)}><Delete /></IconButton>
+                    <IconButton onClick={() => promptDelete(s)}>
+                      <Delete />
+                    </IconButton>
                   </Tooltip>
                 </TableCell>
               </TableRow>
@@ -307,7 +354,7 @@ const StudentListPage = () => {
         </Table>
       </Paper>
 
-      <StudentFormDialog 
+      <StudentFormDialog
         open={!!editingStudent}
         onClose={() => setEditingStudent(null)}
         onSubmit={handleSave}
@@ -328,14 +375,22 @@ const StudentListPage = () => {
         submitLabel="Add"
       />
 
-      <Dialog open={confirmDeleteDialogOpen} onClose={() => setConfirmDeleteDialogOpen(false)}>
+      <Dialog
+        open={confirmDeleteDialogOpen}
+        onClose={() => setConfirmDeleteDialogOpen(false)}
+      >
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete {studentToDelete?.first_name} {studentToDelete?.last_name}?
+          Are you sure you want to delete {studentToDelete?.first_name}{" "}
+          {studentToDelete?.last_name}?
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">Delete</Button>
+          <Button onClick={() => setConfirmDeleteDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

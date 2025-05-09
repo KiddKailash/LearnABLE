@@ -53,7 +53,6 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const AIAssistantUpload = () => {
   const BACKEND = process.env.REACT_APP_SERVER_URL;
-  const navigate = useNavigate();
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
