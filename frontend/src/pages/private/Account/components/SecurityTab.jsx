@@ -55,7 +55,6 @@ const SecurityTab = () => {
     user?.two_factor_enabled || false
   );
 
-  console.log("User is ", user);
   console.log("Two factor data is", twoFactorData);
 
   // Loading state

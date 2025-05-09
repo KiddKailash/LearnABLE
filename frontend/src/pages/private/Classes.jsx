@@ -45,12 +45,12 @@ const Classes = () => {
   const theme = useTheme();
 
   const [classes, setClasses] = useState([]);
-  const [newClass, setNewClass] = useState({ class_name: "", subject: "" });
+  const [newClass, setNewClass] = useState({ class_name: "", year_level: "" });
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [editModeId, setEditModeId] = useState(null);
   const [editClassData, setEditClassData] = useState({
     class_name: "",
-    subject: "",
+    year_level: "",
   });
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -59,9 +59,6 @@ const Classes = () => {
     last_name: "",
     year_level: "",
     student_email: "",
-    guardian_email: "",
-    guardian_first_name: "",
-    guardian_last_name: "",
     disability_info: "",
   });
 
@@ -99,7 +96,7 @@ const Classes = () => {
   const handleCreateClass = async () => {
     try {
       await api.classes.create(newClass);
-      setNewClass({ class_name: "", subject: "" });
+      setNewClass({ class_name: "", year_level: "" });
       setAddClassFormOpen(false);
       fetchClasses();
       showSnackbar("Class created successfully", "success");
@@ -121,10 +118,11 @@ const Classes = () => {
   };
 
   const handleEditClass = (cls) => {
+    console.log("Editing class", cls);
     setEditModeId(cls.id);
     setEditClassData({
       class_name: cls.class_name,
-      subject: cls.subject || "",
+      year_level: cls.year_level || "",
     });
   };
 
@@ -224,9 +222,6 @@ const Classes = () => {
         last_name: "",
         year_level: "",
         student_email: "",
-        guardian_email: "",
-        guardian_first_name: "",
-        guardian_last_name: "",
         disability_info: "",
       });
 
@@ -348,7 +343,7 @@ const Classes = () => {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="Subject"
+                    label="Year Level"
                     value={newClass.class_name}
                     onChange={(e) =>
                       setNewClass({ ...newClass, class_name: e.target.value })
@@ -360,9 +355,9 @@ const Classes = () => {
                   <TextField
                     fullWidth
                     label="Year Level"
-                    value={newClass.subject}
+                    value={newClass.year_level}
                     onChange={(e) =>
-                      setNewClass({ ...newClass, subject: e.target.value })
+                      setNewClass({ ...newClass, year_level: e.target.value })
                     }
                   />
                 </Grid>
@@ -441,12 +436,12 @@ const Classes = () => {
                       />
                       <TextField
                         fullWidth
-                        label="Subject"
-                        value={editClassData.subject}
+                        label="Year Level"
+                        value={editClassData.year_level}
                         onChange={(e) =>
                           setEditClassData({
                             ...editClassData,
-                            subject: e.target.value,
+                            year_level: e.target.value,
                           })
                         }
                       />
@@ -492,7 +487,7 @@ const Classes = () => {
                             {cls.class_name}
                           </Typography>
                           <Chip
-                            label={cls.subject || "No grade"}
+                            label={"Grade " + cls.year_level || "No grade"}
                             size="small"
                             sx={{
                               bgcolor: "rgba(255, 255, 255, 0.2)",
