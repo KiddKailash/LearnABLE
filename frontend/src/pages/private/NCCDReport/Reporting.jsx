@@ -37,7 +37,6 @@ import DownloadIcon from "@mui/icons-material/Download";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 /**
  * Page for displaying and managing NCCD reports
@@ -229,14 +228,6 @@ const NCCDReports = () => {
 
   return (
     <>
-      <Button
-        size="small"
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/dashboard")}
-        sx={{ mb: 2 }}
-      >
-        Back
-      </Button>
       <Box sx={{ mb: 2 }}>
         <Typography variant="h4" gutterBottom>
           NCCD Reports
