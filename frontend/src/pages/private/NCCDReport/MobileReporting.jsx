@@ -133,7 +133,7 @@ const MobileReportingPage = () => {
             <MenuItem value="" disabled>Select class</MenuItem>
             {classes.map((cls) => (
               <MenuItem key={cls.id} value={cls.id}>
-                {cls.class_name} ({cls.subject || "No subject"})
+                {cls.class_name} ({cls.year_level || "No subject"})
               </MenuItem>
             ))}
           </Select>

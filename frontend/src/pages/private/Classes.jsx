@@ -343,7 +343,7 @@ const Classes = () => {
                       />
                       <TextField
                         fullWidth
-                        label="Year Level"
+                        label="Grade"
                         value={editClassData.year_level}
                         onChange={(e) =>
                           setEditClassData({

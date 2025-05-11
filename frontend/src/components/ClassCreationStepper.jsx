@@ -508,7 +508,7 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                       <Grid size={12}>
                         <TextField
                           name="year_level"
-                          label="Year Level"
+                          label="Grade"
                           variant="outlined"
                           fullWidth
                           value={classData.year_level}

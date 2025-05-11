@@ -72,7 +72,7 @@ const StudentFormDialog = ({
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label="Year Level"
+                label="Grade"
                 value={formData.year_level || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({

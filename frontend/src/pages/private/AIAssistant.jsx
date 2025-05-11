@@ -288,7 +288,7 @@ const AIAssistantUpload = () => {
                     {classList && classList.length > 0 ? (
                       classList.map((cls) => (
                         <MenuItem key={cls.id} value={cls.id}>
-                          {cls.class_name} – {cls.subject}
+                          {cls.class_name} – Grade {cls.year_level}
                         </MenuItem>
                       ))
                     ) : (
