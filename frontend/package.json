@@ -7,6 +7,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.9",
     "@mui/material": "^6.4.9",
+    "@pdftron/webviewer": "^8.1.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
@@ -21,8 +22,13 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "mkdir -p public/webviewer && cp -R node_modules/@pdftron/webviewer/public/* public/webviewer"
   },
+  "overrides": {
+   "nth-check": "^2.0.1",
+   "postcss": "^8.4.31"
+ },
   "eslintConfig": {
     "extends": [
       "react-app",

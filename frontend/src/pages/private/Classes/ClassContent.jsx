@@ -24,6 +24,7 @@ import Snackbar from "@mui/material/Snackbar";
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DeleteIcon from "@mui/icons-material/Delete";
+import DownloadIcon from "@mui/icons-material/Download";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
 
@@ -67,9 +68,31 @@ const AIAssistantUpload = () => {
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
 
   const fileInputRef = useRef(null);
+  const viewerRef = useRef(null);
+
+  useEffect(() => {
+    // only run on client and when a file is selected
+    if (file && typeof window !== "undefined" && viewerRef.current) {
+      // clear out any previous instance
+      viewerRef.current.innerHTML = "";
+      // dynamically import WebViewer
+      import("@pdftron/webviewer")
+        .then(({ default: WebViewer }) => {
+          WebViewer(
+            {
+              path: "/webviewer",                // ensure public/webviewer/lib is served
+              initialDoc: URL.createObjectURL(file), // feed the selected file blob
+            },
+            viewerRef.current
+          );
+        })
+        .catch((e) => console.error("WebViewer load failed:", e));
+    }
+  }, [file]);
 
   const steps = ["Select Class", "Upload Material", "Review & Adapt"];
 
@@ -101,6 +124,7 @@ const AIAssistantUpload = () => {
     };
     fetchClasses();
   }, []);
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -151,6 +175,8 @@ const AIAssistantUpload = () => {
       });
 
       setMaterialId(response.id);
+      const { pdf_url } = await api.learningMaterials.convertToPdf(response.id);
+      setPreviewUrl(pdf_url);
       setSuccessMessage("Material uploaded successfully!");
       handleNext();
     } catch (error) {
@@ -381,6 +407,23 @@ const AIAssistantUpload = () => {
                   )}
                 </UploadZone>
 
+                {file && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Live Preview:
+                    </Typography>
+                    <Box
+                      ref={viewerRef}
+                      sx={{
+                        height: 400,
+                        border: "1px solid #ccc",
+                        borderRadius: 1,
+                        overflow: "hidden",
+                      }}
+                    />
+                  </Box>
+                )}
+
                 <Box
                   sx={{
                     display: "flex",
@@ -448,70 +491,74 @@ const AIAssistantUpload = () => {
                       Adapted Materials Ready for Download
                     </Typography>
 
-                    <Paper sx={{ overflowX: "auto" }}>
-                      <Box sx={{ minWidth: 650 }}>
-                        <table
-                          style={{ width: "100%", borderCollapse: "collapse" }}
-                        >
-                          <thead>
-                            <tr>
-                              <th style={tableHeaderStyle}>Student Name</th>
-                              <th style={tableHeaderStyle}>Adapted File</th>
-                              <th style={tableHeaderStyle}>Audio</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {adaptedStudents.map((student) => (
-                              <tr key={student.id}>
-                                <td style={tableCellStyle}>
-                                  {student.first_name} {student.last_name}
-                                </td>
-                                <td style={tableCellStyle}>
-                                  <Button
-                                    variant="outlined"
-                                    size="small"
-                                    href={`${BACKEND}${student.file_url}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    download
-                                    startIcon={<UploadFileIcon />}
-                                    disabled={!student.file_url}
-                                  >
-                                    Download
-                                  </Button>
-                                </td>
-                                <td style={{ ...tableCellStyle }}>
-                                  {student.audio_url ? (
+                    <Paper sx={{ overflowX: "auto", mt: 2, p: 2 }}>
+                      <Box
+                        component="table"
+                        sx={{
+                          width: "100%",
+                          borderCollapse: "collapse",
+                          tableLayout: "fixed",
+                        }}
+                      >
+                        <Box component="thead">
+                          <Box component="tr">
+                            <Box component="th" sx={tableHeaderStyle}>Student Name</Box>
+                            <Box component="th" sx={tableHeaderStyle}>Adapted File</Box>
+                            <Box component="th" sx={tableHeaderStyle}>Audio</Box>
+                          </Box>
+                        </Box>
+                        <Box component="tbody">
+                          {adaptedStudents.map((st) => (
+                            <Box component="tr" key={st.id}>
+                              <Box component="td" sx={tableCellStyle}>
+                                {st.first_name} {st.last_name}
+                              </Box>
+                              <Box component="td" sx={tableCellStyle}>
+                                {st.file_url
+                                  ? (
+                                    <Button
+                                      variant="contained"
+                                      size="small"
+                                      href={`${BACKEND}${st.file_url}`}
+                                      download
+                                      startIcon={<DownloadIcon />}
+                                    >
+                                      Download
+                                    </Button>
+                                  )
+                                  : "—"}
+                              </Box>
+                              <Box component="td" sx={{ ...tableCellStyle, textAlign: "center" }}>
+                                {st.audio_url
+                                  ? (
                                     <>
-                                      <audio controls>
+                                      <audio
+                                        controls
+                                        style={{ width: "100%", outline: "none" }}
+                                      >
                                         <source
-                                          src={`${BACKEND}${student.audio_url}`}
+                                          src={`${BACKEND}${st.audio_url}`}
                                           type="audio/mpeg"
                                         />
-                                        Your browser does not support the audio
-                                        element.
+                                        Your browser doesn’t support audio.
                                       </audio>
                                       <Button
-                                        variant="outlined"
+                                        variant="contained"
                                         size="small"
-                                        href={`${BACKEND}${student.audio_url}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        download
-                                        startIcon={<UploadFileIcon />}
                                         sx={{ mt: 1 }}
+                                        href={`${BACKEND}${st.audio_url}`}
+                                        download
+                                        startIcon={<DownloadIcon />}
                                       >
                                         Download
                                       </Button>
                                     </>
-                                  ) : (
-                                    "—"
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  )
+                                  : "—"}
+                              </Box>
+                            </Box>
+                          ))}
+                        </Box>
                       </Box>
                     </Paper>
 
