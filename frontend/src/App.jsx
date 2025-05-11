@@ -20,11 +20,10 @@ import PageNotFound from "./pages/public/PageNotFound";
 // Webpages - Private
 import Account from "./pages/private/Account/Account";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
-import Classes from "./pages/private/Classes";
+import Classes from "./pages/private/Classes/Classes";
 import Dashboard from "./pages/private/Dashboard";
-import AIAssistantUpload from "./pages/private/AIAssistant";
-import StudentListPage from "./pages/private/StudentList.jsx";
-import ClassContent from "./pages/private/ClassContent";
+import StudentListPage from "./pages/private/Classes/StudentList.jsx";
+import ClassContent from "./pages/private/Classes/ClassContent";
 // Components
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./components/Layout";
@@ -36,8 +35,6 @@ const App = ({ mode }) => {
     { path: "/register", component: <AuthPage initialTab={1} /> },
     { path: "/dashboard", component: <Dashboard /> },
     { path: "/account", component: <Account /> },
-    { path: "/ai-assistant", component: <AIAssistantUpload /> },
-    { path: "/ai-assistant/upload", component: <AIAssistantUpload /> },
     { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },
     { path: "/classes/:classId/students", component: <StudentListPage /> }, 

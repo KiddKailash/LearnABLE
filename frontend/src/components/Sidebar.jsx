@@ -31,7 +31,6 @@ import Tooltip from "@mui/material/Tooltip";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -42,7 +41,6 @@ const navItems = [
   { text: "Dashboard", icon: <DashboardIcon />, tutorialId: "dashboard" },
   { text: "Classes", icon: <PeopleIcon />, tutorialId: "classes" },
   { text: "Reporting", icon: <EventAvailableIcon />, tutorialId: "reporting" },
-  { text: "AI Assistant", icon: <SmartToyIcon />, tutorialId: "ai-assistant" },
 ];
 
 // Navigation items for settings section of the sidebar

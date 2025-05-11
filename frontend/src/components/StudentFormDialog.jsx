@@ -108,7 +108,7 @@ const StudentFormDialog = ({
                 fullWidth
                 multiline
                 rows={3}
-                label="Disability Information"
+                label="Special Learning Needs"
                 value={formData.disability_info || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({

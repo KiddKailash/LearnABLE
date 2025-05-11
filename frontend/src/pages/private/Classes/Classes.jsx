@@ -33,10 +33,10 @@ import School from "@mui/icons-material/School";
 import PersonAdd from "@mui/icons-material/PersonAdd";
 import Menu from "@mui/icons-material/Menu";
 
-import { SnackbarContext } from "../../contexts/SnackbarContext";
-import api from "../../services/api";
-import StudentFormDialog from "../../components/StudentFormDialog";
-import ClassCreationStepper from "../../components/ClassCreationStepper";
+import { SnackbarContext } from "../../../contexts/SnackbarContext";
+import api from "../../../services/api";
+import StudentFormDialog from "../../../components/StudentFormDialog";
+import ClassCreationStepper from "../../../components/ClassCreationStepper";
 
 const Classes = () => {
   const navigate = useNavigate();

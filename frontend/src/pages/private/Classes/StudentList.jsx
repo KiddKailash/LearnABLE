@@ -30,8 +30,8 @@ import Save from "@mui/icons-material/Save";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 // Local Imports
-import { SnackbarContext } from "../../contexts/SnackbarContext";
-import StudentFormDialog from "../../components/StudentFormDialog";
+import { SnackbarContext } from "../../../contexts/SnackbarContext";
+import StudentFormDialog from "../../../components/StudentFormDialog";
 
 const StudentListPage = () => {
   const { classId } = useParams();
@@ -351,7 +351,7 @@ const StudentListPage = () => {
                 <strong>Year</strong>
               </TableCell>
               <TableCell>
-                <strong>Disability Info</strong>
+                <strong>Learning Needs</strong>
               </TableCell>
               <TableCell>
                 <strong>Actions</strong>
@@ -376,7 +376,7 @@ const StudentListPage = () => {
                     </Tooltip>
                     <Tooltip title="Delete Student">
                       <IconButton onClick={() => promptDelete(s)}>
-                        <Delete />
+                        <Delete color="error"/>
                       </IconButton>
                     </Tooltip>
                   </TableCell>
