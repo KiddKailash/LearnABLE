@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Add useLocation import
 import { useTheme } from "@mui/material/styles";
 
 // MUI Components
@@ -40,6 +40,7 @@ import ClassCreationStepper from "../../../components/ClassCreationStepper";
 
 const Classes = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // Add this line
   const { showSnackbar } = useContext(SnackbarContext);
   const theme = useTheme();
 
@@ -67,8 +68,18 @@ const Classes = () => {
 
   useEffect(() => {
     fetchClasses();
+    
+    // Check for query parameter to open class creation dialog
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get('create') === 'true') {
+      // Open the class creation dialog
+      setClassCreationOpen(true);
+      
+      // Remove the query parameter without refreshing the page
+      navigate('/classes', { replace: true });
+    }
     //eslint-disable-next-line
-  }, []);
+  }, [location]); // Add location dependency
 
   const handleAuthError = () => {
     showSnackbar("Session expired. Please log in again.", "warning");
@@ -208,52 +219,46 @@ const Classes = () => {
   };
 
   const getRandomColor = (str) => {
-    // For dark mode, use brighter colors with better contrast
+    // Pastel colors with lower saturation and higher brightness for light mode
     const lightModeColors = [
-      "#F44336",
-      "#E91E63",
-      "#9C27B0",
-      "#673AB7",
-      "#3F51B5",
-      "#2196F3",
-      "#03A9F4",
-      "#00BCD4",
-      "#009688",
-      "#4CAF50",
-      "#8BC34A",
-      "#CDDC39",
-      "#FFC107",
-      "#FF9800",
-      "#FF5722",
+      "#E3F2FD", // light blue
+      "#E8F5E9", // light green
+      "#F3E5F5", // light purple
+      "#FFF3E0", // light orange
+      "#E1F5FE", // lighter blue
+      "#E0F7FA", // light cyan
+      "#F1F8E9", // light lime
+      "#FFF8E1", // light amber
+      "#FBE9E7", // light deep orange
+      "#EFEBE9", // light brown
+      "#EDE7F6", // light deep purple
+      "#E8EAF6", // light indigo
     ];
 
+    // Improved dark mode colors with better visibility
     const darkModeColors = [
-      "#FF5252",
-      "#FF4081",
-      "#E040FB",
-      "#7C4DFF",
-      "#536DFE",
-      "#448AFF",
-      "#40C4FF",
-      "#18FFFF",
-      "#64FFDA",
-      "#69F0AE",
-      "#B2FF59",
-      "#EEFF41",
-      "#FFFF00",
-      "#FFD740",
-      "#FFAB40",
+      "#1A237E40", // indigo with opacity
+      "#00695C40", // teal with opacity
+      "#4A148C40", // purple with opacity
+      "#3E272340", // brown with opacity
+      "#01579B40", // light blue with opacity
+      "#004D4040", // cyan with opacity
+      "#1B5E2040", // green with opacity
+      "#33691E40", // light green with opacity
+      "#F5700040", // amber with opacity
+      "#E6500040", // orange with opacity
+      "#BF360C40", // deep orange with opacity
+      "#880E4F40", // pink with opacity
     ];
 
-    const colors =
-      theme.palette.mode === "dark" ? darkModeColors : lightModeColors;
+    const colors = theme.palette.mode === "dark" ? darkModeColors : lightModeColors;
 
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
     hash = Math.abs(hash);
-    return colors[hash % colors.length];
+    return colors[hash % colors.length]; // This line was missing
   };
 
   const handleClassCreationSuccess = async (classId) => {
@@ -320,7 +325,10 @@ const Classes = () => {
                     flexDirection: "column",
                     borderRadius: 2,
                     transition: "transform 0.2s, box-shadow 0.2s",
-                    bgcolor: "background.paper",
+                    bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "background.paper",
+                    border: theme.palette.mode === "dark" 
+                      ? `1px solid ${getRandomColor(cls.class_name).replace(/40$/, "30")}` // slightly more subtle border
+                      : "none",
                     "&:hover": {
                       transform: "translateY(-4px)",
                       boxShadow: 6,
@@ -380,15 +388,28 @@ const Classes = () => {
                           display: "flex",
                           alignItems: "center",
                           gap: 2,
+                          // Add a subtle gradient overlay for texture
+                          backgroundImage: theme.palette.mode === "dark" 
+                            ? 'linear-gradient(rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)'
+                            : 'linear-gradient(rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 100%)',
                         }}
                       >
-                        <Avatar sx={{ bgcolor: "#ffffff33", color: "white" }}>
+                        {/* Update Avatar to have a consistent color scheme */}
+                        <Avatar sx={{ 
+                          bgcolor: theme.palette.mode === "dark" 
+                            ? "rgba(255,255,255,0.15)" 
+                            : theme.palette.primary.main,
+                          color: theme.palette.mode === "dark" 
+                            ? "white" 
+                            : "white",
+                        }}>
                           {getInitials(cls.class_name)}
                         </Avatar>
                         <Box>
                           <Typography
                             variant="h6"
-                            color="white"
+                            // Update text color to be adaptive based on background
+                            color={theme.palette.mode === "dark" ? "white" : "text.primary"}
                             fontWeight="medium"
                           >
                             {cls.class_name}
@@ -397,8 +418,12 @@ const Classes = () => {
                             label={"Grade " + cls.year_level || "No grade"}
                             size="small"
                             sx={{
-                              bgcolor: "rgba(255, 255, 255, 0.2)",
-                              color: "white",
+                              bgcolor: theme.palette.mode === "dark" 
+                                ? "rgba(255,255,255,0.1)" 
+                                : "rgba(0,0,0,0.08)",
+                              color: theme.palette.mode === "dark" 
+                                ? "white" 
+                                : "text.primary",
                               mt: 0.5,
                             }}
                           />

@@ -15,6 +15,9 @@ import Radio from '@mui/material/Radio';
 import Divider from '@mui/material/Divider';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 // Local imports
 import FormField from '../../../components/FormField';
@@ -51,6 +54,8 @@ const NCCDReportForm = ({ studentId, reportId, onSuccess, onCancel }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [selectedFile, setSelectedFile] = useState(null);
   const [currentEvidence, setCurrentEvidence] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState(studentId);
+  const [students, setStudents] = useState([]);
   
   // Initialize form with defaults
   const initialValues = {
@@ -101,6 +106,25 @@ const NCCDReportForm = ({ studentId, reportId, onSuccess, onCancel }) => {
     fetchReport();
   }, [reportId, setFieldValue]);
 
+  // Add this effect to fetch students data
+  useEffect(() => {
+    const fetchStudents = async () => {
+      if (studentId) return; // Skip if studentId is provided
+      
+      try {
+        setLoading(true);
+        const data = await api.students.getAll();
+        setStudents(data);
+      } catch (error) {
+        setErrorMessage('Failed to load students: ' + (error.message || ''));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStudents();
+  }, [studentId]);
+
   // Handle file selection
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -138,7 +162,7 @@ const NCCDReportForm = ({ studentId, reportId, onSuccess, onCancel }) => {
       setLoading(true);
       
       // Prepare data for API
-      const formData = { ...values };
+      const formData = { ...values, student: selectedStudent };
       
       // Add evidence file if selected
       if (selectedFile) {
@@ -196,6 +220,26 @@ const NCCDReportForm = ({ studentId, reportId, onSuccess, onCancel }) => {
       
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3}>
+          {!studentId && (
+            <Grid item xs={12}>
+              <FormControl fullWidth margin="normal">
+                <InputLabel id="student-select-label">Student</InputLabel>
+                <Select
+                  labelId="student-select-label"
+                  value={selectedStudent}
+                  label="Student"
+                  onChange={(e) => setSelectedStudent(e.target.value)}
+                  required
+                >
+                  {students.map((student) => (
+                    <MenuItem key={student.id} value={student.id}>
+                      {student.first_name} {student.last_name} {student.year_level ? `- Grade ${student.year_level}` : ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
           <Grid size={12}>
             <FormControl 
               component="fieldset" 
@@ -365,4 +409,4 @@ NCCDReportForm.propTypes = {
   onCancel: PropTypes.func,
 };
 
-export default NCCDReportForm; 
+export default NCCDReportForm;

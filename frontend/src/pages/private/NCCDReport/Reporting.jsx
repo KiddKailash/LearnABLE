@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 // Local Imports
 import NCCDReportForm from "./NCCDReportForm";
@@ -62,6 +63,8 @@ const NCCDReports = () => {
   const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
   const [viewingReport, setViewingReport] = useState(null);
 
+  const location = useLocation();
+
   // Fetch all reports and students
   useEffect(() => {
     const fetchData = async () => {
@@ -85,6 +88,21 @@ const NCCDReports = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Check if the URL has the newReport query parameter
+    const queryParams = new URLSearchParams(location.search);
+    const shouldOpenForm = queryParams.get('newReport') === 'true';
+    
+    // If query parameter exists and we have students, open the form dialog
+    if (shouldOpenForm && students.length > 0) {
+      setFormDialogOpen(true);
+      
+      // Clean up the URL without causing a page reload
+      const newUrl = window.location.pathname; 
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [location, students]);
 
   // Filter reports based on current filters
   const filteredReports = reports.filter((report) => {

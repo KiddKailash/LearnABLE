@@ -23,6 +23,9 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import ListItemButton from "@mui/material/ListItemButton";
+import Fade from "@mui/material/Fade";
+import Tooltip from "@mui/material/Tooltip";
+import Skeleton from "@mui/material/Skeleton";
 
 // Icons
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -35,9 +38,15 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import AddIcon from "@mui/icons-material/Add";
+import InfoIcon from "@mui/icons-material/Info";
+import ClassIcon from '@mui/icons-material/Class';
 
 // Context for snackbar notifications
 import { SnackbarContext } from "../../contexts/SnackbarContext";
+
+// Custom Components
+import DashboardCard from "../../components/ui/DashboardCard";
+import EmptyState from "../../components/ui/EmptyState";
 
 const Dashboard = () => {
   const { user } = useContext(UserContext);
@@ -151,13 +160,30 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="50vh"
-      >
-        <CircularProgress />
+      <Box sx={{ mb: 4 }}>
+        {/* Header skeleton */}
+        <Box sx={{ mb: 2 }}>
+          <Skeleton variant="text" width="50%" height={60} />
+          <Skeleton variant="text" width="70%" height={30} />
+        </Box>
+        
+        {/* Stat cards skeleton */}
+        <Grid container spacing={3} sx={{ mb: 2 }}>
+          {[1, 2, 3].map((i) => (
+            <Grid xs={12} sm={4} key={i}>
+              <Skeleton variant="rounded" height={120} />
+            </Grid>
+          ))}
+        </Grid>
+        
+        {/* Content area skeleton */}
+        <Grid container spacing={3}>
+          {[1, 2, 3].map((i) => (
+            <Grid xs={12} md={4} key={i}>
+              <Skeleton variant="rounded" height={350} />
+            </Grid>
+          ))}
+        </Grid>
       </Box>
     );
   }
@@ -234,17 +260,7 @@ const Dashboard = () => {
       <Grid container spacing={3}>
         {/* Left Column - Quick Actions */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            elevation={1}
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              height: "100%",
-            }}
-          >
-            <Box sx={{ p: 2, bgcolor: "primary.main", color: "white" }}>
-              <Typography variant="h6">Quick Actions</Typography>
-            </Box>
+          <DashboardCard title="Quick Actions">
             <List sx={{ p: 0 }}>
               <ListItemButton
                 onClick={() => handleNavigate("/ai-assistant")}
@@ -320,43 +336,29 @@ const Dashboard = () => {
                 <ArrowForwardIcon fontSize="small" color="action" />
               </ListItemButton>
             </List>
-          </Paper>
+          </DashboardCard>
         </Grid>
 
         {/* Middle Column - Recent Classes */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            elevation={1}
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
+          <DashboardCard
+            title="Your Classes"
+            action={
+              classes.length > 0 && (
+                <Button
+                  size="small"
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<AddIcon />}
+                  onClick={() => handleNavigate("/classes?create=true")}
+                >
+                  New
+                </Button>
+              )
+            }
+            actionText="View All Classes"
+            onActionClick={() => handleNavigate("/classes")}
           >
-            <Box
-              sx={{
-                p: 2,
-                bgcolor: "primary.main",
-                color: "white",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6">Your Classes</Typography>
-              <Button
-                size="small"
-                variant="contained"
-                color="secondary"
-                onClick={() => handleNavigate("/classes")}
-                startIcon={<AddIcon />}
-              >
-                New
-              </Button>
-            </Box>
-
             <List sx={{ p: 0, flexGrow: 1, overflow: "auto" }}>
               {classes.length > 0 ? (
                 classes.map((classItem) => (
@@ -389,25 +391,17 @@ const Dashboard = () => {
                   </ListItemButton>
                 ))
               ) : (
-                <ListItem>
-                  <ListItemText
-                    primary="No classes yet"
-                    secondary="Click the New button to create your first class"
-                  />
-                </ListItem>
+                <EmptyState
+                  title="No classes yet"
+                  description="Create your first class to get started organizing your students and materials"
+                  actionText="Create Class" 
+                  actionIcon={<AddIcon />}
+                  onActionClick={() => handleNavigate("/classes?create=true")}
+                  icon={<ClassIcon sx={{ fontSize: 60, opacity: 0.6, mb: 2, color: 'primary.light' }} />}
+                />
               )}
             </List>
-
-            <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => handleNavigate("/classes")}
-              >
-                View All Classes
-              </Button>
-            </Box>
-          </Paper>
+          </DashboardCard>
         </Grid>
 
         {/* Right Column - Recent Assessments */}
@@ -588,19 +582,16 @@ const Dashboard = () => {
                   })}
                 </Grid>
               ) : (
-                <Box sx={{ textAlign: "center", py: 4 }}>
-                  <Typography variant="body1" gutterBottom>
-                    No NCCD reports have been created yet
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 2 }}
-                    onClick={() => handleNavigate("/reporting")}
-                  >
-                    Create Your First Report
-                  </Button>
-                </Box>
+                <EmptyState
+                  title="No NCCD reports yet"
+                  description="Create reports to track adjustments and support for students with disability"
+                  actionText="Create Your First Report"
+                  actionIcon={<DescriptionIcon />}
+                  onActionClick={() => handleNavigate("/reporting?newReport=true")}
+                  disabled={students.length === 0}
+                  icon={<DescriptionIcon sx={{ fontSize: 60, opacity: 0.6, mb: 2, color: 'primary.light' }} />}
+                  errorText={students.length === 0 ? "You need to add students before creating NCCD reports" : null}
+                />
               )}
             </Box>
           </Paper>
