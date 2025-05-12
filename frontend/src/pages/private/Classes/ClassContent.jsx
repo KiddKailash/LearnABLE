@@ -180,8 +180,8 @@ const AIAssistantUpload = () => {
       });
 
       setMaterialId(response.id);
-      const { pdf_url } = await api.learningMaterials.convertToPdf(response.id);
-      setPreviewUrl(pdf_url);
+      setPreviewUrl(URL.createObjectURL(file));
+
       setSuccessMessage("Material uploaded successfully!");
       handleNext();
     } catch (error) {
