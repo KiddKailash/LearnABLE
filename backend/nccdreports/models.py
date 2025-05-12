@@ -40,6 +40,24 @@ class LessonEffectivenessRecord(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     lesson_date = models.DateField(auto_now_add=True)
     was_effective = models.BooleanField()
+    feedback = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.report.student} on {self.lesson_date}: {'Yes' if self.was_effective else 'No'}"
+    
+class Questionnaire(models.Model):
+    report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='questionnaires')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='questionnaires')
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    
+    effectiveness_rating = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    progress_notes = models.TextField(blank=True)
+    
+    parent_consulted = models.BooleanField(default=False)
+    evidence = models.FileField(upload_to='nccdreports/questionnaire_evidence/', blank=True, null=True)
+    #TODO: Add more questions according to research/feedback
+    
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student} - {self.report} - Rating: {self.effectiveness_rating}"
