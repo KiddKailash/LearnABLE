@@ -74,25 +74,30 @@ const AIAssistantUpload = () => {
   const fileInputRef = useRef(null);
   const viewerRef = useRef(null);
 
-  useEffect(() => {
-    // only run on client and when a file is selected
+ useEffect(() => {
     if (file && typeof window !== "undefined" && viewerRef.current) {
-      // clear out any previous instance
       viewerRef.current.innerHTML = "";
-      // dynamically import WebViewer
+
       import("@pdftron/webviewer")
         .then(({ default: WebViewer }) => {
           WebViewer(
             {
-              path: "/webviewer",                // ensure public/webviewer/lib is served
-              initialDoc: URL.createObjectURL(file), // feed the selected file blob
+              path: "/webviewer", // Ensure this matches your public folder
+              initialDoc: URL.createObjectURL(file),
+              extension: file.name.split('.').pop(), // helps with format detection
+              fullAPI: true, // enables Office support
             },
             viewerRef.current
-          );
+          ).then((instance) => {
+            // optional: log for debugging
+            console.log("WebViewer loaded with:", file.name);
+          });
         })
         .catch((e) => console.error("WebViewer load failed:", e));
     }
   }, [file]);
+
+
 
   const steps = ["Select Class", "Upload Material", "Review & Adapt"];
 

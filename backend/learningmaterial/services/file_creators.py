@@ -12,8 +12,10 @@ import requests
 from docx.shared import Pt
 from docx.oxml.ns import qn
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from pptx.enum.shapes import MSO_SHAPE
+from pptx import Presentation
+from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -61,35 +63,51 @@ def create_pptx_from_text(slide_pairs, path):
     title_font_size = Pt(36)
     content_font_size = Pt(20)
 
-    for title, content in slide_pairs:
+    for idx, (title, content) in enumerate(slide_pairs):
         if not title.strip() and not content.strip():
             continue
 
-        slide = prs.slides.add_slide(prs.slide_layouts[1])  # Title + Content layout
+        slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
 
-        # Title text
-        slide_title = slide.shapes.title
-        slide_title.text = title.strip()
-        slide_title.text_frame.paragraphs[0].font.size = title_font_size
-        slide_title.text_frame.paragraphs[0].font.name = "Calibri"
-        slide_title.text_frame.paragraphs[0].font.color.rgb = RGBColor(20, 20, 20)
+        # Add background color
+        background = slide.background
+        fill = background.fill
+        fill.solid()
+        fill.fore_color.rgb = RGBColor(242, 242, 242)  # Light grey
 
-        # Content text
-        body_shape = slide.shapes.placeholders[1]
-        text_frame = body_shape.text_frame
-        text_frame.clear()
+        # Title shape with design
+        title_box = slide.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(0.3), Inches(9), Inches(1)
+        )
+        title_box.fill.solid()
+        title_box.fill.fore_color.rgb = RGBColor(91, 155, 213)  # Blue
+        title_box.text = title.strip()
+        title_frame = title_box.text_frame
+        title_frame.paragraphs[0].font.size = title_font_size
+        title_frame.paragraphs[0].font.bold = True
+        title_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+
+        # Content box
+        content_box = slide.shapes.add_textbox(Inches(0.7), Inches(1.5), Inches(8), Inches(5))
+        tf = content_box.text_frame
+        tf.word_wrap = True
 
         lines = content.strip().split("\n")
-        for idx, line in enumerate(lines):
-            line = line.strip()
+        for i, line in enumerate(lines):
             if not line:
                 continue
-            p = text_frame.add_paragraph() if idx != 0 else text_frame.paragraphs[0]
+            p = tf.add_paragraph() if i != 0 else tf.paragraphs[0]
             p.text = line
             p.level = 0
             p.font.size = content_font_size
             p.font.name = "Calibri"
-            p.font.color.rgb = RGBColor(40, 40, 40)
+            p.font.color.rgb = RGBColor(50, 50, 50)
+
+        # Optional: Add a placeholder image based on slide index
+        if idx % 2 == 0:  # Just an example
+            image_path = "/path/to/your/image.png"
+            if os.path.exists(image_path):
+                slide.shapes.add_picture(image_path, Inches(6.5), Inches(5.5), Inches(2), Inches(1.5))
 
     if not prs.slides:
         print("[ERROR] No valid slides were added.")
