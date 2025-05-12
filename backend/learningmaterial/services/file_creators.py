@@ -2,15 +2,21 @@ from docx import Document
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.lib.colors import Color
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from gtts import gTTS
 import os
+import re
 import requests
-from docx.shared import Pt
 from docx.oxml.ns import qn
+from docx import Document
+from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -32,20 +38,49 @@ def create_docx_from_text(text, path):
     for para in paragraphs:
         para = para.strip()
         if not para:
-            doc.add_paragraph("")  # Blank line for spacing
+            doc.add_paragraph()
+            continue
+        
+        # Main Title (first line)
+        if para == paragraphs[0]:
+            doc.add_paragraph(para, style='Title')
             continue
 
-        if para.startswith("Title:"):
-            title_text = para.replace("Title:", "").strip()
-            p = doc.add_heading(title_text, level=1)
-            p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT
-        elif para.startswith("Content:"):
-            content_text = para.replace("Content:", "").strip()
-            doc.add_paragraph(content_text)
-        elif para.startswith("- "):
-            doc.add_paragraph(para[2:], style='List Bullet')
-        else:
-            doc.add_paragraph(para)
+        # Bolded section title followed by colon (e.g. **Learning Objective:**)
+        match = re.match(r"\*\*(.+?)\*\*:(.*)", para)
+        if match:
+            title, content = match.groups()
+            p = doc.add_paragraph()
+            run = p.add_run(f"{title.strip()}: ")
+            run.bold = True
+            run.font.size = Pt(12)
+            p.add_run(content.strip())
+            continue
+
+        # Full-line subheading (e.g. **Why is Photosynthesis Important?**)
+        if re.match(r"\*\*(.+?)\*\*", para) and para.endswith("**"):
+            heading_text = re.findall(r"\*\*(.+?)\*\*", para)[0]
+            doc.add_paragraph(heading_text, style='Heading 2')
+            continue
+
+        # Bullet list (• ...)
+        if para.startswith("•"):
+            line = para.lstrip("• ").strip()
+            # Check if it starts with bold label (e.g. **Bold Label:** More text)
+            match = re.match(r"\*\*(.+?)\*\*:(.*)", line)
+            if match:
+                label, rest = match.groups()
+                p = doc.add_paragraph(style='List Bullet')
+                run = p.add_run(f"{label.strip()}: ")
+                run.bold = True
+                p.add_run(rest.strip())
+            else:
+                doc.add_paragraph(line, style='List Bullet')
+            continue
+
+        # Equation or plain paragraph
+        doc.add_paragraph(para)
+
 
     doc.save(path)
 
@@ -124,12 +159,16 @@ def create_pdf_from_text(text, path):
     max_width = width - 2 * margin
     y = height - margin
     line_height = 16
+
     font_name = "Helvetica"
     font_size = 12
+    heading_font_size = 16
+    heading_color = Color(46/255, 116/255, 181/255)  # RGB(46, 116, 181)
 
     def draw_line(line, font=font_name, size=font_size):
         nonlocal y
         c.setFont(font, size)
+        c.setFillColorRGB(0, 0, 0)  # Reset to black for normal text
         words = line.split()
         current_line = ""
 
@@ -164,16 +203,20 @@ def create_pdf_from_text(text, path):
         # Section header
         if para.startswith("Title:"):
             title = para.replace("Title:", "").strip()
-            c.setFont("Helvetica-Bold", 14)
             if y < margin:
                 c.showPage()
                 y = height - margin
+            c.setFont("Helvetica-Bold", heading_font_size)
+            c.setFillColor(heading_color)  # Apply blue color
             c.drawString(margin, y, title)
             y -= line_height * 1.5
+
         # Bullet point
         elif para.startswith("- "):
             bullet = u"\u2022 " + para[2:]
             draw_line(bullet)
+
+        # Regular paragraph
         else:
             draw_line(para)
 

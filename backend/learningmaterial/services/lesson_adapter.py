@@ -78,23 +78,21 @@ Original objectives: {objectives}
 Lesson content:
 {text}
 
+Output only the adapted lesson as JSON using the format below. Do not restate or summarize the original content.
+
 Output JSON:
 {format_instructions}
 
 ---
 
-If PPTX, use exact slide format but avoid generic support tool tips (e.g., "Using Support Tools", "Accessing Audiobooks").
-[Slide]
-Title: <title>
-Content: <content>
-(use double line breaks)
+{slide_instructions}
 """,
-    input_variables=["category", "steps", "objectives", "text"],
+    input_variables=["category", "steps", "objectives", "text", "slide_instructions"],
     partial_variables={"format_instructions": adapt_parser.get_format_instructions()}
 )
 
-# Utility to extract raw text
 
+# Utility to extract raw text
 def get_base_text(path: str) -> str:
     ext = path.split('.')[-1].lower()
     if ext == 'pdf':
@@ -105,6 +103,7 @@ def get_base_text(path: str) -> str:
         slides = extract_text_from_pptx(path)
         return "\n\n".join(slides)
     raise ValueError(f"Unsupported file type: {ext}")
+
 
 # Main pipeline
 def generate_adapted_lessons(material, students, return_file=False):
@@ -149,11 +148,24 @@ def generate_adapted_lessons(material, students, return_file=False):
 
         # 4. Lesson adaptation
         steps_list = "\n".join(f"- {s}" for s in strategy)
+        slide_instructions = (
+            """If the output will be used for a PowerPoint presentation (PPTX), structure the `adapted_content` field using this format:
+
+[Slide]
+Title: <title>
+Content: <content>
+(use double line breaks between paragraphs)
+
+Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
+            if file_ext == 'pptx' else ""
+        )
+
         adapt_input = adapt_prompt.format(
             category=category,
             steps=steps_list,
             objectives=material.objective or "",
-            text=base_text
+            text=base_text,
+            slide_instructions=slide_instructions
         )
         adapt_resp = llm.invoke(adapt_input)
         parsed = adapt_parser.parse(adapt_resp.content)
@@ -189,16 +201,29 @@ def generate_adapted_lessons(material, students, return_file=False):
                     re.DOTALL
                 )
                 slide_pairs = [(t.strip(), c.strip()) for t, c in slides]
+
                 # Remove generic support-tool slides
                 blacklist = {"Using Support Tools", "Accessing Audiobooks", "Extended Time Accommodations"}
                 slide_pairs = [(t, c) for t, c in slide_pairs if t not in blacklist]
-                create_pptx_from_text(slide_pairs, output_path)
+
+                # Here we ensure no '### Slide' heading or other unwanted formatting appears
+                adapted_slides = []
+                for title, content in slide_pairs:
+                    adapted_content = content.replace('### Slide', '').strip()
+                    adapted_slides.append((title, adapted_content))
+
+                create_pptx_from_text(adapted_slides, output_path)
 
             parsed['file'] = output_path
             parsed['file_url'] = f"{settings.MEDIA_URL}adapted_output/{filename}"
 
         # 7. Append to results
-        parsed.update({ 'disability': info, 'category': category, 'strategy': strategy, 'notes': notes })
+        parsed.update({
+            'disability': info,
+            'category': category,
+            'strategy': strategy,
+            'notes': notes
+        })
         adapted_lessons[student.id] = parsed
 
     return adapted_lessons
