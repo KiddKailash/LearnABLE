@@ -100,6 +100,7 @@ const ClassRoutes = () => {
     };
 
     loadData();
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classId]);
 
   const handleTabChange = (event, newValue) => {
