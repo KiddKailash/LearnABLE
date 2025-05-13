@@ -16,15 +16,18 @@ import { Outlet, useLocation } from "react-router-dom";
 
 // Components
 import Sidebar from "./Sidebar";
-import PageWrapper from "./PageWrapper";
+import PageWrapper from "../components/PageWrapper";
+
 // MUI Components
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import Drawer from "@mui/material/Drawer";
+
+// MUI Icons
+import MenuIcon from "@mui/icons-material/Menu";
 
 /**
  * Layout component that provides the main layout for the application.
