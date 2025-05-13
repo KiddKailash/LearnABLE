@@ -2,7 +2,7 @@
  * @fileoverview Component to monitor session status via WebSocket. Does not render visible UI.
  */
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import websocketService from '../services/websocketService';

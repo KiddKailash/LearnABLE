@@ -1,10 +1,10 @@
 /**
  * @fileoverview Reusable dashboard card component that displays content in a card format with optional header and footer actions
- * 
+ *
  * @module DashboardCard
  */
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -14,7 +14,7 @@ import Button from "@mui/material/Button";
 
 /**
  * Reusable dashboard card component that displays content in a card format with optional header and footer actions
- * 
+ *
  * @param {Object} props
  * @param {string} props.title - The title displayed in the card header
  * @param {React.ReactNode} props.action - Optional action element displayed in the header
@@ -24,14 +24,14 @@ import Button from "@mui/material/Button";
  * @param {Function} props.onActionClick - Callback for the footer action button
  * @param {React.ReactNode} props.footerContent - Custom footer content to replace the default action button
  */
-const DashboardCard = ({ 
-  title, 
-  action, 
-  children, 
+const DashboardCard = ({
+  title,
+  action,
+  children,
   fullHeight = true,
   actionText,
   onActionClick,
-  footerContent
+  footerContent,
 }) => {
   return (
     <Paper
@@ -58,18 +58,12 @@ const DashboardCard = ({
         {action}
       </Box>
 
-      <Box sx={{ p: 0, flexGrow: 1, overflow: "auto" }}>
-        {children}
-      </Box>
+      <Box sx={{ p: 0, flexGrow: 1, overflow: "auto" }}>{children}</Box>
 
       {(footerContent || actionText) && (
         <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
           {footerContent || (
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={onActionClick}
-            >
+            <Button fullWidth variant="outlined" onClick={onActionClick}>
               {actionText}
             </Button>
           )}
