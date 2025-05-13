@@ -1,4 +1,9 @@
+/**
+ * @fileoverview Dialog for adding or editing a student.
+ */
+
 import React from "react";
+import PropTypes from "prop-types";
 
 // MUI Components
 import Dialog from "@mui/material/Dialog";
@@ -16,6 +21,20 @@ import Chip from "@mui/material/Chip";
 import Add from "@mui/icons-material/Add";
 import Cancel from "@mui/icons-material/Cancel";
 
+/**
+ * StudentFormDialog component for adding or editing a student.
+ *
+ * @component
+ * @param {Object} props
+ * @param {boolean} props.open - Whether the dialog is open
+ * @param {function} props.onClose - Function to call when dialog is closed
+ * @param {function} props.onSubmit - Function to call when form is submitted
+ * @param {Object} props.formData - The form data object
+ * @param {function} props.setFormData - Function to update form data
+ * @param {string} [props.title] - Dialog title
+ * @param {string} [props.submitLabel] - Submit button label
+ * @param {React.ReactNode} [props.submitIcon] - Icon for submit button
+ */
 const StudentFormDialog = ({
   open,
   onClose,
@@ -131,6 +150,23 @@ const StudentFormDialog = ({
       </DialogActions>
     </Dialog>
   );
+};
+
+StudentFormDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  formData: PropTypes.shape({
+    first_name: PropTypes.string,
+    last_name: PropTypes.string,
+    year_level: PropTypes.string,
+    student_email: PropTypes.string,
+    disability_info: PropTypes.string,
+  }).isRequired,
+  setFormData: PropTypes.func.isRequired,
+  title: PropTypes.string,
+  submitLabel: PropTypes.string,
+  submitIcon: PropTypes.node,
 };
 
 export default StudentFormDialog; 

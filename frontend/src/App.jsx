@@ -9,24 +9,25 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { TutorialProvider } from './contexts/TutorialContext';
-import { UserProvider } from './contexts/UserObject';
+import { UserProvider } from './store/UserObject';
+
+// Components
 import Tutorial from './components/Tutorial.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
+import ProtectRoute from "./components/ProtectRoutes";
+import Layout from "./layout/Layout.jsx";
 
 // Webpages - Public
 import AuthPage from "./pages/public/AuthPage";
 import PageNotFound from "./pages/public/PageNotFound";
 
 // Webpages - Private
-import Account from "./pages/private/Account/Account";
+import Account from "./pages/private/Account.jsx";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
 import Classes from "./pages/private/Classes/Classes";
 import Dashboard from "./pages/private/Dashboard";
 import StudentListPage from "./pages/private/Classes/StudentList.jsx";
 import ClassContent from "./pages/private/Classes/ClassContent";
-// Components
-import ProtectRoute from "./components/ProtectRoutes";
-import Layout from "./components/Layout";
 
 const App = ({ mode }) => {
   const pages = [

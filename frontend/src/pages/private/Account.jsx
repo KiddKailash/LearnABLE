@@ -5,18 +5,18 @@ import Button from "@mui/material/Button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 // Contexts and Services
-import UserContext from "../../../store/UserObject";
-import accountApi from "../../../services/accountApi";
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
+import UserContext from "../../store/UserObject";
+import accountApi from "../../services/accountApi";
+import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 // Local Components
-import TabPanel from "./components/TabPanel";
-import ProfileTab from "./components/ProfileTab";
-import SecurityTab from "./components/SecurityTab";
-import AppearanceTab from "./components/AppearanceTab";
-import SessionsTab from "./components/SessionsTab";
-import DataExportTab from "./components/DataExportTab";
-import DeleteAccountTab from "./components/DeleteAccountTab";
+import TabPanel from "../../components/account/TabPanel";
+import ProfileTab from "../../components/account/ProfileTab";
+import SecurityTab from "../../components/account/SecurityTab";
+import AppearanceTab from "../../components/account/AppearanceTab";
+import SessionsTab from "../../components/account/SessionsTab";
+import DataExportTab from "../../components/account/DataExportTab";
+import DeleteAccountTab from "../../components/account/DeleteAccountTab";
 
 // MUI Components
 import Box from "@mui/material/Box";

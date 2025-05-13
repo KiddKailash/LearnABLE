@@ -24,42 +24,30 @@ import IconButton from '@mui/material/IconButton';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 
 /**
- * FormField component that renders different form controls based on the fieldType.
- * 
- * @component
- * @example
- * <FormField
- *   id="email"
- *   name="email"
- *   label="Email"
- *   value={values.email}
- *   onChange={handleChange}
- *   onBlur={handleBlur}
- *   error={touched.email && Boolean(errors.email)}
- *   helperText={touched.email && errors.email}
- *   required
- * />
+ * @typedef {Object} FormFieldProps
+ * @property {string} [fieldType='text'] - Type of field to render
+ * @property {string} id - Field ID
+ * @property {string} name - Field name
+ * @property {string} label - Field label
+ * @property {any} value - Field value
+ * @property {Function} onChange - Change handler
+ * @property {Function} [onBlur] - Blur handler for validation
+ * @property {boolean} [error] - Whether field has an error
+ * @property {string} [helperText] - Helper text or error message
+ * @property {boolean} [required] - Whether field is required
+ * @property {Array<{value: any, label: string, disabled?: boolean}>} [options] - Options for select/radio/checkbox
+ * @property {string} [placeholder] - Placeholder text
+ * @property {boolean} [fullWidth=true] - Whether field should take full width
+ * @property {string} [tooltip] - Tooltip text for help icon
+ * @property {Object} [InputProps] - Additional props for input element
  */
-const FormField = ({
-  fieldType = 'text',
-  id,
-  name,
-  label,
-  value,
-  onChange,
-  onBlur,
-  error,
-  helperText,
-  required,
-  options,
-  placeholder,
-  fullWidth = true,
-  tooltip,
-  InputProps,
-  ...props
-}) => {
-  // Add a help icon with tooltip if provided
-  const getInputProps = () => {
+
+/**
+ * Renders a help icon with tooltip if tooltip text is provided
+ * @param {Object} props - Component props
+ * @returns {Object|null} InputProps with help icon or null
+ */
+const getHelpIconProps = ({ tooltip, InputProps }) => {
     if (!tooltip) return InputProps;
     
     return {
@@ -69,7 +57,7 @@ const FormField = ({
           <Tooltip title={tooltip} arrow>
             <IconButton 
               edge="end"
-              aria-label={`Help for ${label}`}
+            aria-label={`Help for ${tooltip}`}
               tabIndex={-1}
               size="small"
             >
@@ -81,10 +69,12 @@ const FormField = ({
     };
   };
 
-  // Handle different field types
-  switch (fieldType) {
-    case 'select':
-      return (
+/**
+ * Renders a select field
+ * @param {FormFieldProps} props - Component props
+ * @returns {React.ReactNode}
+ */
+const SelectField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, options, fullWidth, ...props }) => (
         <FormControl 
           fullWidth={fullWidth} 
           error={error}
@@ -117,8 +107,12 @@ const FormField = ({
         </FormControl>
       );
       
-    case 'checkbox':
-      return (
+/**
+ * Renders a checkbox field
+ * @param {FormFieldProps} props - Component props
+ * @returns {React.ReactNode}
+ */
+const CheckboxField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, ...props }) => (
         <FormControl error={error} required={required}>
           <FormControlLabel
             control={
@@ -137,8 +131,12 @@ const FormField = ({
         </FormControl>
       );
       
-    case 'radio':
-      return (
+/**
+ * Renders a radio group field
+ * @param {FormFieldProps} props - Component props
+ * @returns {React.ReactNode}
+ */
+const RadioField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, options, fullWidth, ...props }) => (
         <FormControl error={error} required={required} fullWidth={fullWidth}>
           <FormHelperText sx={{ margin: 0 }}>{label}</FormHelperText>
           <RadioGroup
@@ -163,8 +161,12 @@ const FormField = ({
         </FormControl>
       );
       
-    case 'switch':
-      return (
+/**
+ * Renders a switch field
+ * @param {FormFieldProps} props - Component props
+ * @returns {React.ReactNode}
+ */
+const SwitchField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, ...props }) => (
         <FormControl error={error} required={required}>
           <FormControlLabel
             control={
@@ -183,24 +185,48 @@ const FormField = ({
         </FormControl>
       );
       
-    // Default is a text field (handles text, email, password, etc.)
+/**
+ * FormField component that renders different form controls based on the fieldType.
+ * 
+ * @component
+ * @example
+ * <FormField
+ *   id="email"
+ *   name="email"
+ *   label="Email"
+ *   value={values.email}
+ *   onChange={handleChange}
+ *   onBlur={handleBlur}
+ *   error={touched.email && Boolean(errors.email)}
+ *   helperText={touched.email && errors.email}
+ *   required
+ * />
+ */
+const FormField = (props) => {
+  const {
+    fieldType = 'text',
+    tooltip,
+    InputProps,
+    ...rest
+  } = props;
+
+  const inputProps = getHelpIconProps({ tooltip, InputProps });
+
+  switch (fieldType) {
+    case 'select':
+      return <SelectField {...rest} />;
+    case 'checkbox':
+      return <CheckboxField {...rest} />;
+    case 'radio':
+      return <RadioField {...rest} />;
+    case 'switch':
+      return <SwitchField {...rest} />;
     default:
       return (
         <TextField
           type={fieldType}
-          id={id}
-          name={name}
-          label={label}
-          value={value ?? ''}
-          onChange={onChange}
-          onBlur={onBlur}
-          error={error}
-          helperText={helperText}
-          required={required}
-          placeholder={placeholder}
-          fullWidth={fullWidth}
-          InputProps={getInputProps()}
-          {...props}
+          InputProps={inputProps}
+          {...rest}
         />
       );
   }
@@ -252,13 +278,13 @@ FormField.propTypes = {
   /** Placeholder text */
   placeholder: PropTypes.string,
   
-  /** Whether field takes full width */
+  /** Whether field should take full width */
   fullWidth: PropTypes.bool,
   
-  /** Tooltip text to display next to the field */
+  /** Tooltip text for help icon */
   tooltip: PropTypes.string,
   
-  /** Props passed to the input element */
+  /** Additional props for input element */
   InputProps: PropTypes.object,
 };
 

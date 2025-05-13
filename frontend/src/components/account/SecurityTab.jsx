@@ -24,9 +24,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 // Contexts and Services
-import UserContext from "../../../../store/UserObject";
-import { SnackbarContext } from "../../../../contexts/SnackbarContext";
-import api from "../../../../services/api";
+import UserContext from "../../store/UserObject";
+import { SnackbarContext } from "../../contexts/SnackbarContext";
+import api from "../../services/api";
 
 const SecurityTab = () => {
   // Get user profile from context
