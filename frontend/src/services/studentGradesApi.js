@@ -1,24 +1,35 @@
 /**
- * @fileoverview Student Grades API service
+ * @fileoverview Student Grades API service for managing student grades and assessments
+ * 
+ * @module studentGradesApi
  */
 
 import httpClient from './httpClient';
 
+/**
+ * Student Grades API service
+ * @type {Object}
+ */
 const studentGradesApi = {
-  getByAssessment: async (assessmentId) => {
-    return httpClient.get(`/api/studentgrades/assessment/${assessmentId}/`);
-  },
-  
+  /**
+   * Retrieves grades for a specific student
+   * 
+   * @param {string|number} studentId - The student ID
+   * @returns {Promise<Array>} List of student grades
+   */
   getByStudent: async (studentId) => {
-    return httpClient.get(`/api/studentgrades/student/${studentId}/`);
+    return httpClient.get(`/api/student-grades/${studentId}/`);
   },
-  
-  create: async (gradeData) => {
-    return httpClient.post('/api/studentgrades/create/', gradeData);
-  },
-  
-  update: async (id, gradeData) => {
-    return httpClient.put(`/api/studentgrades/${id}/`, gradeData);
+
+  /**
+   * Updates grades for a student
+   * 
+   * @param {string|number} studentId - The student ID
+   * @param {Object} gradeData - The updated grade data
+   * @returns {Promise<Object>} Updated grade data
+   */
+  update: async (studentId, gradeData) => {
+    return httpClient.put(`/api/student-grades/${studentId}/`, gradeData);
   }
 };
 

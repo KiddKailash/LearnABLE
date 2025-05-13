@@ -1,6 +1,7 @@
 /**
- * @fileoverview Centralized API service that combines all individual API services.
- * This allows for backwards compatibility with existing code and provides a single import point.
+ * @fileoverview Centralized API service that combines all individual API services
+ * 
+ * @module api
  */
 
 import httpClient from './httpClient';
@@ -18,6 +19,8 @@ import accountApi from './accountApi';
 
 /**
  * Creates headers with authentication token if available
+ * 
+ * @param {string} [contentType='application/json'] - The content type for the request
  * @returns {Object} Headers object with content type and auth token if available
  */
 const getHeaders = (contentType = 'application/json') => {
@@ -34,11 +37,12 @@ const getHeaders = (contentType = 'application/json') => {
 };
 
 /**
- * Retry a request with fresh authentication
+ * Retries a request with fresh authentication
+ * 
  * @param {string} url - The original request URL
  * @param {string} method - The HTTP method
- * @param {Object|FormData} body - The request body
- * @returns {Promise} Parsed response data
+ * @param {Object|FormData} [body] - The request body
+ * @returns {Promise<any>} Parsed response data
  */
 const _retryRequest = async (url, method, body) => {
   const options = {
@@ -54,28 +58,26 @@ const _retryRequest = async (url, method, body) => {
 
 /**
  * Handles API responses consistently
+ * 
  * @param {Response} response - Fetch API response
- * @returns {Promise} Parsed response data or error
+ * @returns {Promise<any>} Parsed response data
+ * @throws {Error} If the response indicates an error
  */
 const handleResponse = async (response) => {
-  // Special case for 204 No Content
   if (response.status === 204) {
     return { success: true };
   }
 
-  // For responses with content
   const contentType = response.headers.get('content-type');
   let data;
   
   try {
-    if (contentType && contentType.includes('application/json')) {
+    if (contentType?.includes('application/json')) {
       data = await response.json();
     } else {
-      // Handle non-JSON responses
       data = await response.text();
     }
   } catch (error) {
-    // Handle parsing errors
     data = {
       message: "Failed to parse response from server",
       parseError: error.message
@@ -83,34 +85,19 @@ const handleResponse = async (response) => {
   }
   
   if (!response.ok) {
-    // Create standardized error object
     const error = {
       status: response.status,
       data: data
     };
     
-    // Set message with priority chain
-    if (data?.message) {
-      error.message = data.message;
-    } else if (data?.error) {
-      error.message = data.error;
-    } else if (data?.detail) {
-      error.message = data.detail;
-    } else if (typeof data === 'string') {
-      error.message = data;
-    } else {
-      error.message = 'Something went wrong';
-    }
+    error.message = data?.message || data?.error || data?.detail || 
+                   (typeof data === 'string' ? data : 'Something went wrong');
     
-    // Handle token expiration (401 Unauthorized)
     if (response.status === 401 && !window.location.pathname.includes('/login')) {
-      // Attempt token refresh before redirecting
       try {
         await api.auth.refreshToken();
-        // If refresh succeeds, retry the original request
         return api._retryRequest(response.url, response.method, response.body);
       } catch (refreshError) {
-        // If refresh fails, redirect to login
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         window.location.href = '/login';
@@ -123,14 +110,18 @@ const handleResponse = async (response) => {
   return data;
 };
 
-// Create wrapper methods for httpClient methods with token refresh capability
+/**
+ * Wraps an HTTP method with token refresh capability
+ * 
+ * @param {Function} method - The HTTP method to wrap
+ * @returns {Function} Wrapped method with token refresh handling
+ */
 const wrapWithTokenRefresh = (method) => {
   return async (...args) => {
     try {
       return await method(...args);
     } catch (error) {
       if (error?.needsTokenRefresh) {
-        // If token refresh is needed, try to refresh and retry
         return await authApi.handleTokenRefresh(error);
       }
       throw error;
@@ -138,7 +129,10 @@ const wrapWithTokenRefresh = (method) => {
   };
 };
 
-// Combine all API services into a single object for backwards compatibility
+/**
+ * Centralized API service combining all domain-specific APIs
+ * @type {Object}
+ */
 const api = {
   // Base HTTP methods with token refresh capability
   get: wrapWithTokenRefresh(httpClient.get),
@@ -147,7 +141,7 @@ const api = {
   patch: wrapWithTokenRefresh(httpClient.patch),
   delete: wrapWithTokenRefresh(httpClient.delete),
   
-  // Add _retryRequest method
+  // Internal retry method
   _retryRequest,
 
   // Domain-specific APIs
