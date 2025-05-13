@@ -9,9 +9,6 @@ import authApi from './authApi';
 import classesApi from './classesApi';
 import studentsApi from './studentsApi';
 import nccdReportsApi from './nccdReportsApi';
-import assessmentsApi from './assessmentsApi';
-import studentGradesApi from './studentGradesApi';
-import attendanceApi from './attendanceApi';
 import learningMaterialsApi from './learningMaterialsApi';
 import unitPlansApi from './unitPlansApi';
 import aiApi from './aiApi';
@@ -149,9 +146,6 @@ const api = {
   classes: classesApi,
   students: studentsApi,
   nccdReports: nccdReportsApi,
-  assessments: assessmentsApi,
-  studentGrades: studentGradesApi,
-  attendance: attendanceApi,
   learningMaterials: learningMaterialsApi,
   unitPlans: unitPlansApi,
   ai: aiApi,
