@@ -106,6 +106,7 @@ const Classes = () => {
   const handleEditClass = (cls) => {
     console.log("Editing class", cls);
     setEditModeId(cls.id);
+    setSelectedClassId(cls.id);
     setEditClassData({
       class_name: cls.class_name,
       year_level: cls.year_level || "",
