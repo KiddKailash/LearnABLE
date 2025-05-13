@@ -22,46 +22,53 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import { getErrorInfo } from "../utils/errorHandling";
 
 /**
+ * @typedef {Object} ErrorBoundaryProps
+ * @property {React.ReactNode} children - Child components to render
+ * @property {React.ReactNode|Function} [fallback] - Custom fallback UI or function to render
+ */
+
+/**
+ * @typedef {Object} ErrorBoundaryState
+ * @property {boolean} hasError - Whether an error has occurred
+ * @property {Error|null} error - The error that occurred
+ * @property {Object|null} errorInfo - Additional error information
+ * @property {boolean} showDetails - Whether to show error details
+ */
+
+/**
  * Error Boundary component that catches errors in its child components
  * and displays a fallback UI instead of crashing the whole app.
  */
 class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      hasError: false,
-      error: null,
-      errorInfo: null,
-      showDetails: false,
-    };
-  }
+  /** @type {ErrorBoundaryState} */
+  state = {
+    hasError: false,
+    error: null,
+    errorInfo: null,
+    showDetails: false,
+  };
 
   /**
    * Update state when an error occurs
+   * @param {Error} error - The error that occurred
+   * @returns {ErrorBoundaryState} New state
    */
   static getDerivedStateFromError(error) {
-    // Update state so the next render will show the fallback UI
     return { hasError: true, error };
   }
 
   /**
    * Capture error information for logging
+   * @param {Error} error - The error that occurred
+   * @param {Object} errorInfo - Additional error information
    */
   componentDidCatch(error, errorInfo) {
-    // Log error information
     this.setState({ errorInfo });
-
-    // Log to monitoring service
     console.error("Error caught by ErrorBoundary:", error, errorInfo);
-
-    // Here you could log to your error reporting service
-    // if (process.env.NODE_ENV === 'production') {
-    //   logErrorToService(error, errorInfo);
-    // }
   }
 
   /**
-   * Attempt to recover by resetting the error state and refreshing the component
+   * Attempt to recover by resetting the error state
    */
   handleReset = () => {
     this.setState({
@@ -79,36 +86,121 @@ class ErrorBoundary extends Component {
     window.location.reload();
   };
 
+  /**
+   * Navigate to home page
+   */
   handleGoHome = () => {
     window.location.href = "/";
   };
 
+  /**
+   * Toggle error details visibility
+   */
   toggleDetails = () => {
     this.setState((prev) => ({ showDetails: !prev.showDetails }));
   };
 
+  /**
+   * Render error details section
+   * @param {Object} errorInfo - Error information to display
+   * @returns {React.ReactNode}
+   */
+  renderErrorDetails(errorInfo) {
+    if (!errorInfo) return null;
+
+    return (
+      <Fade in={true}>
+        <Box
+          sx={{
+            mt: 3,
+            p: 2,
+            bgcolor: "grey.50",
+            borderRadius: 1,
+            border: "1px solid",
+            borderColor: "divider",
+          }}
+        >
+          <Typography variant="subtitle2" gutterBottom color="text.secondary">
+            Technical Details:
+          </Typography>
+          <Typography
+            variant="body2"
+            component="pre"
+            sx={{
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              fontSize: "0.8rem",
+              color: "text.secondary",
+              m: 0,
+              fontFamily: "monospace",
+            }}
+          >
+            {errorInfo.componentStack}
+          </Typography>
+        </Box>
+      </Fade>
+    );
+  }
+
+  /**
+   * Render action buttons
+   * @returns {React.ReactNode}
+   */
+  renderActions() {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1.5,
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={this.handleReload}
+          size="small"
+        >
+          Reload Page
+        </Button>
+
+        <Button
+          variant="text"
+          color="primary"
+          startIcon={<HomeIcon />}
+          onClick={this.handleGoHome}
+          size="small"
+        >
+          Go Home
+        </Button>
+
+        <Button
+          variant="text"
+          color="primary"
+          startIcon={<HelpOutlineIcon />}
+          onClick={this.toggleDetails}
+          size="small"
+        >
+          {this.state.showDetails ? "Hide Details" : "Show Details"}
+        </Button>
+      </Box>
+    );
+  }
+
   render() {
-    const {
-      hasError,
-      error,
-      errorInfo: componentErrorInfo,
-      showDetails,
-    } = this.state;
+    const { hasError, error, errorInfo: componentErrorInfo, showDetails } = this.state;
     const { children, fallback } = this.props;
 
-    // No error occurred, render children normally
-    if (!hasError) {
-      return children;
-    }
+    if (!hasError) return children;
 
-    // Custom fallback provided
     if (fallback) {
       return typeof fallback === "function"
         ? fallback(error, this.handleReset)
         : fallback;
     }
 
-    const errorInfo = getErrorInfo(error);
+    const errorDetails = getErrorInfo(error);
 
     return (
       <Fade in={true}>
@@ -121,14 +213,7 @@ class ErrorBoundary extends Component {
             minHeight: "95vh",
           }}
         >
-          <Paper
-            elevation={0}
-            sx={{
-              p: 3,
-              maxWidth: "sm",
-              borderRadius: 2,
-            }}
-          >
+          <Paper elevation={0} sx={{ p: 3, maxWidth: "sm", borderRadius: 2 }}>
             <Alert
               severity="error"
               sx={{
@@ -139,9 +224,9 @@ class ErrorBoundary extends Component {
                 },
               }}
             >
-              {errorInfo.title}
+              {errorDetails.title}
               <br />
-              {errorInfo.message}
+              {errorDetails.message}
             </Alert>
 
             <Box sx={{ mb: 3 }}>
@@ -164,7 +249,7 @@ class ErrorBoundary extends Component {
                   },
                 }}
               >
-                {errorInfo.suggestions.map((suggestion, index) => (
+                {errorDetails.suggestions.map((suggestion, index) => (
                   <Typography component="li" key={index}>
                     {suggestion}
                   </Typography>
@@ -173,81 +258,8 @@ class ErrorBoundary extends Component {
             </Box>
 
             <Divider sx={{ my: 3 }} />
-
-            <Box
-              sx={{
-                display: "flex",
-                gap: 1.5,
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
-            >
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={this.handleReload}
-                size="small"
-              >
-                Reload Page
-              </Button>
-
-              <Button
-                variant="text"
-                color="primary"
-                startIcon={<HomeIcon />}
-                onClick={this.handleGoHome}
-                size="small"
-              >
-                Go Home
-              </Button>
-
-              <Button
-                variant="text"
-                color="primary"
-                startIcon={<HelpOutlineIcon />}
-                onClick={this.toggleDetails}
-                size="small"
-              >
-                {showDetails ? "Hide Details" : "Show Details"}
-              </Button>
-            </Box>
-
-            {showDetails && componentErrorInfo && (
-              <Fade in={showDetails}>
-                <Box
-                  sx={{
-                    mt: 3,
-                    p: 2,
-                    bgcolor: "grey.50",
-                    borderRadius: 1,
-                    border: "1px solid",
-                    borderColor: "divider",
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    gutterBottom
-                    color="text.secondary"
-                  >
-                    Technical Details:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    component="pre"
-                    sx={{
-                      whiteSpace: "pre-wrap",
-                      wordBreak: "break-word",
-                      fontSize: "0.8rem",
-                      color: "text.secondary",
-                      m: 0,
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    {componentErrorInfo.componentStack}
-                  </Typography>
-                </Box>
-              </Fade>
-            )}
+            {this.renderActions()}
+            {showDetails && this.renderErrorDetails(componentErrorInfo)}
           </Paper>
         </Box>
       </Fade>
@@ -256,10 +268,7 @@ class ErrorBoundary extends Component {
 }
 
 ErrorBoundary.propTypes = {
-  /** Content to be rendered within the error boundary */
   children: PropTypes.node.isRequired,
-
-  /** Custom fallback UI to display when an error occurs */
   fallback: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
 };
 

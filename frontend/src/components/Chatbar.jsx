@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useContext } from "react";
+import PropTypes from "prop-types";
 import UserContext from "../services/UserObject";
 
 // MUI Components
@@ -23,6 +24,15 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import ThumbUpIcon from "@mui/icons-material/ThumbUp";
 import ThumbDownIcon from "@mui/icons-material/ThumbDown";
 
+/**
+ * Chatbar component for chat interface with session/file logic.
+ *
+ * @component
+ * @param {Object} props
+ * @param {string} [props.apiUrlOverride] - Optional override for backend API URL
+ * @param {string} [props.modelOverride] - Optional override for model
+ * @returns {JSX.Element}
+ */
 const Chatbar = ({ apiUrlOverride, modelOverride }) => {
   const { user } = useContext(UserContext);
 
@@ -288,6 +298,11 @@ const Chatbar = ({ apiUrlOverride, modelOverride }) => {
       </Box>
     </Box>
   );
+};
+
+Chatbar.propTypes = {
+  apiUrlOverride: PropTypes.string,
+  modelOverride: PropTypes.string,
 };
 
 export default Chatbar;

@@ -1,10 +1,19 @@
+/**
+ * @fileoverview Component to monitor session status via WebSocket. Does not render visible UI.
+ */
+
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import websocketService from '../services/websocketService';
 
 /**
- * Component to monitor session status via WebSocket
- * This component doesn't render anything visible
+ * SessionMonitor component to monitor session status via WebSocket.
+ *
+ * @component
+ * @param {Object} props
+ * @param {string|number} props.sessionId - The session ID to monitor
+ * @returns {null}
  */
 const SessionMonitor = ({ sessionId }) => {
   const navigate = useNavigate();
@@ -48,6 +57,10 @@ const SessionMonitor = ({ sessionId }) => {
 
   // This component doesn't render anything visible
   return null;
+};
+
+SessionMonitor.propTypes = {
+  sessionId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default SessionMonitor; 

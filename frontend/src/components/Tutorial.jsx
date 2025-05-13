@@ -1,3 +1,8 @@
+/**
+ * @file Tutorial.jsx
+ * @description Guided tutorial overlay for onboarding and feature discovery.
+ */
+
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import { useTutorial } from "../contexts/TutorialContext";
 
@@ -17,6 +22,13 @@ import { alpha } from "@mui/material/styles";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
+/**
+ * Tutorial component for guided onboarding and feature discovery.
+ *
+ * @component
+ * @param {Object} props
+ * @returns {JSX.Element|null}
+ */
 const Tutorial = () => {
   const { isOpen, currentStep, nextStep, prevStep, closeTutorial } =
     useTutorial();

@@ -116,6 +116,7 @@ const Sidebar = () => {
             onClick={() => setCollapsed(!collapsed)}
             size="small"
             sx={{ mr: collapsed ? 0 : 1, borderRadius: 2 }}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <MenuIcon /> : <MenuOpenIcon />}
           </IconButton>
@@ -157,6 +158,7 @@ const Sidebar = () => {
                   borderRadius: 2,
                   justifyContent: collapsed && !isMobile ? "center" : "flex-start",
                 }}
+                aria-label={text}
               >
                 <ListItemIcon
                   sx={{
@@ -218,6 +220,7 @@ const Sidebar = () => {
                     bgcolor: "action.hover",
                   },
                 }}
+                aria-label={text}
               >
                 <ListItemIcon
                   sx={{

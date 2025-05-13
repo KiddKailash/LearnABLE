@@ -1,11 +1,30 @@
+
+/**
+ * @fileoverview EmptyState component for displaying empty state messages in a card format.
+ * 
+ * @module EmptyState
+ */
 import React from 'react';
+import PropTypes from 'prop-types';
+
+// MUI Components
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import SentimentDissatisfiedIcon from '@mui/icons-material/SentimentDissatisfied';
 
 /**
- * Enhanced empty state component with illustration
+ * Enhanced empty state component that displays a message when there's no content to show
+ * 
+ * @param {Object} props
+ * @param {string} props.title - The main title of the empty state
+ * @param {string} props.description - A description explaining why the content is empty
+ * @param {string} props.actionText - Text for the action button
+ * @param {React.ReactNode} props.actionIcon - Icon to display before the action button text
+ * @param {Function} props.onActionClick - Callback for the action button click
+ * @param {boolean} props.disabled - Whether the action button should be disabled
+ * @param {string} props.errorText - Optional error message to display below the action button
+ * @param {React.ReactNode} props.icon - Custom icon to display (defaults to SentimentDissatisfiedIcon)
  */
 const EmptyState = ({
   title,
@@ -66,6 +85,17 @@ const EmptyState = ({
       )}
     </Box>
   );
+};
+
+EmptyState.propTypes = {
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string.isRequired,
+  actionText: PropTypes.string,
+  actionIcon: PropTypes.node,
+  onActionClick: PropTypes.func,
+  disabled: PropTypes.bool,
+  errorText: PropTypes.string,
+  icon: PropTypes.node,
 };
 
 export default EmptyState;

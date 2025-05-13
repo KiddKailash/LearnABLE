@@ -1,6 +1,5 @@
 /**
- * @file Dashboard.jsx
- * @file Dashboard.jsx
+ * @file Layout.jsx
  * @description Layout component that renders the primary sidebar (if applicable) alongside
  * the main content area and an additional right-hand sidebar. The main content area displays
  * the active route's content via Outlet.
@@ -12,6 +11,7 @@
  */
 
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { Outlet, useLocation } from "react-router-dom";
 
 // Components
@@ -27,14 +27,11 @@ import MenuIcon from "@mui/icons-material/Menu";
 import Drawer from "@mui/material/Drawer";
 
 /**
- * Dashboard component that provides the main layout for the application.
- * Dashboard component that provides the main layout for the application.
- *
- * It conditionally renders the primary sidebar based on the current route. For example,
- * the sidebar is hidden on login, registration, home, or catch-all routes.
+ * Layout component that provides the main layout for the application.
  *
  * @component
- * @returns {JSX.Element} The rendered Dashboard layout component.
+ * @param {Object} props
+ * @param {string} [props.mode] - Optional mode for sidebar or layout
  * @returns {JSX.Element} The rendered Dashboard layout component.
  */
 const Layout = ({ mode }) => {
@@ -175,6 +172,10 @@ const Layout = ({ mode }) => {
       </Box>
     </Box>
   );
+};
+
+Layout.propTypes = {
+  mode: PropTypes.string,
 };
 
 export default Layout;

@@ -10,6 +10,25 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 
 /**
+ * @typedef {Object} LoadingButtonProps
+ * @property {React.ReactNode} children - Content of the button
+ * @property {boolean} [loading=false] - Whether the button is in a loading state
+ * @property {boolean} [disabled=false] - Whether the button is disabled
+ * @property {React.ReactNode} [startIcon] - Icon to display before the button text
+ * @property {'small'|'medium'|'large'} [size='medium'] - Size of the button
+ */
+
+/**
+ * Map of button sizes to spinner sizes
+ * @type {Object.<string, number>}
+ */
+const SPINNER_SIZES = {
+  small: 16,
+  medium: 20,
+  large: 24
+};
+
+/**
  * LoadingButton component that displays a loading indicator when isLoading is true.
  * 
  * @component
@@ -25,30 +44,23 @@ import CircularProgress from '@mui/material/CircularProgress';
  */
 const LoadingButton = ({
   children,
-  loading,
-  disabled,
+  loading = false,
+  disabled = false,
   startIcon,
   size = 'medium',
   ...props
 }) => {
-  // Calculate spinner size based on button size
-  const spinnerSize = {
-    small: 16,
-    medium: 20,
-    large: 24
-  }[size] || 20;
+  const spinnerSize = SPINNER_SIZES[size] || SPINNER_SIZES.medium;
 
-  // When loading, override the startIcon with a spinner
   const buttonStartIcon = loading ? (
     <CircularProgress size={spinnerSize} color="inherit" />
-  ) : (
-    startIcon
-  );
+  ) : startIcon;
 
   return (
     <Button
       startIcon={buttonStartIcon}
       disabled={loading || disabled}
+      size={size}
       {...props}
     >
       {children}
@@ -71,17 +83,6 @@ LoadingButton.propTypes = {
   
   /** Size of the button */
   size: PropTypes.oneOf(['small', 'medium', 'large']),
-  
-  /** Additional props are passed to the MUI Button component */
-  // eslint-disable-next-line react/forbid-prop-types
-  props: PropTypes.object,
-};
-
-LoadingButton.defaultProps = {
-  loading: false,
-  disabled: false,
-  startIcon: null,
-  size: 'medium',
 };
 
 export default LoadingButton; 
