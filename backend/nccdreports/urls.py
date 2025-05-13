@@ -7,7 +7,8 @@ from .views import (
     create_report,
     get_reports_by_student,
     ensure_reports_for_class,
-    create_lesson_effectiveness
+    create_lesson_effectiveness,
+    get_effectiveness_trend
 )
 
 urlpatterns = [
@@ -17,6 +18,7 @@ urlpatterns = [
     path('student/<int:student_id>/', get_reports_by_student, name='get_reports_by_student'),
     path('class/<int:class_id>/check-report/', ensure_reports_for_class, name='ensure_reports_for_class'),
     path('create-lesson-effectiveness/<int:report_id>/', create_lesson_effectiveness, name='create_lesson_effectiveness'),
+    path('effectiveness-trend/<int:student_id>/', get_effectiveness_trend, name='effectiveness-trend')
 ]
 
 if settings.DEBUG:

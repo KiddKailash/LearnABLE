@@ -260,3 +260,25 @@ def create_lesson_effectiveness(request, report_id):
         'teacher_id': record.teacher.id,
         'next_report_id': next_report_id  # helps frontend move to next
     }, status=201)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_effectiveness_trend(request, student_id):
+    """
+    Returns a list of date/score objects for cumulative lesson effectiveness over time.
+    """
+    student = Student.objects.get(id=student_id)
+
+    records = LessonEffectivenessRecord.objects.filter( report__student=student).order_by('lesson_date')
+
+    data = []
+    score = 0
+
+    for record in records:
+        score += 1 if record.was_effective else -1
+        data.append({
+            'date': record.lesson_date,
+            'score': score,
+        })
+
+    return Response(data)
