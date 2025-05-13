@@ -49,12 +49,12 @@ src/
 ├── components/     # Reusable UI components
 ├── contexts/       # React context providers
 ├── hooks/          # Custom React hooks
-├── layouts/        # Page layout components
+├── layout/        # Page layout components
 ├── pages/          # Page components
 ├── services/       # API and other services
+├── store/          # Global state storage
 ├── styles/         # Global styles and themes
 ├── utils/          # Utility functions
-├── tests/          # Test files
 ├── App.jsx         # Application Routing
 └── index.js        # Application Entry Point
 ```
@@ -89,7 +89,7 @@ This project uses ESLint and Prettier for code formatting. The configuration is 
 
 ## Deployment
 
-The frontend is configured for deployment on Netlify. The production build is automatically deployed when changes are pushed to the main branch.
+The frontend is configured for deployment on Vercel. The production build is automatically deployed when changes are pushed to the main branch.
 
 ## Troubleshooting
 
