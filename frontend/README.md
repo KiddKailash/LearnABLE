@@ -48,13 +48,15 @@ The build artifacts will be stored in the `build/` directory.
 src/
 ├── components/     # Reusable UI components
 ├── contexts/       # React context providers
-├── hooks/         # Custom React hooks
-├── layouts/       # Page layout components
-├── pages/         # Page components
-├── services/      # API and other services
-├── styles/        # Global styles and themes
-├── utils/         # Utility functions
-└── tests/         # Test files
+├── hooks/          # Custom React hooks
+├── layouts/        # Page layout components
+├── pages/          # Page components
+├── services/       # API and other services
+├── styles/         # Global styles and themes
+├── utils/          # Utility functions
+├── tests/          # Test files
+├── App.jsx         # Application Routing
+└── index.js        # Application Entry Point
 ```
 
 ## Available Scripts

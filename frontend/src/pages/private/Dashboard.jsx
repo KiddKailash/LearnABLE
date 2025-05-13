@@ -2,14 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Services
-import UserContext from "../../contexts/UserObject";
+import UserContext from "../../store/UserObject";
 import api from "../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid2";
-import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
@@ -23,8 +22,6 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import ListItemButton from "@mui/material/ListItemButton";
-import Fade from "@mui/material/Fade";
-import Tooltip from "@mui/material/Tooltip";
 import Skeleton from "@mui/material/Skeleton";
 
 // Icons
@@ -38,15 +35,14 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DescriptionIcon from "@mui/icons-material/Description";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import AddIcon from "@mui/icons-material/Add";
-import InfoIcon from "@mui/icons-material/Info";
-import ClassIcon from '@mui/icons-material/Class';
+import ClassIcon from "@mui/icons-material/Class";
 
 // Context for snackbar notifications
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 
 // Custom Components
-import DashboardCard from "../../components/ui/DashboardCard";
-import EmptyState from "../../components/ui/EmptyState";
+import DashboardCard from "../../components/DashboardCard";
+import EmptyState from "../../components/EmptyState";
 
 const Dashboard = () => {
   const { user } = useContext(UserContext);
@@ -166,7 +162,7 @@ const Dashboard = () => {
           <Skeleton variant="text" width="50%" height={60} />
           <Skeleton variant="text" width="70%" height={30} />
         </Box>
-        
+
         {/* Stat cards skeleton */}
         <Grid container spacing={3} sx={{ mb: 2 }}>
           {[1, 2, 3].map((i) => (
@@ -175,7 +171,7 @@ const Dashboard = () => {
             </Grid>
           ))}
         </Grid>
-        
+
         {/* Content area skeleton */}
         <Grid container spacing={3}>
           {[1, 2, 3].map((i) => (
@@ -394,10 +390,19 @@ const Dashboard = () => {
                 <EmptyState
                   title="No classes yet"
                   description="Create your first class to get started organizing your students and materials"
-                  actionText="Create Class" 
+                  actionText="Create Class"
                   actionIcon={<AddIcon />}
                   onActionClick={() => handleNavigate("/classes?create=true")}
-                  icon={<ClassIcon sx={{ fontSize: 60, opacity: 0.6, mb: 2, color: 'primary.light' }} />}
+                  icon={
+                    <ClassIcon
+                      sx={{
+                        fontSize: 60,
+                        opacity: 0.6,
+                        mb: 2,
+                        color: "primary.light",
+                      }}
+                    />
+                  }
                 />
               )}
             </List>
@@ -587,10 +592,25 @@ const Dashboard = () => {
                   description="Create reports to track adjustments and support for students with disability"
                   actionText="Create Your First Report"
                   actionIcon={<DescriptionIcon />}
-                  onActionClick={() => handleNavigate("/reporting?newReport=true")}
+                  onActionClick={() =>
+                    handleNavigate("/reporting?newReport=true")
+                  }
                   disabled={students.length === 0}
-                  icon={<DescriptionIcon sx={{ fontSize: 60, opacity: 0.6, mb: 2, color: 'primary.light' }} />}
-                  errorText={students.length === 0 ? "You need to add students before creating NCCD reports" : null}
+                  icon={
+                    <DescriptionIcon
+                      sx={{
+                        fontSize: 60,
+                        opacity: 0.6,
+                        mb: 2,
+                        color: "primary.light",
+                      }}
+                    />
+                  }
+                  errorText={
+                    students.length === 0
+                      ? "You need to add students before creating NCCD reports"
+                      : null
+                  }
                 />
               )}
             </Box>

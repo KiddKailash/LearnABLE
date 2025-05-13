@@ -9,7 +9,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { TutorialProvider } from './contexts/TutorialContext';
-import { UserProvider } from './contexts/UserObject';
+import { UserProvider } from './store/UserObject';
 import Tutorial from './components/Tutorial.jsx';
 import ErrorBoundary from './components/ErrorBoundary';
 

@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 // Contexts and Services
-import UserContext from "../../../contexts/UserObject";
+import UserContext from "../../../store/UserObject";
 import accountApi from "../../../services/accountApi";
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 

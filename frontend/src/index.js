@@ -18,7 +18,7 @@ import reportWebVitals from "./tests/reportWebVitals";
 
 // Context/Providers
 import { SnackbarProvider } from "./contexts/SnackbarContext";
-import { UserProvider, default as UserContext } from "./contexts/UserObject";
+import { UserProvider, default as UserContext } from "./store/UserObject";
 import { TutorialProvider } from "./contexts/TutorialContext";
 
 // MUI imports

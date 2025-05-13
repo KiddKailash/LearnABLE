@@ -5,7 +5,7 @@
 import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import UserContext from "../contexts/UserObject";
+import UserContext from "../store/UserObject";
 
 // MUI Components
 import CircularProgress from "@mui/material/CircularProgress";

@@ -14,7 +14,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 // Contexts
-import UserContext from "../contexts/UserObject";
+import UserContext from "../store/UserObject";
 
 // MUI Components
 import Box from "@mui/material/Box";
