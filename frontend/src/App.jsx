@@ -22,7 +22,7 @@ import AuthPage from "./pages/public/AuthPage";
 import PageNotFound from "./pages/public/PageNotFound";
 
 // Webpages - Private
-import Account from "./pages/private/Account/Account";
+import Account from "./pages/private/Account.jsx";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
 import Classes from "./pages/private/Classes/Classes";
 import Dashboard from "./pages/private/Dashboard";
