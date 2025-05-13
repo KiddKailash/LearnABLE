@@ -48,26 +48,26 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
  * @returns {Object|null} InputProps with help icon or null
  */
 const getHelpIconProps = ({ tooltip, InputProps }) => {
-  if (!tooltip) return InputProps;
-  
-  return {
-    ...InputProps,
-    endAdornment: (
-      <InputAdornment position="end">
-        <Tooltip title={tooltip} arrow>
-          <IconButton 
-            edge="end"
+    if (!tooltip) return InputProps;
+    
+    return {
+      ...InputProps,
+      endAdornment: (
+        <InputAdornment position="end">
+          <Tooltip title={tooltip} arrow>
+            <IconButton 
+              edge="end"
             aria-label={`Help for ${tooltip}`}
-            tabIndex={-1}
-            size="small"
-          >
-            <HelpOutlineIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </InputAdornment>
-    )
+              tabIndex={-1}
+              size="small"
+            >
+              <HelpOutlineIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </InputAdornment>
+      )
+    };
   };
-};
 
 /**
  * Renders a select field
@@ -75,116 +75,116 @@ const getHelpIconProps = ({ tooltip, InputProps }) => {
  * @returns {React.ReactNode}
  */
 const SelectField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, options, fullWidth, ...props }) => (
-  <FormControl 
-    fullWidth={fullWidth} 
-    error={error}
-    required={required}
-    variant="outlined"
-  >
-    <InputLabel id={`${id}-label`}>{label}</InputLabel>
-    <Select
-      labelId={`${id}-label`}
-      id={id}
-      name={name}
-      value={value || ''}
-      onChange={onChange}
-      onBlur={onBlur}
-      label={label}
-      required={required}
-      {...props}
-    >
-      {options?.map(option => (
-        <MenuItem 
-          key={option.value} 
-          value={option.value}
-          disabled={option.disabled}
+        <FormControl 
+          fullWidth={fullWidth} 
+          error={error}
+          required={required}
+          variant="outlined"
         >
-          {option.label}
-        </MenuItem>
-      ))}
-    </Select>
-    {helperText && <FormHelperText>{helperText}</FormHelperText>}
-  </FormControl>
-);
-
+          <InputLabel id={`${id}-label`}>{label}</InputLabel>
+          <Select
+            labelId={`${id}-label`}
+            id={id}
+            name={name}
+            value={value || ''}
+            onChange={onChange}
+            onBlur={onBlur}
+            label={label}
+            required={required}
+            {...props}
+          >
+            {options?.map(option => (
+              <MenuItem 
+                key={option.value} 
+                value={option.value}
+                disabled={option.disabled}
+              >
+                {option.label}
+              </MenuItem>
+            ))}
+          </Select>
+          {helperText && <FormHelperText>{helperText}</FormHelperText>}
+        </FormControl>
+      );
+      
 /**
  * Renders a checkbox field
  * @param {FormFieldProps} props - Component props
  * @returns {React.ReactNode}
  */
 const CheckboxField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, ...props }) => (
-  <FormControl error={error} required={required}>
-    <FormControlLabel
-      control={
-        <Checkbox
-          id={id}
-          name={name}
-          checked={!!value}
-          onChange={onChange}
-          onBlur={onBlur}
-          {...props}
-        />
-      }
-      label={label}
-    />
-    {helperText && <FormHelperText>{helperText}</FormHelperText>}
-  </FormControl>
-);
-
+        <FormControl error={error} required={required}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                id={id}
+                name={name}
+                checked={!!value}
+                onChange={onChange}
+                onBlur={onBlur}
+                {...props}
+              />
+            }
+            label={label}
+          />
+          {helperText && <FormHelperText>{helperText}</FormHelperText>}
+        </FormControl>
+      );
+      
 /**
  * Renders a radio group field
  * @param {FormFieldProps} props - Component props
  * @returns {React.ReactNode}
  */
 const RadioField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, options, fullWidth, ...props }) => (
-  <FormControl error={error} required={required} fullWidth={fullWidth}>
-    <FormHelperText sx={{ margin: 0 }}>{label}</FormHelperText>
-    <RadioGroup
-      id={id}
-      name={name}
-      value={value || ''}
-      onChange={onChange}
-      onBlur={onBlur}
-      row={props.row}
-    >
-      {options?.map(option => (
-        <FormControlLabel
-          key={option.value}
-          value={option.value}
-          control={<Radio />}
-          label={option.label}
-          disabled={option.disabled}
-        />
-      ))}
-    </RadioGroup>
-    {helperText && <FormHelperText>{helperText}</FormHelperText>}
-  </FormControl>
-);
-
+        <FormControl error={error} required={required} fullWidth={fullWidth}>
+          <FormHelperText sx={{ margin: 0 }}>{label}</FormHelperText>
+          <RadioGroup
+            id={id}
+            name={name}
+            value={value || ''}
+            onChange={onChange}
+            onBlur={onBlur}
+            row={props.row}
+          >
+            {options?.map(option => (
+              <FormControlLabel
+                key={option.value}
+                value={option.value}
+                control={<Radio />}
+                label={option.label}
+                disabled={option.disabled}
+              />
+            ))}
+          </RadioGroup>
+          {helperText && <FormHelperText>{helperText}</FormHelperText>}
+        </FormControl>
+      );
+      
 /**
  * Renders a switch field
  * @param {FormFieldProps} props - Component props
  * @returns {React.ReactNode}
  */
 const SwitchField = ({ id, name, label, value, onChange, onBlur, error, helperText, required, ...props }) => (
-  <FormControl error={error} required={required}>
-    <FormControlLabel
-      control={
-        <Switch
-          id={id}
-          name={name}
-          checked={!!value}
-          onChange={onChange}
-          onBlur={onBlur}
-          {...props}
-        />
-      }
-      label={label}
-    />
-    {helperText && <FormHelperText>{helperText}</FormHelperText>}
-  </FormControl>
-);
-
+        <FormControl error={error} required={required}>
+          <FormControlLabel
+            control={
+              <Switch
+                id={id}
+                name={name}
+                checked={!!value}
+                onChange={onChange}
+                onBlur={onBlur}
+                {...props}
+              />
+            }
+            label={label}
+          />
+          {helperText && <FormHelperText>{helperText}</FormHelperText>}
+        </FormControl>
+      );
+      
 /**
  * FormField component that renders different form controls based on the fieldType.
  * 

@@ -42,11 +42,11 @@ import { getErrorInfo } from "../utils/errorHandling";
 class ErrorBoundary extends Component {
   /** @type {ErrorBoundaryState} */
   state = {
-    hasError: false,
-    error: null,
-    errorInfo: null,
-    showDetails: false,
-  };
+      hasError: false,
+      error: null,
+      errorInfo: null,
+      showDetails: false,
+    };
 
   /**
    * Update state when an error occurs
@@ -130,14 +130,14 @@ class ErrorBoundary extends Component {
               whiteSpace: "pre-wrap",
               wordBreak: "break-word",
               fontSize: "0.8rem",
-              color: "text.secondary",
+                    color: "text.secondary",
               m: 0,
               fontFamily: "monospace",
-            }}
-          >
+                }}
+              >
             {errorInfo.componentStack}
-          </Typography>
-        </Box>
+                  </Typography>
+              </Box>
       </Fade>
     );
   }
@@ -148,43 +148,43 @@ class ErrorBoundary extends Component {
    */
   renderActions() {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          gap: 1.5,
-          justifyContent: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={this.handleReload}
-          size="small"
-        >
-          Reload Page
-        </Button>
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1.5,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="primary"
+                onClick={this.handleReload}
+                size="small"
+              >
+                Reload Page
+              </Button>
 
-        <Button
-          variant="text"
-          color="primary"
-          startIcon={<HomeIcon />}
-          onClick={this.handleGoHome}
-          size="small"
-        >
-          Go Home
-        </Button>
+              <Button
+                variant="text"
+                color="primary"
+                startIcon={<HomeIcon />}
+                onClick={this.handleGoHome}
+                size="small"
+              >
+                Go Home
+              </Button>
 
-        <Button
-          variant="text"
-          color="primary"
-          startIcon={<HelpOutlineIcon />}
-          onClick={this.toggleDetails}
-          size="small"
-        >
+              <Button
+                variant="text"
+                color="primary"
+                startIcon={<HelpOutlineIcon />}
+                onClick={this.toggleDetails}
+                size="small"
+              >
           {this.state.showDetails ? "Hide Details" : "Show Details"}
-        </Button>
-      </Box>
+              </Button>
+            </Box>
     );
   }
 
@@ -204,8 +204,8 @@ class ErrorBoundary extends Component {
 
     return (
       <Fade in={true}>
-        <Box
-          sx={{
+                <Box
+                  sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -218,44 +218,44 @@ class ErrorBoundary extends Component {
               severity="error"
               sx={{
                 mb: 3,
-                borderRadius: 1,
+                    borderRadius: 1,
                 "& .MuiAlert-message": {
                   color: "text.primary",
                 },
-              }}
-            >
+                  }}
+                >
               {errorDetails.title}
               <br />
               {errorDetails.message}
             </Alert>
 
             <Box sx={{ mb: 3 }}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
                 sx={{ mb: 1.5 }}
-              >
+                  >
                 Try these steps:
-              </Typography>
+                  </Typography>
               <Box
                 component="ul"
-                sx={{
+                    sx={{
                   pl: 2,
                   m: 0,
                   "& li": {
-                    color: "text.secondary",
+                      color: "text.secondary",
                     mb: 1,
                     fontSize: "0.9rem",
                   },
-                }}
-              >
+                    }}
+                  >
                 {errorDetails.suggestions.map((suggestion, index) => (
                   <Typography component="li" key={index}>
                     {suggestion}
                   </Typography>
                 ))}
               </Box>
-            </Box>
+                </Box>
 
             <Divider sx={{ my: 3 }} />
             {this.renderActions()}
