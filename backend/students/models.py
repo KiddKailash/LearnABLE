@@ -7,8 +7,8 @@ from utils.encryption import encrypt, decrypt
 YEAR_LEVEL_CHOICES = [(0, 'Prep')] + [(i, str(i)) for i in range(1, 13)]
 
 class Student(models.Model):
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
+    _first_name = models.CharField(db_column='first_name', blank=True)
+    _last_name = models.CharField(db_column='last_name', blank=True)
 
     year_level = models.IntegerField(choices=YEAR_LEVEL_CHOICES)
 
@@ -27,6 +27,10 @@ class Student(models.Model):
     def save(self, *args, **kwargs):
         if self._disability_info and not self._disability_info.startswith("gAAAA"):
             self._disability_info = encrypt(self._disability_info)
+        if self._first_name and not self._first_name.startswith("gAAAA"):
+            self._first_name = encrypt(self._first_name)
+        if self._last_name and not self._last_name.startswith("gAAAA"):
+            self._last_name = encrypt(self._last_name)
         self.full_clean()
         super().save(*args, **kwargs)
 
@@ -35,6 +39,22 @@ class Student(models.Model):
     def disability_info(self):
         return decrypt(self._disability_info) if self._disability_info else ''
 
+    @property
+    def first_name(self):
+        return decrypt(self._first_name) if self._first_name else ''
+    
+    @property
+    def last_name(self):
+        return decrypt(self._last_name) if self._last_name else ''
+
     @disability_info.setter
     def disability_info(self, value):
         self._disability_info = value
+    
+    @first_name.setter
+    def first_name(self, value):
+        self._first_name = value
+    
+    @last_name.setter
+    def last_name(self, value):
+        self._last_name = value
