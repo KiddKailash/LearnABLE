@@ -23,13 +23,7 @@ urlpatterns = [
     # Include all app URL patterns with /api/ prefix
     path("api/teachers/", include("teachers.urls")),
     path("api/classes/", include("classes.urls")),
-    path("api/subjects/", include("subjects.urls")),
     path("api/students/", include("students.urls")),
-    path("api/assessments/", include("assessments.urls")),
-    path("api/attendancesessions/", include("attendancesessions.urls")),
-    path("api/classstudents/", include("classstudents.urls")),
-    path("api/studentattendance/", include("studentattendance.urls")),
-    path("api/studentgrades/", include("studentgrades.urls")), 
     path("api/nccdreports/", include("nccdreports.urls")), 
     path("api/learning-materials/", include("learningmaterial.urls")),
     path("api/unit-plans/", include("unitplan.urls")),

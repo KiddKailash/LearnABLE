@@ -65,13 +65,7 @@ INSTALLED_APPS = [
     'backend',
     'teachers',
     'students',
-    'subjects',
     'classes',
-    'attendancesessions',
-    'studentattendance',
-    'classstudents',
-    'assessments',
-    'studentgrades',
     'learningmaterial',
     'nccdreports',
     'unitplan'
