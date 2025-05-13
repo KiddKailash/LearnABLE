@@ -26,9 +26,6 @@ export const getHeaders = (contentType = 'application/json') => {
   return headers;
 };
 
-// Flag to prevent infinite token refresh loops
-let isRefreshing = false;
-
 /**
  * Handles API responses with better error detection and parsing
  * 
