@@ -22,7 +22,6 @@ import { SnackbarContext } from "../../contexts/SnackbarContext";
 import StatsCard from "../../components/dashboard/StatsCard";
 import QuickActions from "../../components/dashboard/QuickActions";
 import ClassesList from "../../components/dashboard/ClassesList";
-import NCCDReportsSummary from "../../components/dashboard/NCCDReportsSummary";
 import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
 
 const Dashboard = () => {
@@ -35,8 +34,6 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [nccdReports, setNccdReports] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -46,19 +43,6 @@ const Dashboard = () => {
         // Fetch classes
         const classesData = await api.classes.getAll();
         setClasses(classesData);
-
-        // Fetch students
-        const studentsData = await api.students.getAll();
-        setStudents(studentsData);
-
-        // Try to fetch NCCD reports
-        try {
-          const nccdData = await api.nccdReports.getAll();
-          setNccdReports(nccdData.slice(0, 5)); // Get top 5
-        } catch (err) {
-          console.log("No NCCD reports or error fetching them:", err);
-          setNccdReports([]);
-        }
 
         // Build stats
         const statsData = [
@@ -70,7 +54,7 @@ const Dashboard = () => {
           },
           {
             label: "Students",
-            value: studentsData.length,
+            value: classesData.reduce((acc, curr) => acc + (curr.students?.length || 0), 0),
             icon: <PeopleIcon fontSize="large" color="primary" />,
             color: "#e8f5e9", // light green
           },
