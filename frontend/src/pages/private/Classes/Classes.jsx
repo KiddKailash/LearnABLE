@@ -36,7 +36,7 @@ import Menu from "@mui/icons-material/Menu";
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import api from "../../../services/api";
 import StudentFormDialog from "../../../components/StudentFormDialog";
-import ClassCreationStepper from "../../../components/ClassCreationStepper";
+import ClassCreationStepper from "./ClassCreationStepper";
 
 const Classes = () => {
   const navigate = useNavigate();
