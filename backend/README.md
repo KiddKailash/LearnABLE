@@ -98,8 +98,8 @@ backend/
 ├── classes/           # Classes app
 ├── nccdreports/       # NCCD reporting app
 ├── learningmaterial/  # Learning materials app
-├── utils/            # Utility functions
-└── media/            # Media files
+├── utils/             # Utility functions
+└── media/             # Media files
 ```
 
 ## Testing
