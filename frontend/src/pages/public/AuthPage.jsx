@@ -29,7 +29,7 @@ import {
 
 // Contexts
 import { SnackbarContext } from "../../contexts/SnackbarContext";
-import UserContext from "../../contexts/UserObject";
+import UserContext from "../../store/UserObject";
 
 /**
  * Login form validation function

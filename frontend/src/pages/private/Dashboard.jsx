@@ -2,51 +2,27 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Services
-import UserContext from "../../contexts/UserObject";
+import UserContext from "../../store/UserObject";
 import api from "../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid2";
-import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
-import Paper from "@mui/material/Paper";
-import Button from "@mui/material/Button";
-import Divider from "@mui/material/Divider";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemText from "@mui/material/ListItemText";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
-import ListItemButton from "@mui/material/ListItemButton";
-import Fade from "@mui/material/Fade";
-import Tooltip from "@mui/material/Tooltip";
-import Skeleton from "@mui/material/Skeleton";
 
-// Icons
-import AssignmentIcon from "@mui/icons-material/Assignment";
+// MUI Icons
 import PeopleIcon from "@mui/icons-material/People";
 import SchoolIcon from "@mui/icons-material/School";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import DescriptionIcon from "@mui/icons-material/Description";
-import AssessmentIcon from "@mui/icons-material/Assessment";
-import AddIcon from "@mui/icons-material/Add";
-import InfoIcon from "@mui/icons-material/Info";
-import ClassIcon from '@mui/icons-material/Class';
 
 // Context for snackbar notifications
 import { SnackbarContext } from "../../contexts/SnackbarContext";
 
-// Custom Components
-import DashboardCard from "../../components/ui/DashboardCard";
-import EmptyState from "../../components/ui/EmptyState";
+// Dashboard Components
+import StatsCard from "../../components/dashboard/StatsCard";
+import QuickActions from "../../components/dashboard/QuickActions";
+import ClassesList from "../../components/dashboard/ClassesList";
+import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
 
 const Dashboard = () => {
   const { user } = useContext(UserContext);
@@ -58,9 +34,6 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [recentAssessments, setRecentAssessments] = useState([]);
-  const [nccdReports, setNccdReports] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -70,51 +43,6 @@ const Dashboard = () => {
         // Fetch classes
         const classesData = await api.classes.getAll();
         setClasses(classesData);
-
-        // Fetch students
-        const studentsData = await api.students.getAll();
-        setStudents(studentsData);
-
-        // Fetch assessments for recent assessments
-        let allAssessments = [];
-        if (classesData.length > 0) {
-          for (const classObj of classesData) {
-            try {
-              const assessments = await api.assessments.getByClass(classObj.id);
-              if (assessments && assessments.length) {
-                // Add class info to assessments
-                const assessmentsWithClass = assessments.map((assessment) => ({
-                  ...assessment,
-                  className: classObj.class_name,
-                }));
-                allAssessments = [...allAssessments, ...assessmentsWithClass];
-              }
-            } catch (err) {
-              console.error(
-                `Error fetching assessments for class ${classObj.id}:`,
-                err
-              );
-            }
-          }
-        }
-
-        // Sort by due date and get most recent
-        allAssessments.sort((a, b) => {
-          const dateA = new Date(a.due_date);
-          const dateB = new Date(b.due_date);
-          return dateB - dateA; // Most recent first
-        });
-
-        setRecentAssessments(allAssessments.slice(0, 5));
-
-        // Try to fetch NCCD reports
-        try {
-          const nccdData = await api.nccdReports.getAll();
-          setNccdReports(nccdData.slice(0, 5)); // Get top 5
-        } catch (err) {
-          console.log("No NCCD reports or error fetching them:", err);
-          setNccdReports([]);
-        }
 
         // Build stats
         const statsData = [
@@ -126,15 +54,9 @@ const Dashboard = () => {
           },
           {
             label: "Students",
-            value: studentsData.length,
+            value: classesData.reduce((acc, curr) => acc + (curr.students?.length || 0), 0),
             icon: <PeopleIcon fontSize="large" color="primary" />,
             color: "#e8f5e9", // light green
-          },
-          {
-            label: "Assessments",
-            value: allAssessments.length,
-            icon: <AssignmentIcon fontSize="large" color="primary" />,
-            color: "#fff3e0", // light orange
           },
         ];
 
@@ -159,33 +81,7 @@ const Dashboard = () => {
   };
 
   if (loading) {
-    return (
-      <Box sx={{ mb: 4 }}>
-        {/* Header skeleton */}
-        <Box sx={{ mb: 2 }}>
-          <Skeleton variant="text" width="50%" height={60} />
-          <Skeleton variant="text" width="70%" height={30} />
-        </Box>
-        
-        {/* Stat cards skeleton */}
-        <Grid container spacing={3} sx={{ mb: 2 }}>
-          {[1, 2, 3].map((i) => (
-            <Grid xs={12} sm={4} key={i}>
-              <Skeleton variant="rounded" height={120} />
-            </Grid>
-          ))}
-        </Grid>
-        
-        {/* Content area skeleton */}
-        <Grid container spacing={3}>
-          {[1, 2, 3].map((i) => (
-            <Grid xs={12} md={4} key={i}>
-              <Skeleton variant="rounded" height={350} />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {
@@ -195,17 +91,6 @@ const Dashboard = () => {
       </Alert>
     );
   }
-
-  // Format date to readable format
-  const formatDate = (dateString) => {
-    if (!dateString) return "No date";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   return (
     <>
@@ -222,379 +107,22 @@ const Dashboard = () => {
       {/* Stats cards */}
       <Grid container spacing={3} sx={{ mb: 2 }}>
         {stats.map((stat, index) => (
-          <Grid size={{ xs: 12, sm: 4 }} key={index}>
-            <Paper
-              elevation={1}
-              sx={{
-                p: 3,
-                height: "100%",
-                borderRadius: 2,
-                display: "flex",
-                alignItems: "center",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                backgroundColor: (theme) =>
-                  theme.palette.mode === "dark"
-                    ? theme.palette.background.paper
-                    : stat.color,
-                "&:hover": {
-                  transform: "translateY(-4px)",
-                  boxShadow: 3,
-                },
-              }}
-            >
-              <Box sx={{ mr: 2 }}>{stat.icon}</Box>
-              <Box>
-                <Typography variant="h3" fontWeight="bold">
-                  {stat.value}
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  {stat.label}
-                </Typography>
-              </Box>
-            </Paper>
+          <Grid size={{ xs: 12, sm: 6 }} key={index}>
+            <StatsCard {...stat} />
           </Grid>
         ))}
       </Grid>
 
-      {/* Main content grid with 3 sections */}
+      {/* Main content grid with 2 sections */}
       <Grid container spacing={3}>
-        {/* Left Column - Quick Actions */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <DashboardCard title="Quick Actions">
-            <List sx={{ p: 0 }}>
-              <ListItemButton
-                onClick={() => handleNavigate("/ai-assistant")}
-                sx={{
-                  py: 2,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  "&:hover": { bgcolor: "action.hover" },
-                }}
-              >
-                <ListItemIcon>
-                  <SmartToyIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="AI Assistant"
-                  secondary="Generate personalized learning materials"
-                />
-                <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItemButton>
-
-              <ListItemButton
-                onClick={() => handleNavigate("/classes")}
-                sx={{
-                  py: 2,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  "&:hover": { bgcolor: "action.hover" },
-                }}
-              >
-                <ListItemIcon>
-                  <SchoolIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Manage Classes"
-                  secondary="View and edit your classes"
-                />
-                <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItemButton>
-
-              <ListItemButton
-                onClick={() => handleNavigate("/reporting")}
-                sx={{
-                  py: 2,
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  "&:hover": { bgcolor: "action.hover" },
-                }}
-              >
-                <ListItemIcon>
-                  <DescriptionIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="NCCD Reporting"
-                  secondary="Manage disability reports and requirements"
-                />
-                <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItemButton>
-
-              <ListItemButton
-                onClick={() => handleNavigate("/analytics")}
-                sx={{
-                  py: 2,
-                  "&:hover": { bgcolor: "action.hover" },
-                }}
-              >
-                <ListItemIcon>
-                  <BarChartIcon color="primary" />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Analytics"
-                  secondary="View student performance insights"
-                />
-                <ArrowForwardIcon fontSize="small" color="action" />
-              </ListItemButton>
-            </List>
-          </DashboardCard>
+        {/* Left Column - Recent Classes */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <ClassesList classes={classes} onNavigate={handleNavigate} />
         </Grid>
 
-        {/* Middle Column - Recent Classes */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <DashboardCard
-            title="Your Classes"
-            action={
-              classes.length > 0 && (
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="secondary"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleNavigate("/classes?create=true")}
-                >
-                  New
-                </Button>
-              )
-            }
-            actionText="View All Classes"
-            onActionClick={() => handleNavigate("/classes")}
-          >
-            <List sx={{ p: 0, flexGrow: 1, overflow: "auto" }}>
-              {classes.length > 0 ? (
-                classes.map((classItem) => (
-                  <ListItemButton
-                    key={classItem.id}
-                    onClick={() =>
-                      handleNavigate(`/classes/${classItem.id}/students`)
-                    }
-                    sx={{
-                      py: 2,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      transition: "background-color 0.2s",
-                      "&:hover": { bgcolor: "action.hover" },
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        mr: 2,
-                        bgcolor: "primary.light",
-                      }}
-                    >
-                      {classItem.class_name.charAt(0)}
-                    </Avatar>
-                    <ListItemText
-                      primary={classItem.class_name}
-                      secondary={`${classItem.students?.length || 0} students`}
-                    />
-                    <ArrowForwardIcon fontSize="small" color="action" />
-                  </ListItemButton>
-                ))
-              ) : (
-                <EmptyState
-                  title="No classes yet"
-                  description="Create your first class to get started organizing your students and materials"
-                  actionText="Create Class" 
-                  actionIcon={<AddIcon />}
-                  onActionClick={() => handleNavigate("/classes?create=true")}
-                  icon={<ClassIcon sx={{ fontSize: 60, opacity: 0.6, mb: 2, color: 'primary.light' }} />}
-                />
-              )}
-            </List>
-          </DashboardCard>
-        </Grid>
-
-        {/* Right Column - Recent Assessments */}
-        <Grid size={{ xs: 12, md: 4 }}>
-          <Paper
-            elevation={1}
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Box sx={{ p: 2, bgcolor: "primary.main", color: "white" }}>
-              <Typography variant="h6">Recent Assessments</Typography>
-            </Box>
-
-            <List sx={{ p: 0, flexGrow: 1, overflow: "auto" }}>
-              {recentAssessments.length > 0 ? (
-                recentAssessments.map((assessment) => (
-                  <ListItem
-                    key={assessment.id}
-                    sx={{
-                      py: 2,
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                    }}
-                  >
-                    <ListItemIcon>
-                      <AssessmentIcon color="primary" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={assessment.title}
-                      secondary={
-                        <>
-                          <Typography variant="body2" component="span">
-                            {assessment.className} •
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            component="span"
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              mt: 0.5,
-                            }}
-                          >
-                            <AccessTimeIcon
-                              fontSize="small"
-                              sx={{ mr: 0.5, fontSize: "1rem" }}
-                            />
-                            Due: {formatDate(assessment.due_date)}
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </ListItem>
-                ))
-              ) : (
-                <ListItem>
-                  <ListItemText
-                    primary="No assessments yet"
-                    secondary="Assessments you create will appear here"
-                  />
-                </ListItem>
-              )}
-            </List>
-
-            {classes.length > 0 && (
-              <Box
-                sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}
-              >
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  onClick={() => handleNavigate("/classes")}
-                >
-                  Manage Assessments
-                </Button>
-              </Box>
-            )}
-          </Paper>
-        </Grid>
-
-        {/* Full Width - NCCD Reports Summary */}
-        <Grid size={12}>
-          <Paper
-            elevation={1}
-            sx={{
-              borderRadius: 2,
-              overflow: "hidden",
-              mt: 2,
-            }}
-          >
-            <Box
-              sx={{
-                p: 2,
-                bgcolor: "primary.main",
-                color: "white",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <Typography variant="h6">NCCD Reports Summary</Typography>
-              <Button
-                size="small"
-                variant="contained"
-                color="secondary"
-                onClick={() => handleNavigate("/reporting")}
-              >
-                View All
-              </Button>
-            </Box>
-
-            <Box sx={{ p: 3 }}>
-              {nccdReports.length > 0 ? (
-                <Grid container spacing={2}>
-                  {nccdReports.map((report) => {
-                    const student = students.find(
-                      (s) => s.id === report.student
-                    );
-                    return (
-                      <Grid size={{ xs: 12, md: 4, lg: 4 }} key={report.id}>
-                        <Card
-                          variant="outlined"
-                          sx={{
-                            height: "100%",
-                            bgcolor: "background.paper",
-                            borderColor: "divider",
-                          }}
-                        >
-                          <CardContent>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                mb: 1,
-                              }}
-                            >
-                              <Typography
-                                variant="subtitle1"
-                                fontWeight="medium"
-                              >
-                                {student
-                                  ? `${student.first_name} ${student.last_name}`
-                                  : `Student #${report.student}`}
-                              </Typography>
-                              <Chip
-                                size="small"
-                                label={report.status}
-                                color={
-                                  report.status === "Approved"
-                                    ? "success"
-                                    : "primary"
-                                }
-                                variant="outlined"
-                              />
-                            </Box>
-                            <Divider sx={{ my: 1 }} />
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              gutterBottom
-                            >
-                              <strong>Disability:</strong>{" "}
-                              {report.disability_category || "Not specified"}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              <strong>Adjustment Level:</strong>{" "}
-                              {report.level_of_adjustment || "Not specified"}
-                            </Typography>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    );
-                  })}
-                </Grid>
-              ) : (
-                <EmptyState
-                  title="No NCCD reports yet"
-                  description="Create reports to track adjustments and support for students with disability"
-                  actionText="Create Your First Report"
-                  actionIcon={<DescriptionIcon />}
-                  onActionClick={() => handleNavigate("/reporting?newReport=true")}
-                  disabled={students.length === 0}
-                  icon={<DescriptionIcon sx={{ fontSize: 60, opacity: 0.6, mb: 2, color: 'primary.light' }} />}
-                  errorText={students.length === 0 ? "You need to add students before creating NCCD reports" : null}
-                />
-              )}
-            </Box>
-          </Paper>
+        {/* Right Column - Quick Actions */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <QuickActions onNavigate={handleNavigate} />
         </Grid>
       </Grid>
     </>

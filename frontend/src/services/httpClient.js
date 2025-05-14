@@ -1,14 +1,25 @@
 /**
  * @fileoverview HTTP client with methods for making API requests
+ * 
+ * @module httpClient
  */
 
 import { API_BASE_URL, getHeaders, handleResponse } from './config';
 
 /**
  * HTTP client for making API requests
+ * @type {Object}
  */
 const httpClient = {
-  // GET request
+  /**
+   * Makes a GET request to the specified endpoint
+   * 
+   * @param {string} endpoint - The API endpoint to request
+   * @param {Object} [params] - Query parameters to include in the request
+   * @param {string} [responseType] - Type of response expected ('blob' for file downloads)
+   * @returns {Promise<any>} The response data
+   * @throws {Error} If the request fails
+   */
   get: async (endpoint, params, responseType) => {
     try {
       let url = `${API_BASE_URL}${endpoint}`;
@@ -53,7 +64,15 @@ const httpClient = {
     }
   },
   
-  // POST request
+  /**
+   * Makes a POST request to the specified endpoint
+   * 
+   * @param {string} endpoint - The API endpoint to request
+   * @param {Object|FormData} data - The data to send
+   * @param {string} [contentType='application/json'] - The content type of the request
+   * @returns {Promise<any>} The response data
+   * @throws {Error} If the request fails
+   */
   post: async (endpoint, data, contentType = 'application/json') => {
     try {
       const options = {
@@ -124,7 +143,15 @@ const httpClient = {
     }
   },
   
-  // PUT request
+  /**
+   * Makes a PUT request to the specified endpoint
+   * 
+   * @param {string} endpoint - The API endpoint to request
+   * @param {Object|FormData} data - The data to send
+   * @param {string} [contentType='application/json'] - The content type of the request
+   * @returns {Promise<any>} The response data
+   * @throws {Error} If the request fails
+   */
   put: async (endpoint, data, contentType = 'application/json') => {
     try {
       const options = {
@@ -158,7 +185,14 @@ const httpClient = {
     }
   },
   
-  // PATCH request
+  /**
+   * Makes a PATCH request to the specified endpoint
+   * 
+   * @param {string} endpoint - The API endpoint to request
+   * @param {Object} data - The data to send
+   * @returns {Promise<any>} The response data
+   * @throws {Error} If the request fails
+   */
   patch: async (endpoint, data) => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -180,7 +214,14 @@ const httpClient = {
     }
   },
   
-  // DELETE request
+  /**
+   * Makes a DELETE request to the specified endpoint
+   * 
+   * @param {string} endpoint - The API endpoint to request
+   * @param {Object} [data] - Optional data to send with the request
+   * @returns {Promise<any>} The response data
+   * @throws {Error} If the request fails
+   */
   delete: async (endpoint, data) => {
     try {
       const options = {

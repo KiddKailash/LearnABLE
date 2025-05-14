@@ -14,11 +14,10 @@ import React, { useContext, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import App from "./App";
-import reportWebVitals from "./tests/reportWebVitals";
 
 // Context/Providers
 import { SnackbarProvider } from "./contexts/SnackbarContext";
-import { UserProvider, default as UserContext } from "./contexts/UserObject";
+import { UserProvider, default as UserContext } from "./store/UserObject";
 import { TutorialProvider } from "./contexts/TutorialContext";
 
 // MUI imports
@@ -81,5 +80,3 @@ root.render(
     <Root />
   </React.StrictMode>
 );
-
-reportWebVitals();

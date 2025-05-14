@@ -33,18 +33,20 @@ const StyledLink = styled(Link)(({ theme, $visuallyHidden }) => ({
 
 /**
  * Accessible link component with proper aria attributes.
- * 
+ *
  * @component
- * @example
- * <AccessibleLink to="/dashboard" aria-label="Go to dashboard">
- *   Dashboard
- * </AccessibleLink>
+ * @param {Object} props
+ * @param {React.ReactNode} props.children - Content of the link
+ * @param {string} props.to - URL the link points to
+ * @param {boolean} [props.external] - Whether the link points to an external resource
+ * @param {boolean} [props.visuallyHidden] - Whether the link should be visually hidden (for screen readers only)
+ * @returns {JSX.Element}
  */
 const AccessibleLink = ({
   children,
   to,
-  external,
-  visuallyHidden,
+  external = false,
+  visuallyHidden = false,
   ...props
 }) => {
   // For external links, use an anchor tag with appropriate attributes
