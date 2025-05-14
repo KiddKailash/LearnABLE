@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useContext } from "react";
+import UserContext from "../../../store/UserObject";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -20,6 +22,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import Fade from "@mui/material/Fade";
 import Snackbar from "@mui/material/Snackbar";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
 
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -53,6 +59,9 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const AIAssistantUpload = () => {
   const BACKEND = process.env.REACT_APP_SERVER_URL;
+  const { user } = useContext(UserContext);
+  const userId = user?.id || user?.email || "guest";
+  const tutorialKey = `aiUploadTutorialDismissed_${userId}`;
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
@@ -70,34 +79,10 @@ const AIAssistantUpload = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const fileInputRef = useRef(null);
   const viewerRef = useRef(null);
-
- useEffect(() => {
-    if (file && typeof window !== "undefined" && viewerRef.current) {
-      viewerRef.current.innerHTML = "";
-
-      import("@pdftron/webviewer")
-        .then(({ default: WebViewer }) => {
-          WebViewer(
-            {
-              path: "/webviewer", // Ensure this matches your public folder
-              initialDoc: URL.createObjectURL(file),
-              extension: file.name.split('.').pop(), // helps with format detection
-              fullAPI: true, // enables Office support
-            },
-            viewerRef.current
-          ).then((instance) => {
-            // optional: log for debugging
-            console.log("WebViewer loaded with:", file.name);
-          });
-        })
-        .catch((e) => console.error("WebViewer load failed:", e));
-    }
-  }, [file]);
-
-
 
   const steps = ["Select Class", "Upload Material", "Review & Adapt"];
 
@@ -130,6 +115,12 @@ const AIAssistantUpload = () => {
     fetchClasses();
   }, []);
 
+  useEffect(() => {
+    const dismissed = localStorage.getItem(tutorialKey);
+    if (!dismissed) {
+      setShowTutorial(true);
+    }
+  }, [tutorialKey]);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -283,8 +274,30 @@ const AIAssistantUpload = () => {
     }
   }, [uploadError]);
 
+  const handleCloseTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem(tutorialKey, "true");
+  };
+
   return (
     <>
+      {/* Standalone Tutorial Notification Box */}
+      <Dialog open={showTutorial} onClose={handleCloseTutorial} PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          Welcome to Learning Material Upload
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" color="text.secondary">
+            Here you can upload your learning materials and let the AI help adapt them for your students. Select a class, upload your file, and review the AI-generated adaptations tailored for each student's needs.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button variant="contained" onClick={handleCloseTutorial} autoFocus>
+            Got it
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
         Learning Material Upload
       </Typography>
@@ -301,9 +314,9 @@ const AIAssistantUpload = () => {
         <div>
           {activeStep === 0 && (
             <StyledCard>
-              <CardContent>
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Select Your Class
+                  Select Class
                 </Typography>
                 <FormControl fullWidth>
                   <InputLabel>Class</InputLabel>
@@ -332,9 +345,7 @@ const AIAssistantUpload = () => {
 
           {activeStep === 1 && (
             <StyledCard>
-              <CardContent
-                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-              >
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   Material Details
                 </Typography>
@@ -465,7 +476,7 @@ const AIAssistantUpload = () => {
 
           {activeStep === 2 && (
             <StyledCard>
-              <CardContent>
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <Typography variant="h6" gutterBottom>
                   Adapt Material
                 </Typography>
@@ -545,7 +556,7 @@ const AIAssistantUpload = () => {
                                           src={`${BACKEND}${st.audio_url}`}
                                           type="audio/mpeg"
                                         />
-                                        Your browser doesn’t support audio.
+                                        Your browser doesn't support audio.
                                       </audio>
                                       <Button
                                         variant="contained"
