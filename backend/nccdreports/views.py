@@ -35,6 +35,7 @@ def get_all_reports(request):
     
     return Response(data)
 
+
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def get_report_detail(request, report_id):
@@ -102,6 +103,7 @@ def get_report_detail(request, report_id):
         report.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_report(request):
@@ -163,6 +165,7 @@ def create_report(request):
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_reports_by_student(request, student_id):
@@ -186,6 +189,7 @@ def get_reports_by_student(request, student_id):
         data.append(report_data)
     
     return Response(data)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -217,6 +221,7 @@ def ensure_reports_for_class(request, class_id):
 
     serializer = NCCDreportSerializer(valid_reports, many=True, context={'request': request})
     return Response(serializer.data)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -260,6 +265,7 @@ def create_lesson_effectiveness(request, report_id):
         'teacher_id': record.teacher.id,
         'next_report_id': next_report_id  # helps frontend move to next
     }, status=201)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

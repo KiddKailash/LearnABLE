@@ -9,11 +9,18 @@ from .services.file_extractors import extract_text_from_pdf, extract_text_from_d
 from .services.lesson_adapter import generate_adapted_lessons
 
 class LearningMaterialsViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing learning materials.
+    """
     queryset = LearningMaterials.objects.all()
     serializer_class = LearningMaterialsSerializer
     parser_classes = (MultiPartParser, FormParser)
 
+
     def create(self, request, *args, **kwargs):
+        """
+        Create a new learning material linked to the authenticated teacher.
+        """
         data = request.data.copy()
         if hasattr(request.user, 'teacher'):
             data['created_by'] = request.user.teacher.id
@@ -27,8 +34,12 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
         else:
             return Response(serializer.errors, status=400)
 
+
     @action(detail=True, methods=["post"])
     def adapt(self, request, pk=None):
+        """
+        Generate adapted lessons for all students in the assigned class.
+        """
         material = self.get_object()
         students = material.class_assigned.students.all()
         adapted_outputs = generate_adapted_lessons(material, students, return_file=True)
