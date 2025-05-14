@@ -77,7 +77,8 @@ const NCCDReportSelection = () => {
   }
 
   if (showForm) {
-    return <NCCDReportForm 
+    return <NCCDReportForm
+      open={showForm} // pass showForm to open the form 
       studentId={selectedStudent} 
       onSuccess={handleFormSuccess}
       onCancel={handleCancel}
