@@ -9,7 +9,7 @@ from django.conf.urls.static import static
 
 
 def home(request):
-    return HttpResponse("Welcome to the homepage!")
+    return HttpResponse("Welcome to the LearnABLE. The new innovative learning platform!")
 
 def api_view(request):
     return HttpResponse("This is the API endpoint!")

@@ -49,6 +49,7 @@ def create_class(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_classes(request):
@@ -70,9 +71,13 @@ def get_all_classes(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def add_student_to_class(request, class_id):
+    """
+    Add a student to a class.
+    """
     student_id = request.data.get("student_id")
     if not student_id:
         return Response({"error": "student_id is required"}, status=400)
@@ -87,10 +92,14 @@ def add_student_to_class(request, class_id):
     except Student.DoesNotExist:
         return Response({"error": "Student not found"}, status=404)
 
+
 @api_view(['POST', 'GET']) 
 @parser_classes([MultiPartParser])
 @permission_classes([IsAuthenticated])
 def upload_students_csv(request):
+    """
+    Upload a CSV file to add students to a class.
+    """
     if request.method == 'GET':
         return HttpResponse(
             "<h2>Upload Student CSV</h2>"
@@ -153,6 +162,9 @@ def upload_students_csv(request):
 @api_view(["PUT", "DELETE"])
 @permission_classes([IsAuthenticated])
 def class_detail(request, class_id):
+    """
+    Update or delete a class.
+    """
     try:
         cls = Classes.objects.get(id=class_id)
     except Classes.DoesNotExist:
