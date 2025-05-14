@@ -1,5 +1,6 @@
 import json
 import logging
+from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.http import Http404

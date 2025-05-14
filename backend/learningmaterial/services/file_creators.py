@@ -87,46 +87,29 @@ def create_docx_from_text(text, path):
 
 
 def create_pptx_from_text(slide_pairs, path):
-    print(f"[DEBUG] Saving PPTX to: {path}")
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    if not slide_pairs or not isinstance(slide_pairs, list):
-        print("[ERROR] No slide content or invalid format.")
-        return
-
     prs = Presentation()
     title_font_size = Pt(36)
     content_font_size = Pt(20)
 
-    for idx, (title, content) in enumerate(slide_pairs):
-        if not title.strip() and not content.strip():
-            continue
+    for idx, (title, content, images) in enumerate(slide_pairs):
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-        slide = prs.slides.add_slide(prs.slide_layouts[6])  # Blank layout
-
-        # Add background color
-        background = slide.background
-        fill = background.fill
-        fill.solid()
-        fill.fore_color.rgb = RGBColor(242, 242, 242)  # Light grey
-
-        # Title shape with design
+        # Title
         title_box = slide.shapes.add_shape(
             MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(0.3), Inches(9), Inches(1)
         )
         title_box.fill.solid()
-        title_box.fill.fore_color.rgb = RGBColor(91, 155, 213)  # Blue
+        title_box.fill.fore_color.rgb = RGBColor(91, 155, 213)
         title_box.text = title.strip()
         title_frame = title_box.text_frame
         title_frame.paragraphs[0].font.size = title_font_size
         title_frame.paragraphs[0].font.bold = True
         title_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
 
-        # Content box
-        content_box = slide.shapes.add_textbox(Inches(0.7), Inches(1.5), Inches(8), Inches(5))
+        # Content
+        content_box = slide.shapes.add_textbox(Inches(0.7), Inches(1.5), Inches(8), Inches(4))
         tf = content_box.text_frame
         tf.word_wrap = True
-
         lines = content.strip().split("\n")
         for i, line in enumerate(lines):
             if not line:
@@ -138,18 +121,13 @@ def create_pptx_from_text(slide_pairs, path):
             p.font.name = "Calibri"
             p.font.color.rgb = RGBColor(50, 50, 50)
 
-        # Optional: Add a placeholder image based on slide index
-        if idx % 2 == 0:  # Just an example
-            image_path = "/path/to/your/image.png"
-            if os.path.exists(image_path):
-                slide.shapes.add_picture(image_path, Inches(6.5), Inches(5.5), Inches(2), Inches(1.5))
-
-    if not prs.slides:
-        print("[ERROR] No valid slides were added.")
-        return
+        # Add image(s)
+        for i, img_path in enumerate(images or []):
+            if os.path.exists(img_path):
+                slide.shapes.add_picture(img_path, Inches(6.5), Inches(4.8 + i * 1.5), Inches(2), Inches(1.5))
 
     prs.save(path)
-    print(f"[PPTX] Saved successfully to {path}")
+
 
 
 def create_pdf_from_text(text, path):
