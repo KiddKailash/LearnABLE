@@ -141,12 +141,15 @@ def create_pdf_from_text(text, path):
     font_name = "Helvetica"
     font_size = 12
     heading_font_size = 16
-    heading_color = Color(46/255, 116/255, 181/255)  # RGB(46, 116, 181)
+    subheading_font_size = 14
+    label_font_size = 12
+    heading_color = Color(46/255, 116/255, 181/255)  # Blue
+    label_color = Color(0, 0, 0)  # Black
 
-    def draw_line(line, font=font_name, size=font_size):
+    def draw_line(line, font=font_name, size=font_size, color=(0, 0, 0)):
         nonlocal y
         c.setFont(font, size)
-        c.setFillColorRGB(0, 0, 0)  # Reset to black for normal text
+        c.setFillColorRGB(*color)
         words = line.split()
         current_line = ""
 
@@ -172,35 +175,61 @@ def create_pdf_from_text(text, path):
             y -= line_height
 
     paragraphs = text.split("\n")
-    for para in paragraphs:
+
+    for i, para in enumerate(paragraphs):
         para = para.strip()
         if not para:
             y -= line_height
             continue
 
-        # Section header
-        if para.startswith("Title:"):
-            title = para.replace("Title:", "").strip()
+        # Main title (first non-empty paragraph)
+        if i == 0:
+            c.setFont("Helvetica-Bold", heading_font_size + 2)
+            c.setFillColor(heading_color)
+            c.drawString(margin, y, para)
+            y -= line_height * 2
+            continue
+
+        # Subheading (e.g., **Why Photosynthesis Matters**)
+        if re.match(r"\*\*(.+?)\*\*$", para):
+            heading = re.findall(r"\*\*(.+?)\*\*", para)[0]
+            c.setFont("Helvetica-Bold", subheading_font_size)
+            c.setFillColor(heading_color)
+            c.drawString(margin, y, heading)
+            y -= line_height * 1.5
+            continue
+
+        # Bold label + content (e.g., **Definition:** The process by which ...)
+        match = re.match(r"\*\*(.+?)\*\*:(.*)", para)
+        if match:
+            label, content = match.groups()
+            label = label.strip() + ": "
+            content = content.strip()
             if y < margin:
                 c.showPage()
                 y = height - margin
-            c.setFont("Helvetica-Bold", heading_font_size)
-            c.setFillColor(heading_color)  # Apply blue color
-            c.drawString(margin, y, title)
-            y -= line_height * 1.5
+            c.setFont("Helvetica-Bold", label_font_size)
+            c.setFillColorRGB(0, 0, 0)
+            c.drawString(margin, y, label)
+            label_width = stringWidth(label, "Helvetica-Bold", label_font_size)
+            c.setFont("Helvetica", font_size)
+            c.drawString(margin + label_width, y, content)
+            y -= line_height
+            continue
 
-        # Bullet point
-        elif para.startswith("- "):
-            bullet = u"\u2022 " + para[2:]
+        # Bullet points
+        if para.startswith("•"):
+            bullet = u"\u2022 " + para[1:].strip()
             draw_line(bullet)
+            y -= line_height * 0.5
+            continue
 
         # Regular paragraph
-        else:
-            draw_line(para)
-
+        draw_line(para)
         y -= line_height * 0.5
 
     c.save()
+
 
 
 
