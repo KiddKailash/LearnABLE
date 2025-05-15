@@ -157,21 +157,6 @@ def generate_adapted_lessons(material, students, return_file=False):
     else:
         base_text = get_base_text(material.file.path)
 
-    # Alignment validation
-    alignment_input = alignment_prompt.format(
-        objectives=material.objective or "",
-        text=base_text
-    )
-    alignment_resp = llm.invoke(alignment_input)
-    alignment_result = alignment_parser.parse(alignment_resp.content)
-
-    print("🔎 Learning Objective Alignment:", alignment_result)
-
-    if alignment_result['alignment'] == 'not_aligned':
-        return {
-            "alignment_check": alignment_result,
-            "error": "learning_objectives_mismatch"
-        }
 
 
     for student in students:
