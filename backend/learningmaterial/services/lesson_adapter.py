@@ -101,15 +101,27 @@ def get_base_text(path: str) -> str:
         return extract_text_from_docx(path)
     if ext == 'pptx':
         slides = extract_text_from_pptx(path)
-        return "\n\n".join(slides)
+        return "\n\n".join(
+            f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in slides
+        )
     raise ValueError(f"Unsupported file type: {ext}")
+
 
 
 # Main pipeline
 def generate_adapted_lessons(material, students, return_file=False):
-    base_text = get_base_text(material.file.path)
     file_ext = material.file.path.split('.')[-1].lower()
     adapted_lessons = {}
+
+    # If PPTX, extract structured data including images
+    if file_ext == 'pptx':
+        original_slides = extract_text_from_pptx(material.file.path)
+        base_text = "\n\n".join(
+            f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in original_slides
+        )
+        print(base_text)
+    else:
+        base_text = get_base_text(material.file.path)
 
     for student in students:
         info = student.disability_info.strip()
@@ -123,7 +135,7 @@ def generate_adapted_lessons(material, students, return_file=False):
         category = cls['category']
         notes = cls.get('notes', '')
 
-        # 2. Visual-impairment override: only audio output
+        # 2. Visual-impairment override
         if category == 'visual_impairment':
             out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
             os.makedirs(out_dir, exist_ok=True)
@@ -151,12 +163,12 @@ def generate_adapted_lessons(material, students, return_file=False):
         slide_instructions = (
             """If the output will be used for a PowerPoint presentation (PPTX), structure the `adapted_content` field using this format:
 
-[Slide]
-Title: <title>
-Content: <content>
-(use double line breaks between paragraphs)
+                [Slide]
+                Title: <title>
+                Content: <content>
+                (use double line breaks between paragraphs)
 
-Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
+                Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
             if file_ext == 'pptx' else ""
         )
 
@@ -170,7 +182,7 @@ Avoid including any generic tool tips or the original lesson content outside of 
         adapt_resp = llm.invoke(adapt_input)
         parsed = adapt_parser.parse(adapt_resp.content)
 
-        # 5. Conditional audio as supplement
+        # 5. Conditional audio supplement
         if any('audio narration' in s.lower() for s in strategy):
             out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
             os.makedirs(out_dir, exist_ok=True)
@@ -194,7 +206,6 @@ Avoid including any generic tool tips or the original lesson content outside of 
             elif file_ext == 'docx':
                 create_docx_from_text(content, output_path)
             elif file_ext == 'pptx':
-                # Extract and filter slides
                 slides = re.findall(
                     r"\[Slide\]\s*Title:\s*(.*?)\s*Content:\s*(.*?)(?=\n\s*\[Slide\]|\Z)",
                     content,
@@ -206,11 +217,12 @@ Avoid including any generic tool tips or the original lesson content outside of 
                 blacklist = {"Using Support Tools", "Accessing Audiobooks", "Extended Time Accommodations"}
                 slide_pairs = [(t, c) for t, c in slide_pairs if t not in blacklist]
 
-                # Here we ensure no '### Slide' heading or other unwanted formatting appears
+                # Pair adapted slides with original images
                 adapted_slides = []
-                for title, content in slide_pairs:
-                    adapted_content = content.replace('### Slide', '').strip()
-                    adapted_slides.append((title, adapted_content))
+                for i, (title, slide_content) in enumerate(slide_pairs):
+                    slide_content = slide_content.replace('### Slide', '').strip()
+                    images = original_slides[i]['images'] if i < len(original_slides) else []
+                    adapted_slides.append((title, slide_content, images))
 
                 create_pptx_from_text(adapted_slides, output_path)
 

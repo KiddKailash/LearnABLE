@@ -6,6 +6,7 @@ from decouple import config
 # Initialize the Fernet encryption key
 fernet = Fernet(config("FERNET_KEY").encode())
 
+
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
@@ -27,6 +28,7 @@ class StudentSerializer(serializers.ModelSerializer):
             data['last_name'] = ""
             data['disability_info'] = ""
         return data
+
 
     def to_internal_value(self, data):
         """

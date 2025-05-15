@@ -31,5 +31,5 @@ def ask_openai(request):
 
 
 def api_view(request):
-    data = {"message": "Hello from the backend!"}
+    data = {"message": "Welcome to the LearnABLE. The new innovative learning platform!"}
     return JsonResponse(data)

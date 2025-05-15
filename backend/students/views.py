@@ -14,10 +14,14 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import permission_classes
 from teachers.models import Teacher
 
+
 #Get all students
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_students(request):
+    """
+    Retrieve all students associated with the authenticated teacher.
+    """
     try:
         # Get the teacher linked to the current user
         teacher = Teacher.objects.get(user=request.user)
@@ -37,9 +41,13 @@ def get_all_students(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
 # Create a student
 @api_view(['POST'])
 def create_student(request):
+    """
+    Create a new student.
+    """
     serializer = StudentSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -47,9 +55,13 @@ def create_student(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Update a student
 @api_view(['PUT'])
 def update_student(request, student_id):
+    """
+    Fully update a student's information.
+    """
     try:
         student = Student.objects.get(id=student_id)
     except Student.DoesNotExist:
@@ -61,9 +73,13 @@ def update_student(request, student_id):
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
 
+
 # Get a single student
 @api_view(['GET'])
 def get_student(request, student_id):
+    """
+    Retrieve a single student by ID.
+    """
     try:
         student = Student.objects.get(id=student_id)
     except Student.DoesNotExist:
@@ -72,9 +88,13 @@ def get_student(request, student_id):
     serializer = StudentSerializer(student)
     return Response(serializer.data)
 
+
 # Delete a student
 @api_view(['DELETE'])
 def delete_student(request, student_id):
+    """
+    Delete a student by ID.
+    """
     try:
         student = Student.objects.get(id=student_id)
     except Student.DoesNotExist:
@@ -83,9 +103,13 @@ def delete_student(request, student_id):
     student.delete()
     return Response({"message": "Student deleted successfully"}, status=204)
 
+
 # Update student's fields
 @api_view(['PATCH'])
 def partial_update_student(request, student_id):
+    """
+    Partially update a student's information.
+    """
     try:
         student = Student.objects.get(id=student_id)
     except Student.DoesNotExist:
@@ -96,6 +120,7 @@ def partial_update_student(request, student_id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=400)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -110,10 +135,14 @@ def get_students_by_class(request, class_id):
     except Classes.DoesNotExist:
         return Response({"error": "Class not found"}, status=404)
     
+
 # Check if a student exists by email (for linking to another class)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def get_student_by_email(request):
+    """
+    Retrieve a student by email (for linking to another class).
+    """
     email = request.data.get("student_email", "").lower().strip()
     if not email:
         return Response({"error": "Email is required"}, status=400)
@@ -130,6 +159,9 @@ def get_student_by_email(request):
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser])
 def upload_csv_to_class(request):
+    """
+    Upload a CSV file and add students to a class.
+    """
     csv_file = request.FILES.get("file")
     class_id = request.POST.get("class_id")
 
