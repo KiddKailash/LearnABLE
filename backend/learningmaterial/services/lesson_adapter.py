@@ -33,12 +33,46 @@ adaptation_schema = [
     ResponseSchema(name="adapted_content", description="Full adapted lesson content (plain text or slide blocks).")
 ]
 
+alignment_schema = [
+    ResponseSchema(name="alignment", description="One of: aligned, partially_aligned, not_aligned."),
+    ResponseSchema(name="justification", description="Brief explanation of why the objectives match or don't.")
+]
+
+
 # Build parsers
 class_parser = StructuredOutputParser.from_response_schemas(classification_schema)
 strat_parser = StructuredOutputParser.from_response_schemas(strategy_schema)
 adapt_parser = StructuredOutputParser.from_response_schemas(adaptation_schema)
+alignment_parser = StructuredOutputParser.from_response_schemas(alignment_schema)
+
 
 # Prompts
+alignment_prompt = PromptTemplate(
+    template="""
+You are an education specialist.
+
+Determine whether the following lesson objectives are aligned with the provided lesson content.
+
+Objectives:
+{objectives}
+
+Content:
+{text}
+
+Classify the alignment as one of the following:
+- aligned
+- partially_aligned
+- not_aligned
+
+Provide a brief justification.
+
+Output JSON:
+{format_instructions}
+""",
+    input_variables=["objectives", "text"],
+    partial_variables={"format_instructions": alignment_parser.get_format_instructions()}
+)
+
 classify_prompt = PromptTemplate(
     template="""
 You are a disability classification assistant.
@@ -122,6 +156,23 @@ def generate_adapted_lessons(material, students, return_file=False):
         print(base_text)
     else:
         base_text = get_base_text(material.file.path)
+
+    # Alignment validation
+    alignment_input = alignment_prompt.format(
+        objectives=material.objective or "",
+        text=base_text
+    )
+    alignment_resp = llm.invoke(alignment_input)
+    alignment_result = alignment_parser.parse(alignment_resp.content)
+
+    print("🔎 Learning Objective Alignment:", alignment_result)
+
+    if alignment_result['alignment'] == 'not_aligned':
+        return {
+            "alignment_check": alignment_result,
+            "error": "learning_objectives_mismatch"
+        }
+
 
     for student in students:
         info = student.disability_info.strip()
