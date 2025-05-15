@@ -6,7 +6,10 @@ from rest_framework.response import Response
 from .models import LearningMaterials
 from .serializers import LearningMaterialsSerializer
 from .services.file_extractors import extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx
-from .services.lesson_adapter import generate_adapted_lessons
+from .services.lesson_adapter import (generate_adapted_lessons, extract_text_from_pdf, 
+extract_text_from_docx, extract_text_from_pptx, alignment_prompt, alignment_parser, llm)
+
+
 
 class LearningMaterialsViewSet(viewsets.ModelViewSet):
     """
@@ -17,10 +20,12 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
     parser_classes = (MultiPartParser, FormParser)
 
 
+    from .services.lesson_adapter import (
+    extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx,
+    alignment_prompt, alignment_parser, llm
+)
+
     def create(self, request, *args, **kwargs):
-        """
-        Create a new learning material linked to the authenticated teacher.
-        """
         data = request.data.copy()
         if hasattr(request.user, 'teacher'):
             data['created_by'] = request.user.teacher.id
@@ -28,11 +33,47 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
             return Response({"error": "User is not linked to a teacher."}, status=400)
 
         serializer = self.get_serializer(data=data)
-        if serializer.is_valid():
-            instance = serializer.save()
-            return Response(serializer.data, status=201)
-        else:
+        if not serializer.is_valid():
             return Response(serializer.errors, status=400)
+
+        instance = serializer.save()
+
+        # Try to extract content and validate alignment
+        alignment_info = None
+        try:
+            file_path = instance.file.path
+            ext = file_path.split('.')[-1].lower()
+
+            if ext == "pdf":
+                text = extract_text_from_pdf(file_path)
+            elif ext == "docx":
+                text = extract_text_from_docx(file_path)
+            elif ext == "pptx":
+                slides = extract_text_from_pptx(file_path)
+                text = "\n\n".join(
+                    f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in slides
+                )
+            else:
+                raise ValueError("Unsupported file type for alignment check.")
+
+            alignment_input = alignment_prompt.format(
+                objectives=instance.objective or "",
+                text=text
+            )
+            alignment_resp = llm.invoke(alignment_input)
+            alignment_info = alignment_parser.parse(alignment_resp.content)
+
+        except Exception as e:
+            alignment_info = {
+                "alignment": "error",
+                "justification": f"Could not process content: {str(e)}"
+            }
+
+        response_data = serializer.data
+        response_data["alignment_check"] = alignment_info
+
+        return Response(response_data, status=201)
+
 
 
     @action(detail=True, methods=["post"])

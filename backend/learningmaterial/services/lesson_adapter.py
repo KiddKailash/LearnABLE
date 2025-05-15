@@ -32,19 +32,21 @@ adaptation_schema = [
     ResponseSchema(name="adapted_objectives", description="List of 2-4 adapted objectives."),
     ResponseSchema(name="adapted_content", description="Full adapted lesson content (plain text or slide blocks).")
 ]
-
 alignment_schema = [
     ResponseSchema(name="alignment", description="One of: aligned, partially_aligned, not_aligned."),
     ResponseSchema(name="justification", description="Brief explanation of why the objectives match or don't.")
 ]
-
+validation_schema = [
+    ResponseSchema(name="suitability", description="One of: suitable, partially_suitable, not_suitable."),
+    ResponseSchema(name="explanation", description="Brief explanation of why the adaptation is or isn't suitable for the student and objectives.")
+]
 
 # Build parsers
 class_parser = StructuredOutputParser.from_response_schemas(classification_schema)
 strat_parser = StructuredOutputParser.from_response_schemas(strategy_schema)
 adapt_parser = StructuredOutputParser.from_response_schemas(adaptation_schema)
 alignment_parser = StructuredOutputParser.from_response_schemas(alignment_schema)
-
+validation_parser = StructuredOutputParser.from_response_schemas(validation_schema)
 
 # Prompts
 alignment_prompt = PromptTemplate(
@@ -71,6 +73,26 @@ Output JSON:
 """,
     input_variables=["objectives", "text"],
     partial_variables={"format_instructions": alignment_parser.get_format_instructions()}
+)
+
+fix_alignment_prompt = PromptTemplate(
+    template="""
+You are an educational content designer.
+
+The following lesson content does not match the listed objectives.
+
+Please regenerate new lesson content that fully aligns with the objectives.
+
+Objectives:
+{objectives}
+
+---
+
+Generate new lesson content (in the same general format as the original):
+
+Output:
+""",
+    input_variables=["objectives"]
 )
 
 classify_prompt = PromptTemplate(
@@ -125,6 +147,31 @@ Output JSON:
     partial_variables={"format_instructions": adapt_parser.get_format_instructions()}
 )
 
+validation_prompt = PromptTemplate(
+    template="""
+You are an expert in inclusive education reviewing a lesson adaptation.
+
+Student's disability category: {category}
+Adaptation strategy: {steps}
+Original objectives:
+{objectives}
+
+Adapted lesson content:
+{adapted_content}
+
+Does the adapted lesson appropriately meet the student's needs and align with the original objectives?
+
+Classify as:
+- suitable
+- partially_suitable
+- not_suitable
+
+Output JSON:
+{format_instructions}
+""",
+    input_variables=["category", "steps", "objectives", "adapted_content"],
+    partial_variables={"format_instructions": validation_parser.get_format_instructions()}
+)
 
 # Utility to extract raw text
 def get_base_text(path: str) -> str:
@@ -135,12 +182,8 @@ def get_base_text(path: str) -> str:
         return extract_text_from_docx(path)
     if ext == 'pptx':
         slides = extract_text_from_pptx(path)
-        return "\n\n".join(
-            f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in slides
-        )
+        return "\n\n".join(f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in slides)
     raise ValueError(f"Unsupported file type: {ext}")
-
-
 
 # Main pipeline
 def generate_adapted_lessons(material, students, return_file=False):
@@ -150,29 +193,31 @@ def generate_adapted_lessons(material, students, return_file=False):
     # If PPTX, extract structured data including images
     if file_ext == 'pptx':
         original_slides = extract_text_from_pptx(material.file.path)
-        base_text = "\n\n".join(
-            f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in original_slides
-        )
-        print(base_text)
+        base_text = "\n\n".join(f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in original_slides)
     else:
         base_text = get_base_text(material.file.path)
 
     # Alignment validation
-    alignment_input = alignment_prompt.format(
-        objectives=material.objective or "",
-        text=base_text
-    )
+    alignment_input = alignment_prompt.format(objectives=material.objective or "", text=base_text)
     alignment_resp = llm.invoke(alignment_input)
     alignment_result = alignment_parser.parse(alignment_resp.content)
 
-    print("🔎 Learning Objective Alignment:", alignment_result)
-
     if alignment_result['alignment'] == 'not_aligned':
-        return {
-            "alignment_check": alignment_result,
-            "error": "learning_objectives_mismatch"
-        }
+        print("⚠️ Content not aligned. Regenerating...")
+        regen_input = fix_alignment_prompt.format(objectives=material.objective or "")
+        regen_resp = llm.invoke(regen_input)
+        base_text = regen_resp.content.strip()
 
+        # Re-check alignment after regeneration
+        alignment_input = alignment_prompt.format(objectives=material.objective or "", text=base_text)
+        alignment_resp = llm.invoke(alignment_input)
+        alignment_result = alignment_parser.parse(alignment_resp.content)
+
+        if alignment_result['alignment'] == 'not_aligned':
+            return {
+                "alignment_check": alignment_result,
+                "error": "regenerated_content_still_misaligned"
+            }
 
     for student in students:
         info = student.disability_info.strip()
@@ -214,12 +259,12 @@ def generate_adapted_lessons(material, students, return_file=False):
         slide_instructions = (
             """If the output will be used for a PowerPoint presentation (PPTX), structure the `adapted_content` field using this format:
 
-                [Slide]
-                Title: <title>
-                Content: <content>
-                (use double line breaks between paragraphs)
+            [Slide]
+            Title: <title>
+            Content: <content>
+            (use double line breaks between paragraphs)
 
-                Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
+            Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
             if file_ext == 'pptx' else ""
         )
 
@@ -233,8 +278,30 @@ def generate_adapted_lessons(material, students, return_file=False):
         adapt_resp = llm.invoke(adapt_input)
         parsed = adapt_parser.parse(adapt_resp.content)
 
-        # 5. Conditional audio supplement
-        if any('audio narration' in s.lower() for s in strategy):
+        # 5. Validate adaptation suitability
+        validation_input = validation_prompt.format(
+            category=category,
+            steps=steps_list,
+            objectives=material.objective or "",
+            adapted_content=parsed.get('adapted_content', '')
+        )
+        validation_resp = llm.invoke(validation_input)
+        validation_result = validation_parser.parse(validation_resp.content)
+
+        if validation_result.get("suitability", "").lower() == "not_suitable":
+            adapted_lessons[student.id] = {
+                "disability": info,
+                "category": category,
+                "notes": notes,
+                "error": "adaptation_unsuitable",
+                "validation": validation_result
+            }
+            continue
+
+        parsed["validation"] = validation_result
+
+        # 6. Optional audio generation
+        if any("audio narration" in s.lower() for s in strategy):
             out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
             os.makedirs(out_dir, exist_ok=True)
             fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
@@ -242,7 +309,7 @@ def generate_adapted_lessons(material, students, return_file=False):
             create_audio_from_text(base_text, audio_path)
             parsed['audio_url'] = f"{settings.MEDIA_URL}adapted_output/{fname}"
 
-        # 6. File writing if requested
+        # 7. Optional file output
         if return_file:
             out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
             os.makedirs(out_dir, exist_ok=True)
@@ -259,19 +326,17 @@ def generate_adapted_lessons(material, students, return_file=False):
             elif file_ext == 'pptx':
                 slides = re.findall(
                     r"\[Slide\]\s*Title:\s*(.*?)\s*Content:\s*(.*?)(?=\n\s*\[Slide\]|\Z)",
-                    content,
-                    re.DOTALL
+                    content, re.DOTALL
                 )
                 slide_pairs = [(t.strip(), c.strip()) for t, c in slides]
 
-                # Remove generic support-tool slides
+                # Filter out generic support slides
                 blacklist = {"Using Support Tools", "Accessing Audiobooks", "Extended Time Accommodations"}
                 slide_pairs = [(t, c) for t, c in slide_pairs if t not in blacklist]
 
-                # Pair adapted slides with original images
                 adapted_slides = []
                 for i, (title, slide_content) in enumerate(slide_pairs):
-                    slide_content = slide_content.replace('### Slide', '').strip()
+                    slide_content = slide_content.replace("### Slide", "").strip()
                     images = original_slides[i]['images'] if i < len(original_slides) else []
                     adapted_slides.append((title, slide_content, images))
 
@@ -280,7 +345,7 @@ def generate_adapted_lessons(material, students, return_file=False):
             parsed['file'] = output_path
             parsed['file_url'] = f"{settings.MEDIA_URL}adapted_output/{filename}"
 
-        # 7. Append to results
+        # 8. Final results
         parsed.update({
             'disability': info,
             'category': category,
