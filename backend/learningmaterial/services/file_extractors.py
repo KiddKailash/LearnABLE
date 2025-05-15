@@ -68,4 +68,3 @@ def extract_text_from_pptx(path):
         })
 
     return slide_data
-
