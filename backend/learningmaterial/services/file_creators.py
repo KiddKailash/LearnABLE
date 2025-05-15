@@ -27,6 +27,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 def create_docx_from_text(text, path):
+    # Join list into a string if needed
+    if isinstance(text, list):
+        text = "\n".join(text)
+
     doc = Document()
     style = doc.styles['Normal']
     font = style.font
@@ -35,14 +39,14 @@ def create_docx_from_text(text, path):
 
     paragraphs = text.split('\n')
 
-    for para in paragraphs:
+    for i, para in enumerate(paragraphs):
         para = para.strip()
         if not para:
             doc.add_paragraph()
             continue
-        
-        # Main Title (first line)
-        if para == paragraphs[0]:
+
+        # Main Title (first non-empty line)
+        if i == 0:
             doc.add_paragraph(para, style='Title')
             continue
 
@@ -66,7 +70,6 @@ def create_docx_from_text(text, path):
         # Bullet list (• ...)
         if para.startswith("•"):
             line = para.lstrip("• ").strip()
-            # Check if it starts with bold label (e.g. **Bold Label:** More text)
             match = re.match(r"\*\*(.+?)\*\*:(.*)", line)
             if match:
                 label, rest = match.groups()
@@ -78,9 +81,8 @@ def create_docx_from_text(text, path):
                 doc.add_paragraph(line, style='List Bullet')
             continue
 
-        # Equation or plain paragraph
+        # Plain paragraph or equation
         doc.add_paragraph(para)
-
 
     doc.save(path)
 
