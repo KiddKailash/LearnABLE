@@ -44,6 +44,9 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
         students = material.class_assigned.students.all()
         adapted_outputs = generate_adapted_lessons(material, students, return_file=True)
 
+        if isinstance(adapted_outputs, dict) and "error" in adapted_outputs:
+            return Response(adapted_outputs, status=200)
+
         response = {}
 
         for student in students:
