@@ -20,7 +20,7 @@ const DashboardSkeleton = () => {
       </Box>
 
       {/* Stat cards skeleton */}
-      <Grid container spacing={3} sx={{ mb: 2 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         {[1, 2].map((i) => (
           <Grid xs={12} sm={6} key={i}>
             <Skeleton variant="rounded" height={120} />
@@ -29,7 +29,7 @@ const DashboardSkeleton = () => {
       </Grid>
 
       {/* Content area skeleton */}
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {[1, 2].map((i) => (
           <Grid xs={12} md={6} key={i}>
             <Skeleton variant="rounded" height={350} />

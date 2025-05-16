@@ -105,7 +105,7 @@ const Dashboard = () => {
       </Box>
 
       {/* Stats cards */}
-      <Grid container spacing={3} sx={{ mb: 2 }}>
+      <Grid container spacing={2} sx={{ mb: 2 }}>
         {stats.map((stat, index) => (
           <Grid size={{ xs: 12, sm: 6 }} key={index}>
             <StatsCard {...stat} />
@@ -114,7 +114,7 @@ const Dashboard = () => {
       </Grid>
 
       {/* Main content grid with 2 sections */}
-      <Grid container spacing={3}>
+      <Grid container spacing={2}>
         {/* Left Column - Recent Classes */}
         <Grid size={{ xs: 12, md: 6 }}>
           <ClassesList classes={classes} onNavigate={handleNavigate} />

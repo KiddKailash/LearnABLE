@@ -318,7 +318,7 @@ const Tutorial = () => {
             </Button>
             <Stack
               direction="row"
-              spacing={0.5}
+              spacing={2}
               sx={{ flexGrow: 1, justifyContent: "center" }}
             >
               {tutorialSteps.map((_, index) => (

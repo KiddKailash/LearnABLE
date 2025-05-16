@@ -575,7 +575,7 @@ const AuthPage = ({ initialTab = 0 }) => {
           <Box component="form" noValidate onSubmit={handleVerify2FA}>
             <Stack
               direction="row"
-              spacing={1}
+              spacing={2}
               justifyContent="center"
               sx={{ mb: 2 }}
               onPaste={handlePaste}

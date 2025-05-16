@@ -623,7 +623,7 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                 )}
 
                 <Box sx={{ mb: 2, mt: 2 }}>
-                  <Stack direction="row" spacing={1}>
+                  <Stack direction="row" spacing={2}>
                     <Button
                       disabled={index === 0 || loading}
                       onClick={handleBack}
