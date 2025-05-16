@@ -5,7 +5,11 @@
  */
 
 import React from 'react';
-import { Box, Grid, Skeleton } from '@mui/material';
+
+// MUI Components
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
+import Skeleton from '@mui/material/Skeleton';
 
 /**
  * DashboardSkeleton component for displaying loading state

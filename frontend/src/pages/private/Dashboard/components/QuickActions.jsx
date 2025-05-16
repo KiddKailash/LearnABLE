@@ -6,6 +6,9 @@
 
 import React from 'react';
 
+// Components
+import DashboardCard from './DashboardCard';
+
 // MUI Components
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -16,7 +19,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SchoolIcon from '@mui/icons-material/School';
 import DescriptionIcon from '@mui/icons-material/Description';
-import DashboardCard from '../DashboardCard';
 
 /**
  * QuickActions component for displaying dashboard quick actions

@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Services
-import UserContext from "../../store/UserObject";
-import api from "../../services/api";
+import UserContext from "../../../store/UserObject";
+import api from "../../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -16,13 +16,14 @@ import PeopleIcon from "@mui/icons-material/People";
 import SchoolIcon from "@mui/icons-material/School";
 
 // Context for snackbar notifications
-import { SnackbarContext } from "../../contexts/SnackbarContext";
+import { SnackbarContext } from "../../../contexts/SnackbarContext";
 
 // Dashboard Components
-import StatsCard from "../../components/dashboard/StatsCard";
-import QuickActions from "../../components/dashboard/QuickActions";
-import ClassesList from "../../components/dashboard/ClassesList";
-import DashboardSkeleton from "../../components/dashboard/DashboardSkeleton";
+import StatsCard from "./components/StatsCard";
+import QuickActions from "./components/QuickActions";
+import ClassesList from "./components/ClassesList";
+import DashboardSkeleton from "./components/DashboardSkeleton";
+import NCCDReportsSummary from "./components/NCCDReportsSummary";
 
 const Dashboard = () => {
   const { user } = useContext(UserContext);
@@ -34,6 +35,8 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState([]);
   const [classes, setClasses] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [students, setStudents] = useState([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -43,6 +46,14 @@ const Dashboard = () => {
         // Fetch classes
         const classesData = await api.classes.getAll();
         setClasses(classesData);
+
+        // Fetch students
+        const studentsData = await api.students.getAll();
+        setStudents(studentsData);
+
+        // Fetch NCCD reports
+        const reportsData = await api.nccdReports.getAll();
+        setReports(reportsData);
 
         // Build stats
         const statsData = [
@@ -54,7 +65,10 @@ const Dashboard = () => {
           },
           {
             label: "Students",
-            value: classesData.reduce((acc, curr) => acc + (curr.students?.length || 0), 0),
+            value: classesData.reduce(
+              (acc, curr) => acc + (curr.students?.length || 0),
+              0
+            ),
             icon: <PeopleIcon fontSize="large" color="primary" />,
             color: "#e8f5e9", // light green
           },
@@ -123,6 +137,9 @@ const Dashboard = () => {
         {/* Right Column - Quick Actions */}
         <Grid size={{ xs: 12, md: 6 }}>
           <QuickActions onNavigate={handleNavigate} />
+        </Grid>
+        <Grid size={12}>
+          <NCCDReportsSummary reports={reports} students={students} onNavigate={handleNavigate} />
         </Grid>
       </Grid>
     </>

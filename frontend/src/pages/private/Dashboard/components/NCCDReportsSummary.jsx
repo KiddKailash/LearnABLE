@@ -6,6 +6,9 @@
 
 import React from 'react';
 
+// Components
+import EmptyState from '../../../../components/EmptyState';
+
 // MUI Components
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -19,7 +22,6 @@ import Divider from '@mui/material/Divider';
 
 // MUI Icons
 import DescriptionIcon from '@mui/icons-material/Description';
-import EmptyState from '../EmptyState';
 
 /**
  * NCCDReportsSummary component for displaying NCCD reports summary
