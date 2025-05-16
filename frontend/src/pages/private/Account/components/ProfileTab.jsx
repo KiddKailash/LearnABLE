@@ -40,7 +40,7 @@ const ProfileTab = ({
           gutterBottom
           sx={{ fontWeight: "bold" }}
         >
-          Personal Information
+          Personal
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -52,7 +52,7 @@ const ProfileTab = ({
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
-            mb: 2,
+            mb: 3,
           }}
         >
           <Box sx={{ mr: 3 }}>
@@ -96,7 +96,6 @@ const ProfileTab = ({
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               variant="outlined"
-              margin="normal"
             />
           </Grid>
 
@@ -107,7 +106,7 @@ const ProfileTab = ({
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               variant="outlined"
-              margin="normal"
+              
             />
           </Grid>
 
@@ -119,7 +118,7 @@ const ProfileTab = ({
               onChange={(e) => setPhoneNumber(e.target.value)}
               variant="outlined"
               placeholder="Optional contact number"
-              margin="normal"
+              
             />
           </Grid>
         </Grid>
@@ -132,7 +131,7 @@ const ProfileTab = ({
           gutterBottom
           sx={{ fontWeight: "bold" }}
         >
-          Professional Information
+          Professional
         </Typography>
 
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
@@ -148,7 +147,7 @@ const ProfileTab = ({
               onChange={(e) => setSchool(e.target.value)}
               variant="outlined"
               placeholder="Where do you teach?"
-              margin="normal"
+              
             />
           </Grid>
 
@@ -160,7 +159,7 @@ const ProfileTab = ({
               onChange={(e) => setSpecialty(e.target.value)}
               variant="outlined"
               placeholder="Your main teaching subject"
-              margin="normal"
+              
             />
           </Grid>
 
@@ -174,7 +173,7 @@ const ProfileTab = ({
               multiline
               rows={4}
               placeholder="Tell us a bit about yourself and your teaching experience"
-              margin="normal"
+              
             />
           </Grid>
         </Grid>
