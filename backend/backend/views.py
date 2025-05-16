@@ -1,13 +1,36 @@
+"""
+views.py
+
+This module defines key views for the LearnABLE backend.
+
+Functions:
+    - ask_openai: Accepts user input via POST and returns an OpenAI-generated response.
+    - api_view: Returns a simple welcome message confirming API availability.
+"""
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.conf import settings
 import openai
 
+# Initialize OpenAI client using API key from Django settings
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
 @csrf_exempt
 def ask_openai(request):
+    """
+    View to interact with OpenAI's Chat API using user-provided messages.
+
+    Method: POST
+    Payload:
+        {
+            "message": "Your message to the AI"
+        }
+
+    Returns:
+        JsonResponse: AI-generated response or error message.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
