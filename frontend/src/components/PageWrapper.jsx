@@ -29,8 +29,7 @@ const PageWrapper = ({ children, maxWidth = "lg", sx = {} }) => {
     <Container
       maxWidth={maxWidth}
       sx={{
-
-        pb: 5,
+        p: 4,
         mb: 4,
         ...sx,
       }}

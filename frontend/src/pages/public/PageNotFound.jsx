@@ -1,12 +1,12 @@
 /**
- * @fileoverview Renders a 404 Page Not Found component that informs the user that the requested page does not exist
+ * @file PageNotFound.jsx
+ * @description Renders a 404 Page Not Found component that informs the user that the requested page does not exist
  * and provides a button to navigate back to the login page.
  *
- * The component uses a PageWrapper to provide a consistent layout, displays error messages using Material-UI
- * Typography components, and includes a Button that navigates to the "/" route (assumed to be the Login page)
- * when clicked.
- *
- * @module PageNotFound
+ * Features:
+ * - Displays a 404 error message
+ * - Button to navigate back to the login page
+ * - Uses Material-UI for layout and styling
  */
 
 import React from "react";
@@ -29,6 +29,7 @@ const PageNotFound = () => {
 
   return (
     <Container maxWidth="xs" sx={{ textAlign: "center", p:2, borderRadius: 4, mt: "30vh"}}>
+      {/* Stack for vertical alignment of error message and button */}
       <Stack direction="column">
       <Typography variant="caption" color="error">
         ERROR 404

@@ -1,3 +1,18 @@
+/**
+ * @file Reporting.jsx
+ * @description Main component for managing NCCD reports, providing a comprehensive interface
+ * for viewing, creating, editing, and deleting reports. Includes filtering, search, and
+ * detailed report management capabilities.
+ * 
+ * Features:
+ * - Report listing with filtering and search
+ * - Report creation and editing
+ * - Report deletion with confirmation
+ * - Status tracking and management
+ * - Student information integration
+ * - Error handling and loading states
+ */
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
@@ -40,15 +55,19 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 
 /**
- * Page for displaying and managing NCCD reports
+ * Main component for managing NCCD reports
+ * 
+ * @component
+ * @returns {JSX.Element} The NCCD reports management interface
  */
 const NCCDReports = () => {
+  // State management
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
   const [students, setStudents] = useState([]);
   const [error, setError] = useState("");
 
-  // Filters
+  // Filter state
   const [statusFilter, setStatusFilter] = useState("");
   const [studentFilter, setStudentFilter] = useState("");
   const [nameSearch, setNameSearch] = useState("");
@@ -65,7 +84,7 @@ const NCCDReports = () => {
 
   const location = useLocation();
 
-  // Fetch all reports and students
+  // Fetch reports and students data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -89,12 +108,11 @@ const NCCDReports = () => {
     fetchData();
   }, []);
 
+  // Handle URL parameters for new report creation
   useEffect(() => {
-    // Check if the URL has the newReport query parameter
     const queryParams = new URLSearchParams(location.search);
     const shouldOpenForm = queryParams.get('newReport') === 'true';
     
-    // If query parameter exists and we have students, open the form dialog
     if (shouldOpenForm && students.length > 0) {
       setFormDialogOpen(true);
       
@@ -104,26 +122,28 @@ const NCCDReports = () => {
     }
   }, [location, students]);
 
-  // Filter reports based on current filters
+  /**
+   * Filters reports based on current filter criteria
+   * @returns {Array} Filtered reports array
+   */
   const filteredReports = reports.filter((report) => {
     // Find student for this report
     const student = students.find((s) => s.id === report.student);
     if (!student) return false;
 
-    // Status filter
+    // Apply status filter
     if (statusFilter && report.status !== statusFilter) {
       return false;
     }
 
-    // Student filter
+    // Apply student filter
     if (studentFilter && report.student !== parseInt(studentFilter)) {
       return false;
     }
 
-    // Name search
+    // Apply name search
     if (nameSearch) {
-      const fullName =
-        `${student.first_name} ${student.last_name}`.toLowerCase();
+      const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
       if (!fullName.includes(nameSearch.toLowerCase())) {
         return false;
       }
@@ -132,14 +152,20 @@ const NCCDReports = () => {
     return true;
   });
 
-  // Handle opening create form for a student
+  /**
+   * Handles opening the create report form for a student
+   * @param {string} studentId - ID of the student
+   */
   const handleCreateReport = (studentId) => {
     setSelectedStudentId(studentId);
     setSelectedReportId(null);
     setFormDialogOpen(true);
   };
 
-  // Handle opening edit form
+  /**
+   * Handles opening the edit form for a report
+   * @param {string} reportId - ID of the report to edit
+   */
   const handleEditReport = (reportId) => {
     const report = reports.find((r) => r.id === reportId);
     if (!report) return;
@@ -149,7 +175,10 @@ const NCCDReports = () => {
     setFormDialogOpen(true);
   };
 
-  // Handle viewing a report
+  /**
+   * Handles viewing a report's details
+   * @param {string} reportId - ID of the report to view
+   */
   const handleViewReport = (reportId) => {
     const report = reports.find((r) => r.id === reportId);
     if (!report) return;
@@ -158,13 +187,18 @@ const NCCDReports = () => {
     setViewDialogOpen(true);
   };
 
-  // Handle deleting a report
+  /**
+   * Handles initiating report deletion
+   * @param {string} reportId - ID of the report to delete
+   */
   const handleDeleteClick = (reportId) => {
     setSelectedReportId(reportId);
     setConfirmDeleteDialogOpen(true);
   };
 
-  // Confirm and execute report deletion
+  /**
+   * Confirms and executes report deletion
+   */
   const handleConfirmDelete = async () => {
     try {
       setLoading(true);
@@ -181,7 +215,10 @@ const NCCDReports = () => {
     }
   };
 
-  // Handle successful form submission
+  /**
+   * Handles successful form submission
+   * @param {Object} result - The submitted report data
+   */
   const handleFormSuccess = (result) => {
     if (selectedReportId) {
       // Update existing report in list
@@ -198,7 +235,11 @@ const NCCDReports = () => {
     setFormDialogOpen(false);
   };
 
-  // Get chip color based on status
+  /**
+   * Gets the appropriate chip color based on report status
+   * @param {string} status - The report status
+   * @returns {string} The chip color
+   */
   const getStatusChipColor = (status) => {
     switch (status) {
       case "NotStart":
@@ -212,7 +253,11 @@ const NCCDReports = () => {
     }
   };
 
-  // Get readable status label
+  /**
+   * Gets a human-readable status label
+   * @param {string} status - The report status
+   * @returns {string} The readable status label
+   */
   const getStatusLabel = (status) => {
     switch (status) {
       case "NotStart":
@@ -226,13 +271,21 @@ const NCCDReports = () => {
     }
   };
 
-  // Get disability category label
+  /**
+   * Gets a human-readable disability category label
+   * @param {string} category - The disability category
+   * @returns {string} The readable category label
+   */
   const getDisabilityCategoryLabel = (category) => {
     if (!category) return "None";
     return category;
   };
 
-  // Get level of adjustment label
+  /**
+   * Gets a human-readable adjustment level label
+   * @param {string} level - The adjustment level
+   * @returns {string} The readable adjustment label
+   */
   const getAdjustmentLabel = (level) => {
     switch (level) {
       case "QDTP":

@@ -9,27 +9,6 @@ import { createTheme } from "@mui/material/styles";
  * component is used to ensure consistent baseline styling across browsers. Components can access this
  * theme via the useTheme hook to apply theme-specific properties.
  *
- *
- * QLD Education Department Colour Scheme:
- *  - Brand (Queensland Government Colours):
- *      Blue (Primary):            #005E85 ($qg-global-primary)
- *      Dark Blue (Primary dark):  #063652 ($qg-global-primary-dark)
- *      Light Green (Secondary):   #9AC02C ($qg-light-green)
- *      Green (Additional):        #78ba00 ($qg-green)
- *
- *  - Text:
- *      Primary Text:              #212529 ($qg-dark-grey-darker)
- *      Secondary/Muted Text:      #585e62 ($qg-dark-grey)
- *      Light Text (Disabled):     #EFF2F4 ($qg-global-primary-light)
- *      Link:                      #13578b ($qg-blue-dark)
- *      Visited Link:              #8800BB
- *
- *  - Alerts (mapped to palette values):
- *      Info:                      #1E77AA ($brand-info)
- *      Success:                   #9EBF6D ($brand-success)
- *      Warning:                   #F9AF71 ($brand-warning)
- *      Critical/Error:            #B90824 ($brand-danger)
- *
  * @returns {object} A Material-UI theme object.
  */
 export const getTheme = () => {

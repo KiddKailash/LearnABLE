@@ -1,5 +1,6 @@
 /**
- * @fileoverview Component to monitor session status via WebSocket. Does not render visible UI.
+ * @fileoverview Component to monitor session status via WebSocket. 
+ * Does not render visible UI.
  */
 
 import { useEffect } from 'react';

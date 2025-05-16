@@ -1,3 +1,10 @@
+/**
+ * @file AppearanceTab.jsx
+ * @description A component that allows users to customize the visual appearance of the application
+ * by selecting different theme modes (light, dark, system). The component provides a visual
+ * preview of each theme option and handles theme changes.
+ */
+
 import React from "react";
 
 // MUI Components
@@ -7,6 +14,15 @@ import Button from "@mui/material/Button";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 
+/**
+ * AppearanceTab component that manages theme preferences
+ * @param {Object} props - Component props
+ * @param {string} props.themeMode - Current theme mode ('light', 'dark', or 'system')
+ * @param {Function} props.setThemeMode - Function to update theme mode
+ * @param {boolean} props.isSaving - Loading state for save operations
+ * @param {Function} props.handleSaveTheme - Function to save theme changes
+ * @returns {JSX.Element} The theme customization interface
+ */
 const AppearanceTab = ({
   themeMode,
   setThemeMode,
@@ -431,7 +447,7 @@ const AppearanceTab = ({
           onClick={handleSaveTheme}
           disabled={isSaving}
         >
-          Apply Theme
+          {isSaving ? "Saving..." : "Save Changes"}
         </Button>
       </Box>
     </Paper>

@@ -1,3 +1,10 @@
+/**
+ * @file DataExportTab.jsx
+ * @description A component that provides functionality for users to export their account data
+ * and content. Users can export their profile information and selectively export different
+ * types of content such as classes, students, assessments, and reports.
+ */
+
 import React from "react";
 
 // MUI Components
@@ -16,6 +23,16 @@ import Tooltip from "@mui/material/Tooltip";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import InfoIcon from "@mui/icons-material/Info";
 
+/**
+ * DataExportTab component that manages data export functionality
+ * @param {Object} props - Component props
+ * @param {Object} props.exportOptions - Object containing boolean flags for different data types to export
+ * @param {Function} props.setExportOptions - Function to update export options
+ * @param {boolean} props.isSaving - Loading state for export operations
+ * @param {Function} props.handleExportAccountData - Function to export all account data
+ * @param {Function} props.handleExportSelectedData - Function to export selected data types
+ * @returns {JSX.Element} The data export interface
+ */
 const DataExportTab = ({
   exportOptions,
   setExportOptions,
@@ -25,6 +42,7 @@ const DataExportTab = ({
 }) => {
   return (
     <Paper variant="outlined" sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+      {/* Account Information Section */}
       <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold" }}>
         Account Information
       </Typography>
@@ -37,6 +55,7 @@ const DataExportTab = ({
         device.
       </Alert>
 
+      {/* Export Account Data Button */}
       <Box sx={{ mb: 2 }}>
         <Button
           variant="outlined"
@@ -52,6 +71,7 @@ const DataExportTab = ({
 
       <Divider sx={{ my: 2 }} />
 
+      {/* Content & Data Section */}
       <Box>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
@@ -69,6 +89,7 @@ const DataExportTab = ({
           Export classes, students, and assessment data
         </Typography>
 
+        {/* Data Type Selection Switches */}
         <FormControlLabel
           control={
             <Switch
@@ -133,6 +154,7 @@ const DataExportTab = ({
           sx={{ display: "block", mb: 2 }}
         />
 
+        {/* Export Selected Data Button */}
         <Button
           variant="contained"
           disabled={!Object.values(exportOptions).some((v) => v) || isSaving}

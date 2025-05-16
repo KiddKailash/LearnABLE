@@ -1,3 +1,9 @@
+/**
+ * @file PasswordField.jsx
+ * @description A reusable password input component that provides a toggle for password visibility.
+ * This component extends the Material-UI TextField component with password-specific functionality.
+ */
+
 import React, { useState } from "react";
 
 // MUI Components
@@ -9,6 +15,17 @@ import IconButton from "@mui/material/IconButton";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
+/**
+ * PasswordField component that provides a password input with visibility toggle
+ * @param {Object} props - Component props
+ * @param {string} props.label - Label text for the input field
+ * @param {string} props.value - Current value of the password field
+ * @param {Function} props.onChange - Function to handle value changes
+ * @param {boolean} props.error - Error state of the input
+ * @param {string} props.helperText - Helper text to display below the input
+ * @param {Object} props.props - Additional props to be spread to the TextField component
+ * @returns {JSX.Element} A password input field with visibility toggle
+ */
 const PasswordField = ({
   label,
   value,

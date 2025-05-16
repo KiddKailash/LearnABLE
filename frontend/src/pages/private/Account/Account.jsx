@@ -1,3 +1,17 @@
+/**
+ * @file Account.jsx
+ * @description Main account management page component that handles user profile, security settings,
+ * appearance preferences, and account management features. This component serves as a container
+ * for various account-related tabs and manages the overall state and API interactions.
+ * 
+ * Features:
+ * - Profile management (personal info, bio, profile picture)
+ * - Security settings (password, 2FA)
+ * - Appearance preferences (theme)
+ * - Account data export
+ * - Account deletion
+ */
+
 import React, { useState, useEffect, useContext } from "react";
 import { useColorScheme } from "@mui/material/styles";
 
@@ -30,6 +44,10 @@ import PaletteIcon from "@mui/icons-material/Palette";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Account component that manages user account settings and preferences
+ * @returns {JSX.Element} The rendered account management interface
+ */
 const Account = () => {
   const { user, logout, updateUserInfo } = useContext(UserContext);
   const { showSnackbar } = useContext(SnackbarContext);
@@ -84,6 +102,10 @@ const Account = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  /**
+   * Fetches user profile data and active sessions on component mount
+   * Updates local state with fetched data
+   */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -133,16 +155,26 @@ const Account = () => {
     fetchSessions();
   }, [showSnackbar]);
 
-  // Update theme when user preferences change
+  /**
+   * Updates theme mode when user preferences change
+   */
   useEffect(() => {
     setThemeMode(user?.theme_preference || "system");
   }, [user?.theme_preference]);
 
+  /**
+   * Handles tab navigation changes
+   * @param {Object} event - The event object
+   * @param {number} newValue - The index of the new tab
+   */
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // Profile handlers
+  /**
+   * Saves updated profile information to the backend
+   * Updates both backend and frontend state
+   */
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
@@ -178,6 +210,10 @@ const Account = () => {
     }
   };
 
+  /**
+   * Handles profile picture upload
+   * @param {Event} e - The file input change event
+   */
   const handleUploadProfilePicture = async (e) => {
     if (e.target.files?.[0]) {
       try {
@@ -200,6 +236,10 @@ const Account = () => {
     }
   };
 
+  /**
+   * Manages Google account connection/disconnection
+   * Updates profile state and shows appropriate notifications
+   */
   const handleConnectGoogleAccount = async () => {
     try {
       setIsSaving(true);
