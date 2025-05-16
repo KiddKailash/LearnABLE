@@ -1,3 +1,20 @@
+"""
+error_handling_middleware.py
+
+Custom middleware to provide centralized exception handling and return
+consistent JSON responses across the LearnABLE backend.
+
+Handles:
+    - 404 Not Found (Http404)
+    - 403 Forbidden (PermissionDenied)
+    - 400 Validation errors (Django ValidationError)
+    - DRF APIException-based errors
+    - 500 Internal Server Error for unexpected exceptions
+
+This improves error debugging during development and delivers standardized
+error responses in production.
+"""
+
 import json
 import logging
 from django.conf import settings
@@ -11,17 +28,26 @@ logger = logging.getLogger(__name__)
 
 class ErrorHandlingMiddleware:
     """
-    Middleware to handle exceptions and return consistent error responses
+    Middleware to handle exceptions and return consistent error responses 
+    in JSON format
     """
     def __init__(self, get_response):
+        """
+        Initialize the middleware with the next layer in the request/response cycle.
+        """
         self.get_response = get_response
 
     def __call__(self, request):
+        """
+        Standard entry point for each request.
+        """
         return self.get_response(request)
 
     def process_exception(self, request, exception):
         """
-        Process the exception and return a consistent error response
+        Intercepts exceptions raised in views and routes them to appropriate handlers.
+        Returns:
+            JsonResponse: A standardized error message and HTTP status code.
         """
         if isinstance(exception, Http404):
             return self._handle_404(exception)
@@ -35,6 +61,9 @@ class ErrorHandlingMiddleware:
             return self._handle_unexpected_error(exception)
 
     def _handle_404(self, exception):
+        """
+        Handle 404 Not Found exceptions.
+        """
         return JsonResponse({
             'status': 'error',
             'type': 'NOT_FOUND',
@@ -43,6 +72,9 @@ class ErrorHandlingMiddleware:
         }, status=status.HTTP_404_NOT_FOUND)
 
     def _handle_403(self, exception):
+        """
+        Handle 403 Permission Denied exceptions.
+        """
         return JsonResponse({
             'status': 'error',
             'type': 'PERMISSION_DENIED',
@@ -51,6 +83,9 @@ class ErrorHandlingMiddleware:
         }, status=status.HTTP_403_FORBIDDEN)
 
     def _handle_validation_error(self, exception):
+        """
+        Handle 400 Validation errors (e.g., from form or model validation).
+        """
         return JsonResponse({
             'status': 'error',
             'type': 'VALIDATION_ERROR',
@@ -59,6 +94,9 @@ class ErrorHandlingMiddleware:
         }, status=status.HTTP_400_BAD_REQUEST)
 
     def _handle_api_exception(self, exception):
+        """
+        Handle DRF APIExceptions.
+        """
         return JsonResponse({
             'status': 'error',
             'type': 'API_ERROR',
@@ -67,7 +105,9 @@ class ErrorHandlingMiddleware:
         }, status=exception.status_code)
 
     def _handle_unexpected_error(self, exception):
-        # Log the unexpected error
+        """
+        Catch-all handler for unexpected server errors.
+        """
         logger.error(f"Unexpected error: {str(exception)}", exc_info=True)
 
         return JsonResponse({

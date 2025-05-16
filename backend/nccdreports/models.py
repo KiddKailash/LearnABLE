@@ -3,15 +3,17 @@ from students.models import Student
 from teachers.models import Teacher
 
 class NCCDreport(models.Model):
+    """
+    Model representing an NCCD report for a student,
+    detailing their disability category, adjustment level, and evidence.
+    """
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=20,
         choices=[('InProgress', 'InProgress'), ('Approved', 'Approved'), ('NotStart', 'NotStart')],
         default='NotStarted'
     )
-    # REMOVE THIS LINE (no longer stored in DB)
-    # has_diagonsed_disability = models.BooleanField(default=False)
-
+   
     disability_category = models.CharField(
         max_length=20,
         choices=[('Cognitive', 'Cognitive'), ('Physical', 'Physical'), ('Social/Emotional', 'Social/Emotional'), ('Sensory', 'Sensory')],
@@ -30,12 +32,16 @@ class NCCDreport(models.Model):
     @property
     def has_diagonsed_disability(self):
         """
-        Dynamically check the linked student's decrypted disability_info.
-        Returns True if non-empty.
+        Dynamically checks if the linked student has a diagnosed disability
+        by evaluating if the disability_info field is non-empty.
         """
         return bool(self.student.disability_info.strip())
 
 class LessonEffectivenessRecord(models.Model):
+    """
+    Tracks how effective a lesson was for a student with adjustments in place,
+    linked to an NCCD report.
+    """
     report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='effectiveness_records')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, null=True, blank=True)
     lesson_date = models.DateField(auto_now_add=True)
@@ -46,6 +52,10 @@ class LessonEffectivenessRecord(models.Model):
         return f"{self.report.student} on {self.lesson_date}: {'Yes' if self.was_effective else 'No'}"
     
 class Questionnaire(models.Model):
+    """
+    Represents a questionnaire submission by a teacher regarding the
+    effectiveness of adjustments for a student as part of their NCCD report.
+    """
     report = models.ForeignKey(NCCDreport, on_delete=models.CASCADE, related_name='questionnaires')
     student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='questionnaires')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)

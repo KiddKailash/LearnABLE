@@ -21,6 +21,15 @@ from channels.layers import get_channel_layer
 
 @csrf_exempt
 def register_teacher(request):
+    """
+    Registers a new teacher along with a corresponding User account.
+    Accepts POST requests with required fields: first_name, last_name, email, and password.
+    Performs cleanup of orphaned teacher profiles before registration.
+    
+    Returns:
+        JsonResponse with success message and teacher_id on success.
+        JsonResponse with error details and appropriate HTTP status on failure.
+    """
     if request.method == "POST":
         try:
             # Parse the JSON body for standard requests
@@ -110,6 +119,20 @@ def register_teacher(request):
 
 @csrf_exempt
 def login_teacher(request):
+    """
+    Authenticates a teacher by email and password.
+    Supports 2FA by indicating if a second factor is required.
+    Creates a DeviceSession on successful login and returns JWT tokens.
+    
+    Request body must contain:
+        - email (string)
+        - password (string)
+    
+    Returns:
+        JsonResponse with JWT tokens and teacher info on success,
+        or indication that 2FA verification is required,
+        or error message with appropriate HTTP status.
+    """
     if request.method == "POST":
         try:
             # Parse the request body based on content type
@@ -218,6 +241,16 @@ def login_teacher(request):
 
 @api_view(["POST"])
 def upload_profile_pic(request):
+    """
+    Uploads or updates the profile picture for a teacher identified by email.
+    Accepts multipart/form-data with fields:
+        - email (string)
+        - profile_pic (file)
+    
+    Returns:
+        JSON response with success message and URL of uploaded picture,
+        or error if teacher not found or missing inputs.
+    """
     email = request.data.get("email")
     file = request.FILES.get("profile_pic")
 
@@ -239,6 +272,13 @@ def upload_profile_pic(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
+    """
+    Returns the authenticated teacher's profile data serialized.
+    
+    Returns:
+        Serialized teacher data on success,
+        or error if profile not found.
+    """
     try:
         teacher = request.user.teacher
         serializer = TeacherSerializer(teacher)
@@ -249,6 +289,14 @@ def get_profile(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
+    """
+    Updates the authenticated teacher's profile with partial or full data.
+    Accepts JSON data fields matching TeacherSerializer.
+    
+    Returns:
+        Updated serialized profile data on success,
+        or validation errors if any.
+    """
     try:
         teacher = request.user.teacher
         serializer = TeacherSerializer(teacher, data=request.data, partial=True)
@@ -262,6 +310,14 @@ def update_profile(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
+    """
+    Changes the password for the authenticated user.
+    Requires current_password and new_password in the request body.
+    
+    Returns:
+        Success message if password changed,
+        or error if current password incorrect.
+    """
     try:
         user = request.user
         current_password = request.data.get('current_password')

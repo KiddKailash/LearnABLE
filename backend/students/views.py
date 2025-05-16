@@ -21,6 +21,10 @@ from teachers.models import Teacher
 def get_all_students(request):
     """
     Retrieve all students associated with the authenticated teacher.
+
+    Returns:
+        HTTP 200 with serialized list of students or
+        HTTP 400 if teacher profile not found.
     """
     try:
         # Get the teacher linked to the current user
@@ -46,7 +50,11 @@ def get_all_students(request):
 @api_view(['POST'])
 def create_student(request):
     """
-    Create a new student.
+    Create a new student with provided data.
+
+    Returns:
+        HTTP 201 with created student data if successful,
+        HTTP 400 with validation errors otherwise.
     """
     serializer = StudentSerializer(data=request.data)
     if serializer.is_valid():
@@ -60,7 +68,15 @@ def create_student(request):
 @api_view(['PUT'])
 def update_student(request, student_id):
     """
-    Fully update a student's information.
+    Fully update the student identified by student_id with provided data.
+
+    Args:
+        student_id (int): ID of the student to update.
+
+    Returns:
+        HTTP 200 with updated student data if successful,
+        HTTP 404 if student not found,
+        HTTP 400 if validation fails.
     """
     try:
         student = Student.objects.get(id=student_id)
@@ -78,7 +94,14 @@ def update_student(request, student_id):
 @api_view(['GET'])
 def get_student(request, student_id):
     """
-    Retrieve a single student by ID.
+    Retrieve a student by their ID.
+
+    Args:
+        student_id (int): ID of the student to retrieve.
+
+    Returns:
+        HTTP 200 with student data if found,
+        HTTP 404 if student does not exist.
     """
     try:
         student = Student.objects.get(id=student_id)
@@ -93,7 +116,14 @@ def get_student(request, student_id):
 @api_view(['DELETE'])
 def delete_student(request, student_id):
     """
-    Delete a student by ID.
+    Delete a student identified by student_id.
+
+    Args:
+        student_id (int): ID of the student to delete.
+
+    Returns:
+        HTTP 204 if deletion successful,
+        HTTP 404 if student not found.
     """
     try:
         student = Student.objects.get(id=student_id)
@@ -108,7 +138,15 @@ def delete_student(request, student_id):
 @api_view(['PATCH'])
 def partial_update_student(request, student_id):
     """
-    Partially update a student's information.
+    Partially update fields of a student by their ID.
+
+    Args:
+        student_id (int): ID of the student to update.
+
+    Returns:
+        HTTP 200 with updated student data if successful,
+        HTTP 404 if student not found,
+        HTTP 400 if validation fails.
     """
     try:
         student = Student.objects.get(id=student_id)
@@ -126,7 +164,14 @@ def partial_update_student(request, student_id):
 @permission_classes([IsAuthenticated])
 def get_students_by_class(request, class_id):
     """
-    Returns full class object including students.
+    Retrieve a class and its students by class ID.
+
+    Args:
+        class_id (int): ID of the class.
+
+    Returns:
+        HTTP 200 with serialized class data including students,
+        HTTP 404 if class not found.
     """
     try:
         class_obj = Classes.objects.get(id=class_id)
@@ -141,7 +186,15 @@ def get_students_by_class(request, class_id):
 @permission_classes([IsAuthenticated])
 def get_student_by_email(request):
     """
-    Retrieve a student by email (for linking to another class).
+    Retrieve a student by email address (case-insensitive).
+
+    Expects:
+        student_email (string): email in POST data.
+
+    Returns:
+        HTTP 200 with student data if found,
+        HTTP 200 with empty object if not found,
+        HTTP 400 if email not provided.
     """
     email = request.data.get("student_email", "").lower().strip()
     if not email:
@@ -160,7 +213,18 @@ def get_student_by_email(request):
 @parser_classes([MultiPartParser])
 def upload_csv_to_class(request):
     """
-    Upload a CSV file and add students to a class.
+    Upload a CSV file to bulk add students to a class.
+
+    Expects:
+        file: CSV file uploaded with key 'file',
+        class_id: class ID in POST data.
+
+    CSV must include columns: student_email, first_name, last_name, year_level, disability_info.
+
+    Returns:
+        HTTP 200 with count of students added and list of duplicates,
+        HTTP 400 if file or class_id missing,
+        HTTP 404 if class not found.
     """
     csv_file = request.FILES.get("file")
     class_id = request.POST.get("class_id")

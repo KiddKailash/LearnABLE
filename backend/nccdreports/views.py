@@ -1,3 +1,21 @@
+"""
+Views for managing NCCD reports and lesson effectiveness tracking.
+
+This module provides API endpoints to create, retrieve, update, and delete NCCD reports,
+manage lesson effectiveness records related to reports, and retrieve effectiveness trends.
+
+Endpoints include:
+- get_all_reports: List all NCCD reports.
+- get_report_detail: Retrieve, update, or delete a specific NCCD report.
+- create_report: Create a new NCCD report or return existing one for a student.
+- get_reports_by_student: List all reports for a specific student.
+- ensure_reports_for_class: Ensure reports exist for all qualifying students in a class.
+- create_lesson_effectiveness: Create a lesson effectiveness record for a report.
+- get_effectiveness_trend: Retrieve cumulative lesson effectiveness trend data for a student.
+
+All endpoints require authenticated users and use Django REST Framework's API view decorators.
+"""
+
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
@@ -17,7 +35,10 @@ from .serializers import NCCDreportSerializer, LessonEffectivenessRecordSerializ
 @permission_classes([IsAuthenticated])
 def get_all_reports(request):
     """
-    Get all NCCD reports.
+    Retrieve a list of all NCCD reports.
+
+    Returns:
+        200 OK: A JSON list of NCCD report objects with their details.
     """
     reports = NCCDreport.objects.all()
     data = []
@@ -40,7 +61,20 @@ def get_all_reports(request):
 @permission_classes([IsAuthenticated])
 def get_report_detail(request, report_id):
     """
-    Get, update or delete a specific NCCD report.
+    Retrieve, update, or delete a specific NCCD report by its ID.
+
+    Args:
+        report_id (int): ID of the NCCD report.
+
+    Methods:
+        GET: Return report details.
+        PUT: Update report fields and/or evidence file.
+        DELETE: Delete the report.
+
+    Returns:
+        200 OK with report data (GET, PUT),
+        204 No Content (DELETE),
+        or appropriate error status.
     """
     report = get_object_or_404(NCCDreport, id=report_id)
     
@@ -108,7 +142,17 @@ def get_report_detail(request, report_id):
 @permission_classes([IsAuthenticated])
 def create_report(request):
     """
-    Create a new NCCD report, or return existing if already created for the student.
+    Create a new NCCD report for a student, or return an existing one if found.
+
+    Expects:
+        - student: ID of the student (required).
+        - status, disability_category, level_of_adjustment (optional).
+        - evidence: file upload (optional).
+
+    Returns:
+        201 Created with new report data, or
+        200 OK with existing report if already present,
+        or 400 Bad Request on errors.
     """
     parser_classes = (MultiPartParser, FormParser)
 
@@ -170,7 +214,13 @@ def create_report(request):
 @permission_classes([IsAuthenticated])
 def get_reports_by_student(request, student_id):
     """
-    Get all NCCD reports for a specific student.
+    Retrieve all NCCD reports associated with a specific student.
+
+    Args:
+        student_id (int): ID of the student.
+
+    Returns:
+        200 OK: List of reports for the student.
     """
     student = get_object_or_404(Student, id=student_id)
     reports = NCCDreport.objects.filter(student=student)
@@ -195,8 +245,14 @@ def get_reports_by_student(request, student_id):
 @permission_classes([IsAuthenticated])
 def ensure_reports_for_class(request, class_id):
     """
-    Ensure each student in the class who has a non-empty decrypted disability info has a report.
-    Create one if needed. Return list of valid reports.
+    Ensure that every student in the class with disability info has an NCCD report.
+    Creates reports for qualifying students and deletes reports for non-qualifying ones.
+
+    Args:
+        class_id (int): ID of the class.
+
+    Returns:
+        200 OK: List of valid reports for the class.
     """
     from utils.encryption import decrypt
 
@@ -227,7 +283,16 @@ def ensure_reports_for_class(request, class_id):
 @permission_classes([IsAuthenticated])
 def create_lesson_effectiveness(request, report_id):
     """
-    Record lesson effectiveness for a report (yes/no), track teacher, return next report ID.
+    Record a lesson effectiveness entry linked to a specific NCCD report and teacher.
+
+    Args:
+        report_id (int): ID of the NCCD report.
+        was_effective (bool, required): Whether the lesson was effective.
+
+    Returns:
+        201 Created: Lesson effectiveness record details including next report ID for navigation.
+        400 Bad Request: Missing or invalid data.
+        403 Forbidden: User not linked to teacher.
     """
     report = get_object_or_404(NCCDreport, id=report_id)
 
@@ -271,7 +336,13 @@ def create_lesson_effectiveness(request, report_id):
 @permission_classes([IsAuthenticated])
 def get_effectiveness_trend(request, student_id):
     """
-    Returns a list of date/score objects for cumulative lesson effectiveness over time.
+    Retrieve cumulative lesson effectiveness scores over time for a student.
+
+    Args:
+        student_id (int): ID of the student.
+
+    Returns:
+        200 OK: List of dates and cumulative effectiveness scores.
     """
     student = Student.objects.get(id=student_id)
 

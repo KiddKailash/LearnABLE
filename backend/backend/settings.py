@@ -14,13 +14,16 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 
-
+# Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load the .env file from BASE_DIR
+# Load environment variables from .env file
 load_dotenv(os.path.join(BASE_DIR, '.env'))
 
+# Secret key used in production - keep this hidden
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-secret-key')
+
+# OpenAI API key from env file
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -29,7 +32,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 # Set ALLOWED_HOSTS from environment variable
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
 
-# CORS settings
+# CORS settings to allow frontend access
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
 CORS_ALLOW_CREDENTIALS = os.getenv('CORS_ALLOW_CREDENTIALS', 'True') == 'True'
 
@@ -49,8 +52,7 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# Application definition
-
+# Installed Django and third-party apps
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -62,6 +64,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'channels',
+    # Our added apps
     'backend',
     'teachers',
     'students',
@@ -71,6 +74,7 @@ INSTALLED_APPS = [
     'unitplan'
 ]
 
+# Middleware stack for request/response processing
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -80,16 +84,18 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'backend.middleware.ErrorHandlingMiddleware',
+    'backend.middleware.ErrorHandlingMiddleware', # Custom middleware for API error handling
 ]
 
+# URL routing configuration
 ROOT_URLCONF = 'backend.urls'
 
+# Template engine settings
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [], # Optional custom template dirs
+        'APP_DIRS': True, # Auto - discover templates in apps
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -101,10 +107,11 @@ TEMPLATES = [
     },
 ]
 
+# WSGI application (used for traditional HTTP)
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-# Database
+# PostgreSQL database settings
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
@@ -141,26 +148,21 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
-
 STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Media file settings (for file uploads like profile pics, documents, etc.)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -174,10 +176,11 @@ REST_FRAMEWORK = {
     )
 }
 
+# Media file settings (for file uploads like profile pics, documents, etc.)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Channels configuration
+# Channels (WebSocket) settings using Redis
 ASGI_APPLICATION = 'backend.asgi.application'
 CHANNEL_LAYERS = {
     'default': {
