@@ -19,7 +19,6 @@ npm install
 2. Create a `.env` file in the root directory with the following variables:
 ```
 REACT_APP_API_URL=http://localhost:8000
-REACT_APP_ENV=development
 ```
 
 ### Development
@@ -49,7 +48,7 @@ src/
 ├── components/     # Reusable UI components
 ├── contexts/       # React context providers
 ├── hooks/          # Custom React hooks
-├── layout/        # Page layout components
+├── layout/         # Page layout components
 ├── pages/          # Page components
 ├── services/       # API and other services
 ├── store/          # Global state storage
@@ -96,6 +95,6 @@ The frontend is configured for deployment on Vercel. The production build is aut
 If you encounter any issues:
 
 1. Clear the npm cache: `npm cache clean --force`
-2. Delete node_modules and reinstall: `rm -rf node_modules && npm install`
+2. Delete node_modules and reinstall: `rm -rf node_modules && rm package-lock.json && npm install`
 3. Check the console for error messages
 4. Ensure all environment variables are properly set
