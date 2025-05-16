@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { useColorScheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 // Contexts and Services
 import UserContext from "../../../store/UserObject";
@@ -342,16 +341,16 @@ const Account = () => {
     try {
       setIsSaving(true);
       await accountApi.updateTheme(themeMode);
-      
+
       // Update user context
       updateUserInfo({ theme_preference: themeMode });
-      
+
       // Update the MUI color scheme
       setMode(themeMode);
-      
+
       // Update localStorage to persist between sessions
       localStorage.setItem("theme_preference", themeMode);
-      
+
       showSnackbar("Theme preference saved", "success");
     } catch (error) {
       showSnackbar("Failed to save theme preference", "error");
@@ -429,7 +428,7 @@ const Account = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Clean up the URL object
       URL.revokeObjectURL(url);
 
@@ -445,7 +444,7 @@ const Account = () => {
   const handleExportSelectedData = async () => {
     try {
       setIsSaving(true);
-      
+
       // Only include options that are selected (true)
       const selectedOptions = Object.entries(exportOptions)
         .filter(([key, value]) => value === true)
@@ -453,7 +452,7 @@ const Account = () => {
           obj[key] = value;
           return obj;
         }, {});
-        
+
       const data = await accountApi.exportAccountData(selectedOptions);
 
       // Create a download link
@@ -467,7 +466,7 @@ const Account = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Clean up the URL object
       URL.revokeObjectURL(url);
 
@@ -502,15 +501,6 @@ const Account = () => {
 
   return (
     <>
-      <Button
-        size="small"
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/dashboard")}
-        sx={{ mb: 2 }}
-      >
-        Back 
-      </Button>
-
       <Typography variant="h4">Account Settings</Typography>
 
       <Tabs
