@@ -522,7 +522,6 @@ const Account = () => {
         <Tab icon={<PersonIcon />} label="Profile" iconPosition="start" />
         <Tab icon={<SecurityIcon />} label="Security" iconPosition="start" />
         <Tab icon={<PaletteIcon />} label="Appearance" iconPosition="start" />
-        <Tab icon={<DevicesIcon />} label="Sessions" iconPosition="start" />
         <Tab
           icon={<CloudDownloadIcon />}
           label="Data Export"
@@ -596,7 +595,7 @@ const Account = () => {
               handleSaveTheme={handleSaveTheme}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={3}>
+          {/* <TabPanel value={tabValue} index={3}>
             <SessionsTab
               sessions={sessions}
               sessionsLoading={sessionsLoading}
@@ -605,8 +604,8 @@ const Account = () => {
               handleTerminateAllSessions={handleTerminateAllSessions}
               handleRefreshSessions={handleRefreshSessions}
             />
-          </TabPanel>
-          <TabPanel value={tabValue} index={4}>
+          </TabPanel> */}
+          <TabPanel value={tabValue} index={3}>
             <DataExportTab
               exportOptions={exportOptions}
               setExportOptions={setExportOptions}
@@ -615,7 +614,7 @@ const Account = () => {
               handleExportSelectedData={handleExportSelectedData}
             />
           </TabPanel>
-          <TabPanel value={tabValue} index={5}>
+          <TabPanel value={tabValue} index={4}>
             <DeleteAccountTab
               deleteDialogOpen={deleteDialogOpen}
               setDeleteDialogOpen={setDeleteDialogOpen}
