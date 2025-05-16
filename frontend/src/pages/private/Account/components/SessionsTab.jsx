@@ -1,3 +1,11 @@
+/**
+ * @file SessionsTab.jsx
+ * @description A component that manages and displays active user sessions across different devices.
+ * This component allows users to view their active sessions, terminate individual sessions,
+ * and log out from all other devices. It provides detailed information about each session
+ * including device name, location, IP address, and last active time.
+ */
+
 import React from "react";
 
 // MUI Components
@@ -17,6 +25,17 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DevicesIcon from "@mui/icons-material/Devices";
 import LogoutIcon from "@mui/icons-material/Devices";
 
+/**
+ * SessionsTab component that manages active user sessions
+ * @param {Object} props - Component props
+ * @param {Array} props.sessions - Array of active session objects
+ * @param {boolean} props.sessionsLoading - Loading state for sessions data
+ * @param {boolean} props.isSaving - Loading state for session termination operations
+ * @param {Function} props.handleTerminateSession - Function to terminate a specific session
+ * @param {Function} props.handleTerminateAllSessions - Function to terminate all other sessions
+ * @param {Function} props.handleRefreshSessions - Function to refresh the sessions list
+ * @returns {JSX.Element} The sessions management interface
+ */
 const SessionsTab = ({
   sessions,
   sessionsLoading,
@@ -25,13 +44,21 @@ const SessionsTab = ({
   handleTerminateAllSessions,
   handleRefreshSessions,
 }) => {
+  // State for confirmation dialog
   const [confirmDialog, setConfirmDialog] = React.useState({
     open: false,
     sessionId: null,
     deviceName: "",
   });
+
+  // State for tracking sessions being terminated
   const [terminatingSessionIds, setTerminatingSessionIds] = React.useState([]);
 
+  /**
+   * Opens the confirmation dialog for session termination
+   * @param {string} sessionId - ID of the session to terminate
+   * @param {string} deviceName - Name of the device for the session
+   */
   const openConfirmDialog = (sessionId, deviceName) => {
     setConfirmDialog({
       open: true,
@@ -40,6 +67,9 @@ const SessionsTab = ({
     });
   };
 
+  /**
+   * Closes the confirmation dialog and resets its state
+   */
   const closeConfirmDialog = () => {
     setConfirmDialog({
       open: false,
@@ -48,6 +78,10 @@ const SessionsTab = ({
     });
   };
 
+  /**
+   * Handles the confirmation of session termination
+   * Updates UI state and calls the termination handler
+   */
   const confirmTerminateSession = async () => {
     if (confirmDialog.sessionId) {
       // Add the session ID to the list of terminating sessions
@@ -69,6 +103,10 @@ const SessionsTab = ({
     closeConfirmDialog();
   };
 
+  /**
+   * Handles termination of all other sessions
+   * Updates UI state and calls the termination handler
+   */
   const handleTerminateAllClick = async () => {
     // Mark all other sessions as terminating
     const otherSessionIds = sessions
@@ -249,24 +287,24 @@ const SessionsTab = ({
       <Dialog
         open={confirmDialog.open}
         onClose={closeConfirmDialog}
-        aria-labelledby="terminate-session-dialog-title"
       >
-        <DialogTitle id="terminate-session-dialog-title">
-          Terminate Session
-        </DialogTitle>
+        <DialogTitle>Terminate Session?</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to terminate the session on{" "}
-            {confirmDialog.deviceName || "this device"}? This will log out that
-            device immediately.
+            <strong>{confirmDialog.deviceName || "this device"}</strong>? This
+            will log out the device from your account.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeConfirmDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={confirmTerminateSession} color="error" autoFocus>
-            Terminate
+          <Button onClick={closeConfirmDialog}>Cancel</Button>
+          <Button
+            onClick={confirmTerminateSession}
+            color="error"
+            variant="contained"
+            disabled={isSaving}
+          >
+            Terminate Session
           </Button>
         </DialogActions>
       </Dialog>

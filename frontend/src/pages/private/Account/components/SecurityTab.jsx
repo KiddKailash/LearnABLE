@@ -1,3 +1,10 @@
+/**
+ * @file SecurityTab.jsx
+ * @description A component that manages user security settings, including password changes and
+ * two-factor authentication (2FA) setup. This component provides interfaces for users to
+ * enhance their account security through various authentication methods.
+ */
+
 import React, { useState, useContext, useEffect } from "react";
 
 // Local Components
@@ -28,6 +35,10 @@ import UserContext from "../../../../store/UserObject";
 import { SnackbarContext } from "../../../../contexts/SnackbarContext";
 import api from "../../../../services/api";
 
+/**
+ * SecurityTab component that manages user security settings
+ * @returns {JSX.Element} The security settings interface
+ */
 const SecurityTab = () => {
   // Get user profile from context
   const {
@@ -60,7 +71,10 @@ const SecurityTab = () => {
   // Loading state
   const [isSaving, setIsSaving] = useState(false);
 
-  // Effect to fetch the latest 2FA status when component mounts
+  /**
+   * Fetches the latest 2FA status when component mounts
+   * Updates local state with the fetched status
+   */
   useEffect(() => {
     const fetchTwoFactorStatus = async () => {
       try {
@@ -77,13 +91,20 @@ const SecurityTab = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update local state when user object changes
+  /**
+   * Updates local state when user object changes
+   * Synchronizes 2FA enabled status with user context
+   */
   useEffect(() => {
     if (user && typeof user.two_factor_enabled === "boolean") {
       setTwoFactorEnabled(user.two_factor_enabled);
     }
   }, [user]);
 
+  /**
+   * Handles password change request
+   * Validates passwords and updates user profile on success
+   */
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
       showSnackbar("New passwords do not match", "error");
@@ -117,6 +138,10 @@ const SecurityTab = () => {
     }
   };
 
+  /**
+   * Initiates the 2FA setup process
+   * Generates QR code for authenticator app setup
+   */
   const handleSetupTwoFactor = async () => {
     setQrCodeLoading(true);
     try {
@@ -137,6 +162,10 @@ const SecurityTab = () => {
     }
   };
 
+  /**
+   * Verifies and enables 2FA after user enters verification code
+   * Updates user profile and local state on success
+   */
   const handleVerifyTwoFactor = async () => {
     setIsSaving(true);
     try {
@@ -159,6 +188,10 @@ const SecurityTab = () => {
     }
   };
 
+  /**
+   * Disables 2FA after user enters verification code
+   * Updates user profile and local state on success
+   */
   const handleDisableTwoFactor = async () => {
     setIsSaving(true);
     try {
@@ -184,7 +217,10 @@ const SecurityTab = () => {
     }
   };
 
-  // Load 2FA QR code when dialog opens
+  /**
+   * Loads 2FA QR code when setup dialog opens
+   * Triggers setup process if QR code data is not available
+   */
   useEffect(() => {
     if (setup2FADialogOpen && !twoFactorData) {
       handleSetupTwoFactor();

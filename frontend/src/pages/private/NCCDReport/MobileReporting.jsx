@@ -1,5 +1,12 @@
+/**
+ * @file MobileReporting.jsx
+ * @description Mobile-optimized interface for NCCD reporting, providing a streamlined experience
+ * for teachers to report on student adjustments and effectiveness. Features a step-by-step
+ * process for class selection and student reporting.
+ * 
+ */
+
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import api from "../../../services/api";
 
@@ -13,10 +20,16 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Alert from "@mui/material/Alert";
 
+/**
+ * Mobile-optimized NCCD reporting interface component
+ * 
+ * @component
+ * @returns {JSX.Element} The mobile reporting interface
+ */
 const MobileReportingPage = () => {
-  const navigate = useNavigate();
   const { showSnackbar } = useContext(SnackbarContext);
 
+  // State management for classes and reporting
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState("");
   const [reportsQueue, setReportsQueue] = useState([]);
@@ -26,7 +39,7 @@ const MobileReportingPage = () => {
   const [error, setError] = useState("");
   const [reportingComplete, setReportingComplete] = useState(false);
 
-  // Fetch teacher's classes
+  // Fetch teacher's classes on component mount
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -40,6 +53,10 @@ const MobileReportingPage = () => {
     fetchClasses();
   }, [showSnackbar]);
 
+  /**
+   * Initializes the reporting process for the selected class
+   * Filters out students without diagnosed disabilities
+   */
   const handleStartReporting = async () => {
     if (!selectedClassId) {
       setError("Please select a class first");
@@ -50,7 +67,7 @@ const MobileReportingPage = () => {
       setLoading(true);
       const ensuredReports = await api.nccdReports.ensureReportsForClass(selectedClassId);
   
-      // filter out students who don't have a diagnosed disability
+      // Filter out students who don't have a diagnosed disability
       const filteredReports = ensuredReports.filter(r => r.has_diagonsed_disability);
   
       if (filteredReports.length === 0) {
@@ -59,7 +76,7 @@ const MobileReportingPage = () => {
   
       setReportsQueue(filteredReports);
       setCurrentReportIndex(0);
-      setReportingComplete(filteredReports.length === 0); // mark complete if no students left
+      setReportingComplete(filteredReports.length === 0); // Mark complete if no students left
       setError("");
     } catch (err) {
       showSnackbar("Failed to initialize reports: " + (err.message || ""), "error");
@@ -67,8 +84,11 @@ const MobileReportingPage = () => {
       setLoading(false);
     }
   };
-  
 
+  /**
+   * Records the effectiveness of adjustments for the current student
+   * @param {boolean} wasEffective - Whether the adjustment was effective
+   */
   const handleRecordEffectiveness = async (wasEffective) => {
     const currentReport = reportsQueue[currentReportIndex];
     if (!currentReport) return;
@@ -91,7 +111,7 @@ const MobileReportingPage = () => {
     }
   };
 
-  // 🔥 Find current student name
+  // Get current student name from the class data
   const currentStudentName = (() => {
     const currentReport = reportsQueue[currentReportIndex];
     if (!currentReport) return "";
@@ -112,14 +132,14 @@ const MobileReportingPage = () => {
         Mobile Reporting
       </Typography>
 
-      {/* Done state */}
+      {/* Completion state */}
       {reportingComplete && (
         <Alert severity="success" sx={{ mb: 3 }}>
           Reporting complete for all students!
         </Alert>
       )}
 
-      {/* Step 1: Class selection */}
+      {/* Class selection step */}
       {!reportingComplete && reportsQueue.length === 0 && (
         <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
           <Typography>Select a Class:</Typography>
@@ -152,7 +172,7 @@ const MobileReportingPage = () => {
         </Paper>
       )}
 
-      {/* Step 2: Reporting UI */}
+      {/* Student reporting interface */}
       {!reportingComplete && reportsQueue.length > 0 && (
         <Paper elevation={3} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>

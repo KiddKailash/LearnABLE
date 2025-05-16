@@ -1,7 +1,13 @@
+/**
+ * @file Account.jsx
+ * @description Main account management page component that handles user profile, security settings,
+ * appearance preferences, and account management features. This component serves as a container
+ * for various account-related tabs and manages the overall state and API interactions.
+ * 
+ */
+
 import React, { useState, useEffect, useContext } from "react";
 import { useColorScheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
-import Button from "@mui/material/Button";
 
 // Contexts and Services
 import UserContext from "../../../store/UserObject";
@@ -13,7 +19,7 @@ import TabPanel from "./components/TabPanel";
 import ProfileTab from "./components/ProfileTab";
 import SecurityTab from "./components/SecurityTab";
 import AppearanceTab from "./components/AppearanceTab";
-import SessionsTab from "./components/SessionsTab";
+// import SessionsTab from "./components/SessionsTab";
 import DataExportTab from "./components/DataExportTab";
 import DeleteAccountTab from "./components/DeleteAccountTab";
 
@@ -28,10 +34,14 @@ import Typography from "@mui/material/Typography";
 import PersonIcon from "@mui/icons-material/Person";
 import SecurityIcon from "@mui/icons-material/Security";
 import PaletteIcon from "@mui/icons-material/Palette";
-import DevicesIcon from "@mui/icons-material/Devices";
+// import DevicesIcon from "@mui/icons-material/Devices";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * Account component that manages user account settings and preferences
+ * @returns {JSX.Element} The rendered account management interface
+ */
 const Account = () => {
   const { user, logout, updateUserInfo } = useContext(UserContext);
   const { showSnackbar } = useContext(SnackbarContext);
@@ -39,7 +49,6 @@ const Account = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const navigate = useNavigate();
 
   // Profile state
   const [firstName, setFirstName] = useState("");
@@ -87,6 +96,10 @@ const Account = () => {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  /**
+   * Fetches user profile data and active sessions on component mount
+   * Updates local state with fetched data
+   */
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -136,16 +149,26 @@ const Account = () => {
     fetchSessions();
   }, [showSnackbar]);
 
-  // Update theme when user preferences change
+  /**
+   * Updates theme mode when user preferences change
+   */
   useEffect(() => {
     setThemeMode(user?.theme_preference || "system");
   }, [user?.theme_preference]);
 
+  /**
+   * Handles tab navigation changes
+   * @param {Object} event - The event object
+   * @param {number} newValue - The index of the new tab
+   */
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // Profile handlers
+  /**
+   * Saves updated profile information to the backend
+   * Updates both backend and frontend state
+   */
   const handleSaveProfile = async () => {
     try {
       setIsSaving(true);
@@ -181,6 +204,10 @@ const Account = () => {
     }
   };
 
+  /**
+   * Handles profile picture upload
+   * @param {Event} e - The file input change event
+   */
   const handleUploadProfilePicture = async (e) => {
     if (e.target.files?.[0]) {
       try {
@@ -203,6 +230,10 @@ const Account = () => {
     }
   };
 
+  /**
+   * Manages Google account connection/disconnection
+   * Updates profile state and shows appropriate notifications
+   */
   const handleConnectGoogleAccount = async () => {
     try {
       setIsSaving(true);
@@ -356,58 +387,6 @@ const Account = () => {
       showSnackbar("Failed to save theme preference", "error");
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // Sessions handlers
-  const handleTerminateSession = async (sessionId) => {
-    try {
-      setIsSaving(true);
-      await accountApi.terminateSession(sessionId);
-
-      // Remove from local state
-      setSessions(sessions.filter((s) => s.id !== sessionId));
-
-      showSnackbar("Session terminated successfully", "success");
-    } catch (error) {
-      showSnackbar("Failed to terminate session", "error");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleTerminateAllSessions = async () => {
-    try {
-      if (
-        window.confirm(
-          "Are you sure you want to log out from all other devices?"
-        )
-      ) {
-        setIsSaving(true);
-        await accountApi.terminateAllSessions();
-
-        // Refresh sessions
-        const updatedSessions = await accountApi.getActiveSessions();
-        setSessions(updatedSessions.filter((session) => session.is_current));
-
-        showSnackbar("Logged out from all other devices", "success");
-      }
-    } catch (error) {
-      showSnackbar("Failed to log out from other devices", "error");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleRefreshSessions = async () => {
-    try {
-      setSessionsLoading(true);
-      const data = await accountApi.getActiveSessions();
-      setSessions(data || []);
-    } catch (error) {
-      showSnackbar("Failed to refresh sessions", "error");
-    } finally {
-      setSessionsLoading(false);
     }
   };
 

@@ -1,5 +1,14 @@
+/**
+ * @file Classes.jsx
+ * @description Main component for managing classes in the LearnABLE application.
+ * This component provides functionality for viewing, creating, editing, and deleting classes,
+ * as well as managing students within classes. It includes features for bulk student uploads
+ * and individual student additions.
+ * 
+ */
+
 import React, { useEffect, useRef, useState, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // Add useLocation import
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 
 // MUI Components
@@ -38,12 +47,17 @@ import api from "../../../services/api";
 import StudentFormDialog from "../../../components/StudentFormDialog";
 import ClassCreationStepper from "./ClassCreationStepper";
 
+/**
+ * Classes component that manages the class listing and operations
+ * @returns {JSX.Element} The class management interface
+ */
 const Classes = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Add this line
+  const location = useLocation();
   const { showSnackbar } = useContext(SnackbarContext);
   const theme = useTheme();
 
+  // State management for classes and operations
   const [classes, setClasses] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [editModeId, setEditModeId] = useState(null);
@@ -52,6 +66,7 @@ const Classes = () => {
     year_level: "",
   });
 
+  // State for student management
   const [openDialog, setOpenDialog] = useState(false);
   const [studentForm, setStudentForm] = useState({
     first_name: "",
@@ -61,32 +76,41 @@ const Classes = () => {
     disability_info: "",
   });
 
+  // State for class deletion
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [classCreationOpen, setClassCreationOpen] = useState(false);
   const fileInputRef = useRef(null);
 
+  /**
+   * Effect hook to fetch classes and handle class creation dialog
+   * Checks URL parameters for class creation trigger
+   */
   useEffect(() => {
     fetchClasses();
     
     // Check for query parameter to open class creation dialog
     const queryParams = new URLSearchParams(location.search);
     if (queryParams.get('create') === 'true') {
-      // Open the class creation dialog
       setClassCreationOpen(true);
-      
-      // Remove the query parameter without refreshing the page
       navigate('/classes', { replace: true });
     }
     //eslint-disable-next-line
-  }, [location]); // Add location dependency
+  }, [location]);
 
+  /**
+   * Handles authentication errors by clearing local storage and redirecting to login
+   */
   const handleAuthError = () => {
     showSnackbar("Session expired. Please log in again.", "warning");
     localStorage.clear();
     navigate("/login");
   };
 
+  /**
+   * Fetches all classes from the API and updates state
+   * Handles authentication errors and displays appropriate messages
+   */
   const fetchClasses = async () => {
     try {
       const data = await api.classes.getAll();
@@ -103,8 +127,11 @@ const Classes = () => {
     }
   };
 
+  /**
+   * Initiates class editing mode
+   * @param {Object} cls - The class object to edit
+   */
   const handleEditClass = (cls) => {
-    console.log("Editing class", cls);
     setEditModeId(cls.id);
     setSelectedClassId(cls.id);
     setEditClassData({
@@ -113,6 +140,10 @@ const Classes = () => {
     });
   };
 
+  /**
+   * Saves class edits to the API
+   * Updates local state and displays success/error messages
+   */
   const saveClassEdit = async () => {
     try {
       await api.classes.update(editModeId, editClassData);
@@ -131,11 +162,19 @@ const Classes = () => {
     }
   };
 
+  /**
+   * Initiates class deletion process
+   * @param {string} id - The ID of the class to delete
+   */
   const handleDeleteClass = (id) => {
     setPendingDeleteId(id);
     setDeleteDialogOpen(true);
   };
 
+  /**
+   * Confirms and executes class deletion
+   * Updates local state and displays success/error messages
+   */
   const confirmDeleteClass = async () => {
     try {
       await api.classes.delete(pendingDeleteId);
@@ -155,6 +194,10 @@ const Classes = () => {
     }
   };
 
+  /**
+   * Handles CSV file upload for bulk student addition
+   * @param {Event} e - The file input change event
+   */
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file || !selectedClassId) return;
@@ -179,6 +222,10 @@ const Classes = () => {
     }
   };
 
+  /**
+   * Handles individual student addition
+   * Creates student and adds them to the selected class
+   */
   const handleStudentSubmit = async () => {
     try {
       // Create the student
@@ -211,6 +258,11 @@ const Classes = () => {
     }
   };
 
+  /**
+   * Generates initials from a full name
+   * @param {string} name - The full name to generate initials from
+   * @returns {string} The initials in uppercase
+   */
   const getInitials = (name) => {
     return name
       .split(" ")
@@ -219,6 +271,12 @@ const Classes = () => {
       .toUpperCase();
   };
 
+  /**
+   * Generates a random color based on a string input
+   * Uses different color palettes for light and dark modes
+   * @param {string} str - The string to generate a color from
+   * @returns {string} A color in hex format
+   */
   const getRandomColor = (str) => {
     // Pastel colors with lower saturation and higher brightness for light mode
     const lightModeColors = [
@@ -248,18 +306,16 @@ const Classes = () => {
       "#33691E40", // light green with opacity
       "#F5700040", // amber with opacity
       "#E6500040", // orange with opacity
-      "#BF360C40", // deep orange with opacity
-      "#880E4F40", // pink with opacity
     ];
 
-    const colors = theme.palette.mode === "dark" ? darkModeColors : lightModeColors;
+    // Use the string to generate a consistent color index
+    const hash = str.split('').reduce((acc, char) => {
+      return char.charCodeAt(0) + ((acc << 5) - acc);
+    }, 0);
 
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    hash = Math.abs(hash);
-    return colors[hash % colors.length]; // This line was missing
+    // Select colors based on theme
+    const colors = theme.palette.mode === 'dark' ? darkModeColors : lightModeColors;
+    return colors[Math.abs(hash) % colors.length];
   };
 
   const handleClassCreationSuccess = async (classId) => {

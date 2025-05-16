@@ -15,10 +15,41 @@ This is the backend application for LearnABLE, built with Django and Django REST
 Create a `.env` file in the backend directory with the following variables:
 
 ```
-DJANGO_SECRET_KEY=your_secret_key
-DEBUG=True  # Set to False in production
-DATABASE_URL=postgres://user:password@localhost:5432/LearnABLE
-OPENAI_API_KEY=your_openai_api_key  # If using OpenAI services
+# Encryption key
+FERNET_KEY=your_fernet_key
+
+export DJANGO_SECRET_KEY=your_django_secret_key
+export DEBUG=True
+ 
+ # Langchain and AI
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT="https://api.smith.langchain.com"
+LANGSMITH_API_KEY=your_langsmith_key
+LANGSMITH_PROJECT="LearnABLE"
+OPENAI_API_KEY=your_openai_key
+ 
+ # Database settings
+DB_NAME=LearnABLE
+DB_USER=postgres
+DB_PASSWORD=new_password
+DB_HOST=localhost
+DB_PORT=5432
+ 
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS=True
+CORS_ALLOW_CREDENTIALS=True
+CORS_ALLOWED_ORIGINS=localhost,127.0.0.1
+
+# Server settings
+ALLOWED_HOSTS=localhost,127.0.0.1
+ 
+# JWT settings
+JWT_ACCESS_TOKEN_LIFETIME_HOURS=8
+JWT_REFRESH_TOKEN_LIFETIME_DAYS=2
+JWT_ROTATE_REFRESH_TOKENS=True
+JWT_BLACKLIST_AFTER_ROTATION=True
+JWT_UPDATE_LAST_LOGIN=True
+JWT_ALGORITHM=HS256
 ```
 
 ### Database Setup

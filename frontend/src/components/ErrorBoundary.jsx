@@ -1,5 +1,6 @@
 /**
- * @fileoverview Error Boundary component that catches JavaScript errors in its child component tree.
+ * @fileoverview Error Boundary component that catches JavaScript errors 
+ * in its child component tree.
  */
 
 import React, { Component } from "react";

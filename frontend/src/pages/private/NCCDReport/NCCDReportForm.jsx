@@ -1,3 +1,11 @@
+/**
+ * @file NCCDReportForm.jsx
+ * @description A multi-step form component for creating and editing NCCD reports.
+ * Implements a stepper interface for collecting information about student adjustments
+ * and disability categories.
+ * 
+ */
+
 import React, { useState, useEffect } from 'react';
 
 //MUI imports
@@ -12,31 +20,46 @@ import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
-import Snackbar from '@mui/material/Snackbar';
 import TextField from '@mui/material/TextField';
 
 // Services
 import api from '../../../services/api'; 
 
-const steps = ['Do you have evidence?', 'What is the level of adjustment?', 'What is the category of disability?', 'Is it under the DDA 1992?', 'Additional Comments'];
+// Define form steps
+const steps = [
+  'Do you have evidence?',
+  'What is the level of adjustment?',
+  'What is the category of disability?',
+  'Is it under the DDA 1992?',
+  'Additional Comments'
+];
 
-
+/**
+ * Multi-step form component for NCCD report creation and editing
+ * 
+ * @component
+ * @param {Object} props - Component props
+ * @param {boolean} props.open - Whether the form dialog is open
+ * @param {Function} props.onClose - Handler for dialog close
+ * @param {string} props.studentId - ID of the student for the report
+ * @param {string} [props.reportId] - ID of the report being edited (optional)
+ * @param {Function} props.onSuccess - Handler for successful form submission
+ * @param {Function} props.onCancel - Handler for form cancellation
+ * @returns {JSX.Element} The NCCD report form
+ */
 const NCCDReportForm = ({ 
-  // Dialog control props
   open,
   onClose,
-  
-  // Integration props
   studentId, 
   reportId,
   onSuccess,
   onCancel
 }) => {
+  // Form state management
   const [activeStep, setActiveStep] = useState(0);
   const [formValues, setFormValues] = useState({
     evidence: '',
@@ -50,10 +73,10 @@ const NCCDReportForm = ({
   const [snackbarMessage, setSnackbarMessage] = useState('Form submitted successfully!');
   const [loading, setLoading] = useState(reportId ? true : false);
   
-  // Determine iff we're in standalone dialog mode or integrated mode
+  // Determine if we're in standalone dialog mode or integrated mode
   const isDialogMode = open !== undefined;
   
-  // Fetch existing report data iff in edit mode
+  // Fetch existing report data if in edit mode
   useEffect(() => {
     const fetchReport = async () => {
       if (!reportId) return;
@@ -82,6 +105,10 @@ const NCCDReportForm = ({
     }
   }, [reportId]);
 
+  /**
+   * Handles moving to the next step in the form
+   * Validates current step before proceeding
+   */
   const handleNext = () => {
     // Skip validation for final step since it's optional
     if (activeStep === 4) {
@@ -98,15 +125,27 @@ const NCCDReportForm = ({
     setActiveStep(prev => prev + 1);
   };
 
+  /**
+   * Handles moving to the previous step in the form
+   */
   const handleBack = () => {
     setActiveStep(prev => prev - 1);
   };
 
+  /**
+   * Handles form field changes
+   * @param {string} field - The field being changed
+   * @returns {Function} Event handler for the field change
+   */
   const handleChange = (field) => (e) => {
     setFormValues(prev => ({ ...prev, [field]: e.target.value }));
     setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
+  /**
+   * Handles form submission
+   * Validates all required fields and submits to API
+   */
   const handleSubmit = async () => {
     // Validate all required fields
     const requiredFields = ['evidence', 'levelOfAdjustment', 'disabilityCategory', 'underDDA'];
@@ -147,24 +186,20 @@ const NCCDReportForm = ({
         result = await api.nccdReports.create(reportData);
       }
       
-      // alert users that the form has been submitted
+      // Show success message
       setSnackbarMessage('Form submitted successfully!');
       setShowSnackbar(true);
       
-      // Delay closing the dialog or calling success handler to ensure message is seen
+      // Delay closing the dialog or calling success handler
       setTimeout(() => {
-        // Different behaviour based on mode
         if (isDialogMode) {
-          // In dialog mode, close the dialog
           if (onClose) onClose();
         } else {
-          // In integrated mode, call success handler
           if (onSuccess) onSuccess(result);
         }
-      }, 2000); // deplay message to show confirmation
+      }, 2000);
     } catch (err) {
       console.error('Error saving report:', err);
-      // Show error notification
       setSnackbarMessage('Error saving form. Please try again.');
       setShowSnackbar(true);
     } finally {
@@ -172,6 +207,10 @@ const NCCDReportForm = ({
     }
   };
 
+  /**
+   * Renders the content for the current step
+   * @returns {JSX.Element} The step content
+   */
   const renderStepContent = () => {
     if (loading) {
       return (
@@ -182,7 +221,7 @@ const NCCDReportForm = ({
     }
     
     switch (activeStep) {
-      // step 1 of the form
+      // Evidence step
       case 0:
         return (
           <FormControl error={!!errors.evidence} fullWidth>
@@ -201,7 +240,7 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // step 2 of the form
+      // Level of adjustment step
       case 1:
         return (
           <FormControl error={!!errors.levelOfAdjustment} fullWidth>
@@ -219,7 +258,7 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // step 3 of the form
+      // Disability category step
       case 2:
         return (
           <FormControl error={!!errors.disabilityCategory} fullWidth>
@@ -237,7 +276,7 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // step 4 of the form
+      // DDA compliance step
       case 3:
         return (
           <FormControl error={!!errors.underDDA} fullWidth>
@@ -253,147 +292,79 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // step 5 of the form
+      // Additional comments step
       case 4:
         return (
-          <FormControl fullWidth>
-            <Typography gutterBottom>
-              Are there any changes to be made to the next session to support student achievement goals?
-            </Typography>
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              (Optional)
-            </Typography>
-            <TextField
-              multiline
-              rows={4}
-              value={formValues.additionalComments}
-              onChange={handleChange('additionalComments')}
-              placeholder="Enter any suggestions for changes or improvements to better support the student..."
-              variant="outlined"
-              fullWidth
-            />
-          </FormControl>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label="Additional Comments"
+            value={formValues.additionalComments}
+            onChange={handleChange('additionalComments')}
+            placeholder="Enter any additional information about the adjustments..."
+          />
         );
       default:
         return null;
     }
   };
 
-  // Render as standalone dialog iff in dialog mode
-  if (isDialogMode) {
-    return (
-      <>
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-          <DialogTitle>NCCD Data Collection</DialogTitle>
-          <DialogContent>
-            <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 2 }}>
-              {steps.map((label) => (
-                <Step key={label}><StepLabel>{label}</StepLabel></Step>
-              ))}
-            </Stepper>
-            {renderStepContent()}
-          </DialogContent>
-          <DialogActions>
-            {activeStep > 0 && (
-              <Button onClick={handleBack} disabled={loading}>
-                Back
-              </Button>
-            )}
-            {activeStep < steps.length - 1 ? (
-              <Button variant="contained" onClick={handleNext} disabled={loading}>
-                Continue to Step {activeStep + 2}
-              </Button>
-            ) : (
-              <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>
-                {loading ? <CircularProgress size={24} /> : "Submit Form"}
-              </Button>
-            )}
-          </DialogActions>
-        </Dialog>
-
-        <Snackbar 
-          open={showSnackbar} 
-          autoHideDuration={3000} 
-          onClose={() => setShowSnackbar(false)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={() => setShowSnackbar(false)} 
-            severity={snackbarMessage.includes('Error') ? 'error' : 'success'} 
-            sx={{ width: '100%' }}
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-      </>
-    );
-  }
-  
-  // Otherwise render as integrated component (without dialog wrapper)
-  return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom>
-        {reportId ? 'Edit NCCD Report' : 'Create NCCD Report'}
-      </Typography>
-      
-      <Stepper activeStep={activeStep} alternativeLabel sx={{ my: 4 }}>
+  // Render the form content
+  const formContent = (
+    <>
+      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
         {steps.map((label) => (
-          <Step key={label}><StepLabel>{label}</StepLabel></Step>
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
         ))}
       </Stepper>
-      
-      <Box sx={{ my: 4 }}>
-        {renderStepContent()}
-      </Box>
-      
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-        <Button 
-          variant="outlined" 
-          onClick={onCancel} 
+
+      {renderStepContent()}
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+        <Button
+          disabled={activeStep === 0}
+          onClick={handleBack}
+        >
+          Back
+        </Button>
+        <Button
+          variant="contained"
+          onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
           disabled={loading}
         >
-          Cancel
+          {activeStep === steps.length - 1 ? 'Submit' : 'Next'}
         </Button>
-        
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {activeStep > 0 && (
-            <Button onClick={handleBack} disabled={loading}>
-              Back
-            </Button>
-          )}
-          {activeStep < steps.length - 1 ? (
-            <Button variant="contained" onClick={handleNext} disabled={loading}>
-              Continue
-            </Button>
-          ) : (
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={handleSubmit} 
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : "Submit"}
-            </Button>
-          )}
-        </Box>
       </Box>
-      
-      <Snackbar 
-        open={showSnackbar} 
-        autoHideDuration={3000} 
-        onClose={() => setShowSnackbar(false)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setShowSnackbar(false)} 
-          severity={snackbarMessage.includes('Error') ? 'error' : 'success'} 
-          sx={{ width: '100%' }}
-        >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Box>
+    </>
   );
+
+  // Render in dialog mode if open prop is provided
+  if (isDialogMode) {
+    return (
+      <Dialog
+        open={open}
+        onClose={onClose}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          {reportId ? 'Edit NCCD Report' : 'Create NCCD Report'}
+        </DialogTitle>
+        <DialogContent>
+          {formContent}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
+  // Render in standalone mode
+  return formContent;
 };
 
 export default NCCDReportForm;

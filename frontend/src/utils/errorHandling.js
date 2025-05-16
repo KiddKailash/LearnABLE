@@ -1,8 +1,13 @@
 /**
- * Error handling utilities for the frontend
+ * @file errorHandling.js
+ * @description Error handling utilities for the frontend application.
+ * 
  */
 
-// Error types
+/**
+ * Enum of possible error types in the application
+ * @enum {string}
+ */
 export const ErrorTypes = {
   NETWORK: 'NETWORK_ERROR',
   AUTH: 'AUTH_ERROR',
@@ -11,7 +16,10 @@ export const ErrorTypes = {
   UNKNOWN: 'UNKNOWN_ERROR'
 };
 
-// User-friendly error messages
+/**
+ * User-friendly error messages and suggestions for each error type
+ * @type {Object}
+ */
 const errorMessages = {
   [ErrorTypes.NETWORK]: {
     title: 'Connection Error',
@@ -61,29 +69,29 @@ const errorMessages = {
 };
 
 /**
- * Classifies an error into a specific type
- * @param {Error} error - The error object
- * @returns {string} The error type
+ * Classifies an error into a specific type based on its properties
+ * @param {Error} error - The error object to classify
+ * @returns {string} The classified error type from ErrorTypes enum
  */
 export const classifyError = (error) => {
   if (!error) return ErrorTypes.UNKNOWN;
 
-  // Network errors
+  // Check for network-related errors
   if (error.name === 'NetworkError' || error.message?.includes('Network Error')) {
     return ErrorTypes.NETWORK;
   }
 
-  // Authentication errors
+  // Check for authentication errors (401, 403)
   if (error.response?.status === 401 || error.response?.status === 403) {
     return ErrorTypes.AUTH;
   }
 
-  // Validation errors
+  // Check for validation errors (400)
   if (error.response?.status === 400) {
     return ErrorTypes.VALIDATION;
   }
 
-  // Server errors
+  // Check for server errors (500+)
   if (error.response?.status >= 500) {
     return ErrorTypes.SERVER;
   }
@@ -92,7 +100,7 @@ export const classifyError = (error) => {
 };
 
 /**
- * Gets user-friendly error information
+ * Gets user-friendly error information based on the error type and response
  * @param {Error} error - The error object
  * @returns {Object} Error information with title, message, and suggestions
  */
@@ -100,7 +108,7 @@ export const getErrorInfo = (error) => {
   const errorType = classifyError(error);
   const baseInfo = errorMessages[errorType];
 
-  // If it's a validation error, try to get specific field errors
+  // Handle validation errors with specific field errors
   if (errorType === ErrorTypes.VALIDATION && error.response?.data?.errors) {
     return {
       ...baseInfo,
@@ -108,7 +116,7 @@ export const getErrorInfo = (error) => {
     };
   }
 
-  // If it's a server error with a specific message, use it
+  // Handle server errors with specific messages
   if (errorType === ErrorTypes.SERVER && error.response?.data?.message) {
     return {
       ...baseInfo,
@@ -121,13 +129,14 @@ export const getErrorInfo = (error) => {
 
 /**
  * Logs an error to the console and any monitoring service
- * @param {Error} error - The error object
+ * @param {Error} error - The error object to log
  * @param {Object} context - Additional context about where the error occurred
  */
 export const logError = (error, context = {}) => {
   const errorType = classifyError(error);
   const errorInfo = getErrorInfo(error);
 
+  // Log error details to console
   console.error('Error occurred:', {
     type: errorType,
     error,
@@ -135,7 +144,7 @@ export const logError = (error, context = {}) => {
     userFriendlyInfo: errorInfo
   });
 
-  // Here you would typically send the error to your error tracking service
+  // TODO: Implement error tracking service integration
   // if (process.env.NODE_ENV === 'production') {
   //   sendToErrorTracking(error, context);
   // }

@@ -1,3 +1,10 @@
+/**
+ * @file ProfileTab.jsx
+ * @description A component that renders the profile management tab, allowing users to update their
+ * personal and professional information. This includes profile picture, contact details, and
+ * teaching-related information.
+ */
+
 import React from "react";
 
 //MUI Components
@@ -12,6 +19,28 @@ import Paper from "@mui/material/Paper";
 import ProfileAvatar from "./ProfileAvatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 
+/**
+ * ProfileTab component that manages user profile information
+ * @param {Object} props - Component props
+ * @param {Object} props.profile - User profile data object
+ * @param {Object} props.user - User object containing basic user information
+ * @param {string} props.firstName - User's first name
+ * @param {Function} props.setFirstName - Function to update first name
+ * @param {string} props.lastName - User's last name
+ * @param {Function} props.setLastName - Function to update last name
+ * @param {string} props.school - User's school/institution
+ * @param {Function} props.setSchool - Function to update school
+ * @param {string} props.specialty - User's subject specialty
+ * @param {Function} props.setSpecialty - Function to update specialty
+ * @param {string} props.phoneNumber - User's phone number
+ * @param {Function} props.setPhoneNumber - Function to update phone number
+ * @param {string} props.bio - User's bio
+ * @param {Function} props.setBio - Function to update bio
+ * @param {boolean} props.isSaving - Loading state for save operations
+ * @param {Function} props.handleSaveProfile - Function to save profile changes
+ * @param {Function} props.handleUploadProfilePicture - Function to handle profile picture upload
+ * @returns {JSX.Element} The profile management interface
+ */
 const ProfileTab = ({
   profile,
   user,

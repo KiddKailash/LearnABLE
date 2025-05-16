@@ -58,11 +58,10 @@ npm start
 
 3. Set up the backend:
 ```bash
-cd ../backend
-poetry install
-poetry shell
-make migrate
-make runserver
+cd ../backend               # Navigate into Backend Directory
+poetry install              # Install Backend Dependencies
+$(poetry env activate)      # Activate the Virtual Environment
+make runserver              # Begin the Server
 ```
 
 For detailed setup instructions, please refer to the README files in the respective directories:
@@ -75,7 +74,6 @@ The project follows a standard development workflow:
 
 1. Frontend development server runs on http://localhost:3000
 2. Backend development server runs on http://localhost:8000
-3. API documentation is available at http://localhost:8000/api/docs/
 
 ## Contributing
 

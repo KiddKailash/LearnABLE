@@ -5,7 +5,11 @@
  */
 
 import React from 'react';
-import { Paper, Box, Typography } from '@mui/material';
+
+// MUI Components
+import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 
 /**
  * StatsCard component for displaying dashboard statistics

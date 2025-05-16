@@ -1,5 +1,14 @@
+/**
+ * @file StudentList.jsx
+ * @description A component for managing students within a class in LearnABLE.
+ * This component provides functionality for viewing, adding, editing, and deleting students,
+ * as well as bulk uploading students via CSV. It includes features for handling student
+ * data validation, duplicate checking, and error handling.
+ * 
+ */
+
 import React, { useEffect, useState, useRef, useContext } from "react";
-import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
+import { useParams, Link as RouterLink } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -13,13 +22,13 @@ import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
-import Tooltip from "@mui/material/Tooltip";
 import Paper from "@mui/material/Paper";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import DialogActions from "@mui/material/DialogActions";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "@mui/material/Link";
+import TextField from "@mui/material/TextField";
 
 // MUI Icons
 import Edit from "@mui/icons-material/Edit";
@@ -33,10 +42,16 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import StudentFormDialog from "../../../components/StudentFormDialog";
 
+/**
+ * StudentListPage Component
+ * @description Main component for managing students within a class
+ * @returns {JSX.Element} The student management interface
+ */
 const StudentListPage = () => {
   const { classId } = useParams();
   const { showSnackbar } = useContext(SnackbarContext);
 
+  // State management
   const [className, setClassName] = useState("");
   const [students, setStudents] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
@@ -54,22 +69,32 @@ const StudentListPage = () => {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const fileInputRef = useRef(null);
 
+  /**
+   * Creates authentication headers for API requests
+   * @returns {Object} Headers object with authorization token
+   */
   const authHeader = () => ({
     Authorization: `Bearer ${localStorage.getItem("access_token")}`,
     "Content-Type": "application/json",
   });
 
+  /**
+   * Handles authentication errors by clearing session and redirecting to login
+   */
   const handleAuthError = () => {
     showSnackbar("Session expired. Please log in again.", "warning");
     localStorage.clear();
     window.location.href = "/login";
   };
 
+  /**
+   * Fetches the list of students for the current class
+   * Updates state with student data and class name
+   */
   const fetchStudents = async () => {
     const res = await fetch(
       `http://localhost:8000/api/students/classes/${classId}/`,
       {
-        //confusing url
         headers: authHeader(),
       }
     );
@@ -81,11 +106,16 @@ const StudentListPage = () => {
     setClassName(data.class_name || `#${classId}`);
   };
 
+  // Fetch students when component mounts or classId changes
   useEffect(() => {
     fetchStudents();
     //eslint-disable-next-line
   }, [classId]);
 
+  /**
+   * Deletes a student from the class
+   * Removes the student from the list and shows success/error message
+   */
   const handleDelete = async () => {
     if (!studentToDelete) return;
 
@@ -110,16 +140,28 @@ const StudentListPage = () => {
     setStudentToDelete(null);
   };
 
+  /**
+   * Opens the delete confirmation dialog for a student
+   * @param {Object} student - The student to be deleted
+   */
   const promptDelete = (student) => {
     setStudentToDelete(student);
     setConfirmDeleteDialogOpen(true);
   };
 
+  /**
+   * Initiates editing mode for a student
+   * @param {Object} student - The student to be edited
+   */
   const handleEdit = (student) => {
     setEditingStudent(student.id);
     setForm(student);
   };
 
+  /**
+   * Saves changes to an edited student
+   * Updates the student list and shows success/error message
+   */
   const handleSave = async () => {
     const res = await fetch(
       `http://localhost:8000/api/students/${editingStudent}/patch/`,
@@ -141,6 +183,10 @@ const StudentListPage = () => {
     }
   };
 
+  /**
+   * Handles CSV file upload for bulk student import
+   * @param {Event} e - The file input change event
+   */
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -179,7 +225,12 @@ const StudentListPage = () => {
     }
   };
 
+  /**
+   * Adds a new student to the class
+   * Handles both new student creation and linking existing students
+   */
   const handleAddStudent = async () => {
+    // Check for duplicate student in class
     const alreadyInClass = students.some(
       (s) =>
         s.student_email.toLowerCase() === newStudent.student_email.toLowerCase()
@@ -190,6 +241,7 @@ const StudentListPage = () => {
       return;
     }
 
+    // Check if student exists in system
     const existingStudentRes = await fetch(
       "http://localhost:8000/api/students/by-email/",
       {
@@ -203,6 +255,7 @@ const StudentListPage = () => {
     const existingStudent = await existingStudentRes.json();
 
     if (existingStudent && existingStudent.id) {
+      // Link existing student to class
       const linkRes = await fetch(
         `http://localhost:8000/api/classes/${classId}/add-student/`,
         {
@@ -213,7 +266,6 @@ const StudentListPage = () => {
       );
 
       if (linkRes.ok) {
-        // ✅ Clear form before closing
         setNewStudent({
           first_name: "",
           last_name: "",
@@ -230,6 +282,7 @@ const StudentListPage = () => {
       return;
     }
 
+    // Create new student
     const createRes = await fetch(
       "http://localhost:8000/api/students/create/",
       {
@@ -243,6 +296,7 @@ const StudentListPage = () => {
     const newStudentData = await createRes.json();
 
     if (createRes.ok) {
+      // Link new student to class
       const linkRes = await fetch(
         `http://localhost:8000/api/classes/${classId}/add-student/`,
         {
@@ -253,7 +307,6 @@ const StudentListPage = () => {
       );
 
       if (linkRes.ok) {
-        // ✅ Clear form before closing
         setNewStudent({
           first_name: "",
           last_name: "",
@@ -263,177 +316,192 @@ const StudentListPage = () => {
         });
         setNewStudentDialog(false);
         await fetchStudents();
-        showSnackbar("Student created and added to class", "success");
+        showSnackbar("Student added to class successfully", "success");
       } else {
-        showSnackbar("Student created but failed to link to class", "error");
+        showSnackbar("Failed to link student to class", "error");
       }
     } else {
-      showSnackbar("Error creating student", "error");
+      showSnackbar("Failed to create student", "error");
     }
   };
 
+  /**
+   * Renders the student list table with sorting and filtering capabilities
+   * @returns {JSX.Element} The student list table interface
+   */
+  const renderStudentList = () => {
+    return (
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Name</TableCell>
+            <TableCell>Year Level</TableCell>
+            <TableCell>Email</TableCell>
+            <TableCell>Disability Info</TableCell>
+            <TableCell align="right">Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {students.map((student) => (
+            <TableRow key={student.id}>
+              <TableCell>
+                {editingStudent === student.id ? (
+                  <TextField
+                    value={form.first_name}
+                    onChange={(e) =>
+                      setForm({ ...form, first_name: e.target.value })
+                    }
+                    size="small"
+                  />
+                ) : (
+                  `${student.first_name} ${student.last_name}`
+                )}
+              </TableCell>
+              <TableCell>
+                {editingStudent === student.id ? (
+                  <TextField
+                    value={form.year_level}
+                    onChange={(e) =>
+                      setForm({ ...form, year_level: e.target.value })
+                    }
+                    size="small"
+                  />
+                ) : (
+                  student.year_level
+                )}
+              </TableCell>
+              <TableCell>
+                {editingStudent === student.id ? (
+                  <TextField
+                    value={form.student_email}
+                    onChange={(e) =>
+                      setForm({ ...form, student_email: e.target.value })
+                    }
+                    size="small"
+                  />
+                ) : (
+                  student.student_email
+                )}
+              </TableCell>
+              <TableCell>
+                {editingStudent === student.id ? (
+                  <TextField
+                    value={form.disability_info}
+                    onChange={(e) =>
+                      setForm({ ...form, disability_info: e.target.value })
+                    }
+                    size="small"
+                  />
+                ) : (
+                  student.disability_info
+                )}
+              </TableCell>
+              <TableCell align="right">
+                {editingStudent === student.id ? (
+                  <IconButton onClick={handleSave} color="primary">
+                    <Save />
+                  </IconButton>
+                ) : (
+                  <>
+                    <IconButton onClick={() => handleEdit(student)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton onClick={() => promptDelete(student)}>
+                      <Delete />
+                    </IconButton>
+                  </>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  };
+
+  /**
+   * Renders the main component interface
+   * @returns {JSX.Element} The complete student management interface
+   */
   return (
-    <Container maxWidth="xl" sx={{ pt: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {/* Breadcrumb navigation */}
       <Breadcrumbs
         separator={<NavigateNextIcon fontSize="small" />}
         aria-label="breadcrumb"
         sx={{ mb: 2 }}
       >
-        <Link
-          component={RouterLink}
-          to="/dashboard"
-          underline="none"
-          color="inherit"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          Dashboard
-        </Link>
-        <Link
-          component={RouterLink}
-          to="/classes"
-          underline="none"
-          color="inherit"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
+        <Link component={RouterLink} to="/classes" color="inherit">
           Classes
         </Link>
-        <Typography
-          color="text.primary"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          {className}
-        </Typography>
+        <Typography color="text.primary">{className}</Typography>
       </Breadcrumbs>
 
-      <Typography variant="h4" gutterBottom>
-        Students in {className}
-      </Typography>
-
-      <Grid container spacing={2} mb={2}>
-        <Grid>
+      {/* Header with actions */}
+      <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6}>
+          <Typography variant="h4" component="h1">
+            Students
+          </Typography>
+        </Grid>
+        <Grid item xs={12} sm={6} sx={{ textAlign: { xs: "left", sm: "right" } }}>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => setNewStudentDialog(true)}
+            sx={{ mr: 1 }}
           >
             Add Student
           </Button>
-        </Grid>
-        <Grid>
-          <input
-            type="file"
-            accept=".csv"
-            hidden
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
           <Button
             variant="outlined"
             startIcon={<UploadFile />}
-            onClick={() => fileInputRef.current.click()}
+            onClick={() => fileInputRef.current?.click()}
           >
             Upload CSV
           </Button>
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            ref={fileInputRef}
+          />
         </Grid>
       </Grid>
 
-      <Paper elevation={3}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <strong>Name</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Email</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Year</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Learning Needs</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Actions</strong>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {students.length > 0 ? (
-              students.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>
-                    {s.first_name} {s.last_name}
-                  </TableCell>
-                  <TableCell>{s.student_email}</TableCell>
-                  <TableCell>{s.year_level}</TableCell>
-                  <TableCell>{s.disability_info || "—"}</TableCell>
-                  <TableCell>
-                    <Tooltip title="Edit Student">
-                      <IconButton onClick={() => handleEdit(s)}>
-                        <Edit />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Student">
-                      <IconButton onClick={() => promptDelete(s)}>
-                        <Delete color="error"/>
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    gutterBottom
-                  >
-                    No students in this class yet
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+      {/* Student list */}
+      <Paper sx={{ width: "100%", overflow: "hidden" }}>
+        {renderStudentList()}
       </Paper>
 
-      <StudentFormDialog
-        open={!!editingStudent}
-        onClose={() => setEditingStudent(null)}
-        onSubmit={handleSave}
-        formData={form}
-        setFormData={setForm}
-        title="Edit Student"
-        submitLabel="Save"
-        submitIcon={<Save />}
-      />
-
+      {/* New student dialog */}
       <StudentFormDialog
         open={newStudentDialog}
         onClose={() => setNewStudentDialog(false)}
+        student={newStudent}
+        setStudent={setNewStudent}
         onSubmit={handleAddStudent}
-        formData={newStudent}
-        setFormData={setNewStudent}
-        title="Add New Student"
-        submitLabel="Add"
       />
 
+      {/* Delete confirmation dialog */}
       <Dialog
         open={confirmDeleteDialogOpen}
         onClose={() => setConfirmDeleteDialogOpen(false)}
       >
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete {studentToDelete?.first_name}{" "}
-          {studentToDelete?.last_name}?
+          <Typography>
+            Are you sure you want to remove{" "}
+            {studentToDelete
+              ? `${studentToDelete.first_name} ${studentToDelete.last_name}`
+              : "this student"}{" "}
+            from the class?
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDeleteDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
+          <Button onClick={() => setConfirmDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDelete} color="error">
             Delete
           </Button>
         </DialogActions>

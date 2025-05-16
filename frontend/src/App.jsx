@@ -25,7 +25,7 @@ import PageNotFound from "./pages/public/PageNotFound";
 import Account from "./pages/private/Account/Account.jsx";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
 import Classes from "./pages/private/Classes/Classes";
-import Dashboard from "./pages/private/Dashboard";
+import Dashboard from "./pages/private/Dashboard/Dashboard";
 import StudentListPage from "./pages/private/Classes/StudentList.jsx";
 import ClassContent from "./pages/private/Classes/ClassContent";
 

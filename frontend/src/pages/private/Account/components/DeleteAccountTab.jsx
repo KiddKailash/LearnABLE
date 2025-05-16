@@ -1,3 +1,10 @@
+/**
+ * @file DeleteAccountTab.jsx
+ * @description A component that provides functionality for users to delete their account.
+ * It includes warnings about the permanent nature of account deletion, suggestions for
+ * alternatives, and a secure confirmation process requiring password verification.
+ */
+
 import React from "react";
 
 // Local Components
@@ -20,6 +27,18 @@ import DialogActions from "@mui/material/DialogActions";
 // MUI Icons
 import DeleteIcon from "@mui/icons-material/Delete";
 
+/**
+ * DeleteAccountTab component that manages account deletion process
+ * @param {Object} props - Component props
+ * @param {boolean} props.deleteDialogOpen - State controlling the visibility of the delete confirmation dialog
+ * @param {Function} props.setDeleteDialogOpen - Function to update delete dialog visibility
+ * @param {string} props.deletePassword - User's password for account deletion confirmation
+ * @param {Function} props.setDeletePassword - Function to update delete password
+ * @param {boolean} props.isSaving - Loading state for delete operation
+ * @param {Function} props.handleDeleteAccount - Function to handle account deletion
+ * @param {Function} props.onNavigateToTab - Function to navigate to other tabs
+ * @returns {JSX.Element} The account deletion interface
+ */
 const DeleteAccountTab = ({
   deleteDialogOpen,
   setDeleteDialogOpen,
@@ -31,13 +50,16 @@ const DeleteAccountTab = ({
 }) => {
   return (
     <>
+      {/* Main Content */}
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+        {/* Warning Alert */}
         <Alert severity="warning" sx={{ mb: 3 }}>
           <AlertTitle>Warning: This action is permanent</AlertTitle>
           Deleting your account will permanently remove all your data including
           classes, students, assessments, and personal information.
         </Alert>
 
+        {/* Pre-deletion Suggestions */}
         <Typography variant="body1" sx={{ mb: 3 }}>
           Before you delete your account, you may want to:
         </Typography>
@@ -62,6 +84,7 @@ const DeleteAccountTab = ({
 
         <Divider sx={{ my: 3 }} />
 
+        {/* Delete Account Section */}
         <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold" }}>
           I understand the consequences and want to delete my account
         </Typography>

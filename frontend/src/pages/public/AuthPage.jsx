@@ -1,3 +1,8 @@
+/**
+ * @file AuthPage.jsx
+ * @description Authentication page for LearnABLE, providing login, registration, and two-factor authentication (2FA) flows for users.
+ *
+ */
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -32,7 +37,9 @@ import { SnackbarContext } from "../../contexts/SnackbarContext";
 import UserContext from "../../store/UserObject";
 
 /**
- * Login form validation function
+ * Validates login form values for email and password fields.
+ * @param {Object} values - The form values
+ * @returns {Object} errors - Validation errors
  */
 const validateLoginForm = (values) => {
   const errors = {};
@@ -51,7 +58,9 @@ const validateLoginForm = (values) => {
 };
 
 /**
- * Registration form validation function
+ * Validates registration form values for first name, last name, email, and password.
+ * @param {Object} values - The form values
+ * @returns {Object} errors - Validation errors
  */
 const validateRegisterForm = (values) => {
   const errors = {};
@@ -80,7 +89,9 @@ const validateRegisterForm = (values) => {
 };
 
 /**
- * 2FA form validation function
+ * Validates the 2FA form for a 6-digit code.
+ * @param {Object} values - The form values
+ * @returns {Object} errors - Validation errors
  */
 const validate2FAForm = (values) => {
   const errors = {};
@@ -94,6 +105,14 @@ const validate2FAForm = (values) => {
   return errors;
 };
 
+/**
+ * AuthPage component provides login, registration, and 2FA authentication for users.
+ * Handles form state, validation, and submission for all flows.
+ *
+ * @component
+ * @param {number} initialTab - The initial tab to display (0 = Login, 1 = Register)
+ * @returns {JSX.Element} The rendered authentication page
+ */
 const AuthPage = ({ initialTab = 0 }) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const { showSnackbar } = useContext(SnackbarContext);
@@ -143,7 +162,8 @@ const AuthPage = ({ initialTab = 0 }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [twoFactorForm.values.code]);
 
-  // Handle individual digit input
+  // Handle individual digit input for 2FA code
+  // Only allow numeric input and auto-advance to next input
   const handleDigitChange = (e, index) => {
     const value = e.target.value;
     if (value === "" || /^\d$/.test(value)) {
@@ -163,14 +183,14 @@ const AuthPage = ({ initialTab = 0 }) => {
     }
   };
 
-  // Handle backspace key
+  // Handle backspace to move focus to previous input if empty
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && index > 0 && !e.target.value) {
       inputRefs[index - 1].current.focus();
     }
   };
 
-  // Handle paste event
+  // Handle paste event for 2FA code (fills all inputs if 6 digits)
   const handlePaste = (e) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text");

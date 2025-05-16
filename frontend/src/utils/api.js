@@ -1,3 +1,9 @@
+/**
+ * @file api.js
+ * @description API client configuration and methods for making HTTP requests to the backend.
+ * 
+ */
+
 import axios from 'axios';
 import { getErrorInfo, logError } from './errorHandling';
 
@@ -12,6 +18,7 @@ const api = axios.create({
 // Add request interceptor for authentication
 api.interceptors.request.use(
   (config) => {
+    // Add authentication token to request headers if available
     const token = localStorage.getItem('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -23,31 +30,31 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor for error handling
+// Add response interceptor for error handling and token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle token refresh
+    // Handle token refresh on 401 errors
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
+        // Attempt to refresh the access token
         const refreshToken = localStorage.getItem('refresh_token');
         const response = await axios.post(
           `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/token/refresh/`,
           { refresh: refreshToken }
         );
 
+        // Store new access token and retry original request
         const { access } = response.data;
         localStorage.setItem('access_token', access);
-
-        // Retry the original request with new token
         originalRequest.headers.Authorization = `Bearer ${access}`;
         return api(originalRequest);
       } catch (refreshError) {
-        // If refresh fails, clear tokens and redirect to login
+        // Clear tokens and redirect to login on refresh failure
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         window.location.href = '/login';
@@ -55,26 +62,31 @@ api.interceptors.response.use(
       }
     }
 
-    // Log the error
+    // Log error and enhance with user-friendly information
     logError(error, {
       url: originalRequest.url,
       method: originalRequest.method,
       data: originalRequest.data,
     });
 
-    // Get user-friendly error info
     const errorInfo = getErrorInfo(error);
-
-    // Enhance the error object with user-friendly info
     error.userFriendlyInfo = errorInfo;
 
     return Promise.reject(error);
   }
 );
 
-// API methods
+/**
+ * API client with methods for making HTTP requests
+ * @namespace apiClient
+ */
 export const apiClient = {
-  // GET request
+  /**
+   * Makes a GET request to the specified URL
+   * @param {string} url - The endpoint URL
+   * @param {Object} config - Additional axios configuration
+   * @returns {Promise<any>} The response data
+   */
   get: async (url, config = {}) => {
     try {
       const response = await api.get(url, config);
@@ -84,7 +96,13 @@ export const apiClient = {
     }
   },
 
-  // POST request
+  /**
+   * Makes a POST request to the specified URL
+   * @param {string} url - The endpoint URL
+   * @param {Object} data - The request body
+   * @param {Object} config - Additional axios configuration
+   * @returns {Promise<any>} The response data
+   */
   post: async (url, data = {}, config = {}) => {
     try {
       const response = await api.post(url, data, config);
@@ -94,7 +112,13 @@ export const apiClient = {
     }
   },
 
-  // PUT request
+  /**
+   * Makes a PUT request to the specified URL
+   * @param {string} url - The endpoint URL
+   * @param {Object} data - The request body
+   * @param {Object} config - Additional axios configuration
+   * @returns {Promise<any>} The response data
+   */
   put: async (url, data = {}, config = {}) => {
     try {
       const response = await api.put(url, data, config);
@@ -104,7 +128,13 @@ export const apiClient = {
     }
   },
 
-  // PATCH request
+  /**
+   * Makes a PATCH request to the specified URL
+   * @param {string} url - The endpoint URL
+   * @param {Object} data - The request body
+   * @param {Object} config - Additional axios configuration
+   * @returns {Promise<any>} The response data
+   */
   patch: async (url, data = {}, config = {}) => {
     try {
       const response = await api.patch(url, data, config);
@@ -114,7 +144,12 @@ export const apiClient = {
     }
   },
 
-  // DELETE request
+  /**
+   * Makes a DELETE request to the specified URL
+   * @param {string} url - The endpoint URL
+   * @param {Object} config - Additional axios configuration
+   * @returns {Promise<any>} The response data
+   */
   delete: async (url, config = {}) => {
     try {
       const response = await api.delete(url, config);

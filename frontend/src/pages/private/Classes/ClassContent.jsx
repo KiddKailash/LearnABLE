@@ -1,8 +1,18 @@
+/**
+ * @file ClassContent.jsx
+ * @description A component for managing and adapting learning materials within a class in LearnABLE.
+ * This component provides functionality for uploading, reviewing, and adapting learning materials
+ * to meet the needs of students with disabilities. It includes features for file preview,
+ * learning objective alignment checks, and material adaptation.
+ * 
+ */
+
 import React, { useState, useEffect, useRef } from "react";
 import { useContext } from "react";
 import UserContext from "../../../store/UserObject";
 import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -17,17 +27,17 @@ import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Alert from "@mui/material/Alert";
-import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
-import Fade from "@mui/material/Fade";
 import Snackbar from "@mui/material/Snackbar";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import Grid from "@mui/material/Grid";
+import Container from "@mui/material/Container";
 
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
@@ -40,6 +50,10 @@ import { styled } from "@mui/material/styles";
 import api from "../../../services/api";
 
 // Styled components
+/**
+ * Styled component for the file upload zone
+ * Provides visual feedback for drag and drop interactions
+ */
 const UploadZone = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   textAlign: "center",
@@ -53,20 +67,29 @@ const UploadZone = styled(Paper)(({ theme }) => ({
   },
 }));
 
+/**
+ * Styled component for content cards
+ * Provides consistent styling for material cards
+ */
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
   borderRadius: theme.shape.borderRadius * 2,
 }));
 
+/**
+ * AIAssistantUpload Component
+ * @description Main component for managing learning materials with AI assistance
+ * @returns {JSX.Element} The learning material management interface
+ */
 const AIAssistantUpload = () => {
+  const theme = useTheme();
   const location = useLocation();
-  const BACKEND = process.env.REACT_APP_SERVER_URL;
   const { user } = useContext(UserContext);
   const userId = user?.id || user?.email || "guest";
   const tutorialKey = `aiUploadTutorialDismissed_${userId}`;
   const [objectiveMismatchDialogOpen, setObjectiveMismatchDialogOpen] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
@@ -78,17 +101,21 @@ const AIAssistantUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isAdapting, setIsAdapting] = useState(false);
   const [materialId, setMaterialId] = useState(null);
-  const [adaptedStudents, setAdaptedStudents] = useState([]);
+  const setAdaptedStudents = useState([]);
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const setPreviewUrl = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [showTutorial, setShowTutorial] = useState(false);
 
   const fileInputRef = useRef(null);
   const viewerRef = useRef(null);
 
+  /**
+   * Initializes the document viewer when a file is selected
+   * Supports PDF and Office documents (DOCX, PPTX)
+   */
   useEffect(() => {
     if (file && typeof window !== "undefined" && viewerRef.current) {
       const fileExtension = file.name.split('.').pop().toLowerCase();
@@ -119,14 +146,24 @@ const AIAssistantUpload = () => {
 
   const steps = ["Upload Material", "Review & Adapt"];
 
+  /**
+   * Advances to the next step in the material upload process
+   */
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
   };
 
+  /**
+   * Returns to the classes page
+   */
   const handleBack = () => {
     navigate("/classes");
   };  
 
+  /**
+   * Fetches the list of available classes
+   * Updates state with class data or handles errors
+   */
   useEffect(() => {
     const fetchClasses = async () => {
       try {
@@ -148,6 +185,10 @@ const AIAssistantUpload = () => {
     fetchClasses();
   }, []);
 
+  /**
+   * Checks if the tutorial has been dismissed
+   * Shows tutorial for new users
+   */
   useEffect(() => {
     const dismissed = localStorage.getItem(tutorialKey);
     if (!dismissed) {
@@ -155,6 +196,10 @@ const AIAssistantUpload = () => {
     }
   }, [tutorialKey]);
 
+  /**
+   * Handles preselected class from navigation
+   * Skips to upload step if class is preselected
+   */
   useEffect(() => {
     const preselected = location?.state?.preselectedClassId;
     if (preselected) {
@@ -164,6 +209,9 @@ const AIAssistantUpload = () => {
   }, [location]);
 
 
+  /**
+   * Handles drag and drop file upload
+   */
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -181,13 +229,23 @@ const AIAssistantUpload = () => {
     if (droppedFile) setFile(droppedFile);
   };
 
+  /**
+   * Handles file selection via click
+   */
   const handleFileClick = () => fileInputRef.current.click();
 
+  /**
+   * Handles file selection via input change
+   * @param {Event} e - The file input change event
+   */
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) setFile(selected);
   };
 
+  /**
+   * Clears the selected file and resets the file input
+   */
   const clearFile = () => {
     setFile(null);
     if (fileInputRef.current) {
@@ -195,6 +253,10 @@ const AIAssistantUpload = () => {
     }
   };
 
+  /**
+   * Uploads the learning material
+   * Validates input and handles alignment checks
+   */
   const handleUploadMaterial = async () => {
     if (!title || !file || !learningObjective || !selectedClass) {
       setUploadError("Please complete all fields.");
@@ -236,6 +298,10 @@ const AIAssistantUpload = () => {
   };
   
 
+  /**
+   * Adapts the learning material for accessibility
+   * Handles the adaptation process and updates state
+   */
   const handleAdaptMaterial = async () => {
     if (!materialId) {
       setUploadError("Please upload a material first.");
@@ -318,83 +384,213 @@ const AIAssistantUpload = () => {
     }
   };
 
-  const handleChangeClass = () => {
-    setSelectedClass("");
-    setAdaptedStudents([]);
-    setMaterialId(null);
-    setTitle("");
-    setFile(null);
-    setLearningObjective("");
+  /**
+   * Changes the selected class
+   * @param {Event} e - The select change event
+   */
+  const handleChangeClass = (e) => {
+    setSelectedClass(e.target.value);
   };
 
+  /**
+   * Handles snackbar close event
+   * @param {Event} event - The event object
+   * @param {string} reason - The reason for closing
+   */
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
     setSnackbarOpen(false);
-    setUploadError("");
   };
 
-  useEffect(() => {
-    if (uploadError) {
-      setSnackbarOpen(true);
-    }
-  }, [uploadError]);
-
+  /**
+   * Closes the tutorial and marks it as dismissed
+   */
   const handleCloseTutorial = () => {
     setShowTutorial(false);
     localStorage.setItem(tutorialKey, "true");
   };
 
-  return (
-    <>
-      {/* Standalone Tutorial Notification Box */}
-      <Dialog open={showTutorial} onClose={handleCloseTutorial} PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}>
-        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
-          Welcome to Learning Material Upload
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" color="text.secondary">
-            Here you can upload your learning materials and let the AI help adapt them for your students. Select a class, upload your file, and review the AI-generated adaptations tailored for each student's needs.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button variant="contained" onClick={handleCloseTutorial} autoFocus>
-            Got it
-          </Button>
-        </DialogActions>
-      </Dialog>
+  /**
+   * Renders the upload step content
+   * @returns {JSX.Element} The upload interface
+   */
+  const renderUploadStep = () => (
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        Upload Learning Material
+      </Typography>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Material Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <FormControl fullWidth required>
+            <InputLabel>Select Class</InputLabel>
+            <Select
+              value={selectedClass}
+              onChange={handleChangeClass}
+              label="Select Class"
+            >
+              {classList.map((cls) => (
+                <MenuItem key={cls.id} value={cls.id}>
+                  {cls.class_name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Learning Objective"
+            value={learningObjective}
+            onChange={(e) => setLearningObjective(e.target.value)}
+            multiline
+            rows={3}
+            required
+            helperText="Describe what students should learn from this material"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <input
+            type="file"
+            accept=".pdf,.docx,.pptx"
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            ref={fileInputRef}
+          />
+          <UploadZone
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={handleFileClick}
+            sx={{
+              border: isDragging
+                ? `2px dashed ${theme.palette.primary.dark}`
+                : undefined,
+            }}
+          >
+            {file ? (
+              <Box>
+                <CheckCircleIcon color="success" sx={{ fontSize: 48, mb: 1 }} />
+                <Typography variant="h6" gutterBottom>
+                  {file.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {(file.size / 1024).toFixed(2)} KB
+                </Typography>
+                <Button
+                  startIcon={<DeleteIcon />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    clearFile();
+                  }}
+                  sx={{ mt: 2 }}
+                >
+                  Remove File
+                </Button>
+              </Box>
+            ) : (
+              <Box>
+                <UploadFileIcon sx={{ fontSize: 48, color: "primary.main", mb: 1 }} />
+                <Typography variant="h6" gutterBottom>
+                  Upload Learning Material
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Drag and drop a file here or click to browse
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: "block" }}>
+                  Supported formats: PDF, DOCX, PPTX
+                </Typography>
+              </Box>
+            )}
+          </UploadZone>
+        </Grid>
+      </Grid>
+      {uploadError && (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {uploadError}
+        </Alert>
+      )}
+      <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+        <Button onClick={handleBack} sx={{ mr: 1 }}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleUploadMaterial}
+          disabled={isUploading || !file || !title || !learningObjective || !selectedClass}
+        >
+          {isUploading ? (
+            <>
+              <CircularProgress size={24} sx={{ mr: 1 }} />
+              Uploading...
+            </>
+          ) : (
+            "Upload Material"
+          )}
+        </Button>
+      </Box>
+    </Box>
+  );
 
-      <Dialog
-        open={objectiveMismatchDialogOpen}
-        onClose={() => setObjectiveMismatchDialogOpen(false)}
-        PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
-      >
-        <DialogTitle>
-          Learning Objectives and Content Mismatch
-        </DialogTitle>
-        <DialogContent>
-          <Typography>
-          The uploaded material does not adequately align with the provided learning objectives. Please adjust the objectives or select content that better matches them.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
+  /**
+   * Renders the review and adapt step content
+   * @returns {JSX.Element} The review and adapt interface
+   */
+  const renderReviewStep = () => (
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        Review & Adapt Material
+      </Typography>
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <StyledCard>
+            <CardContent>
+              <Typography variant="subtitle1" gutterBottom>
+                Material Preview
+              </Typography>
+              <Box
+                ref={viewerRef}
+                sx={{
+                  height: "500px",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  borderRadius: 1,
+                }}
+              />
+            </CardContent>
+          </StyledCard>
+        </Grid>
+        <Grid item xs={12}>
           <Button
             variant="contained"
-            onClick={() => setObjectiveMismatchDialogOpen(false)}
-            autoFocus
+            onClick={handleAdaptMaterial}
+            disabled={isAdapting}
+            startIcon={isAdapting ? <CircularProgress size={20} /> : <DownloadIcon />}
           >
-            OK
+            {isAdapting ? "Adapting..." : "Adapt Material"}
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Grid>
+      </Grid>
+    </Box>
+  );
 
-
-      <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
-        Learning Material Upload
-      </Typography>
-
-      <Stepper activeStep={activeStep} sx={{ mb: 2 }}>
+  /**
+   * Renders the main component interface
+   * @returns {JSX.Element} The complete learning material management interface
+   */
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
         {steps.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
@@ -402,339 +598,77 @@ const AIAssistantUpload = () => {
         ))}
       </Stepper>
 
-      <Fade in={true}>
-        <div>
-          {activeStep === 0 && (
-            <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Select Class
-                </Typography>
-                <FormControl fullWidth>
-                  <InputLabel>Class</InputLabel>
-                  <Select
-                    value={selectedClass}
-                    onChange={(e) => {
-                      setSelectedClass(e.target.value);
-                      handleNext();
-                    }}
-                    label="Class"
-                  >
-                    {classList && classList.length > 0 ? (
-                      classList.map((cls) => (
-                        <MenuItem key={cls.id} value={cls.id}>
-                          {cls.class_name} – Grade {cls.year_level}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>No classes available</MenuItem>
-                    )}
-                  </Select>
-                </FormControl>
-              </CardContent>
-            </StyledCard>
-          )}
+      {activeStep === 0 ? renderUploadStep() : renderReviewStep()}
 
-          {activeStep === 1 && (
-            <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Material Details
-                </Typography>
+      {/* Tutorial Dialog */}
+      <Dialog
+        open={showTutorial}
+        onClose={handleCloseTutorial}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Welcome to LearnABLE Material Upload</DialogTitle>
+        <DialogContent>
+          <Typography paragraph>
+            This tool helps you upload and adapt learning materials for students with disabilities.
+            Follow these steps:
+          </Typography>
+          <ol>
+            <li>Enter a title and select your class</li>
+            <li>Describe the learning objective</li>
+            <li>Upload your material (PDF, DOCX, or PPTX)</li>
+            <li>Review and adapt the material as needed</li>
+          </ol>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseTutorial} variant="contained">
+            Got it!
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-                <TextField
-                  label="Title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  fullWidth
-                  variant="outlined"
-                />
+      {/* Objective Mismatch Dialog */}
+      <Dialog
+        open={objectiveMismatchDialogOpen}
+        onClose={() => setObjectiveMismatchDialogOpen(false)}
+      >
+        <DialogTitle>Learning Objective Mismatch</DialogTitle>
+        <DialogContent>
+          <Typography paragraph>
+            The uploaded material may not align well with the specified learning objective.
+            Would you like to:
+          </Typography>
+          <ul>
+            <li>Modify the learning objective</li>
+            <li>Upload a different material</li>
+            <li>Proceed with adaptation anyway</li>
+          </ul>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setObjectiveMismatchDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              setObjectiveMismatchDialogOpen(false);
+              handleNext();
+            }}
+            variant="contained"
+          >
+            Proceed
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-                <TextField
-                  label="Learning Objective"
-                  value={learningObjective}
-                  onChange={(e) => setLearningObjective(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={3}
-                  variant="outlined"
-                />
-
-                <UploadZone
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={handleFileClick}
-                  sx={{
-                    backgroundColor: isDragging
-                      ? "action.hover"
-                      : "background.default",
-                  }}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                    accept=".pdf,.doc,.docx,.txt,.pptx"
-                  />
-
-                  {file ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 2,
-                      }}
-                    >
-                      <CheckCircleIcon color="success" />
-                      <Typography>{file.name}</Typography>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearFile();
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  ) : (
-                    <Box>
-                      <UploadFileIcon
-                        sx={{ fontSize: 40, color: "primary.main", mb: 1 }}
-                      />
-                      <Typography>
-                        Drag and drop your file here or click to browse
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        Supported formats: PDF, DOC, DOCX, TXT, PPTX
-                      </Typography>
-                    </Box>
-                  )}
-                </UploadZone>
-
-                {file && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Live Preview:
-                    </Typography>
-                    <Box
-                      ref={viewerRef}
-                      sx={{
-                        height: 400,
-                        border: "1px solid #ccc",
-                        borderRadius: 1,
-                        overflow: "hidden",
-                      }}
-                    />
-                  </Box>
-                )}
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mt: 2,
-                  }}
-                >
-                  <Button onClick={handleBack}>Back</Button>
-                  <Button
-                    variant="contained"
-                    onClick={async () => {
-                      await handleUploadMaterial();
-                      if (materialId) handleNext();
-                    }}
-                    disabled={
-                      isUploading || !title || !file || !learningObjective
-                    }
-                  >
-                    {isUploading ? (
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <CircularProgress size={20} color="inherit" />
-                        Uploading...
-                      </Box>
-                    ) : (
-                      "Upload & Continue"
-                    )}
-                  </Button>
-                </Box>
-              </CardContent>
-            </StyledCard>
-          )}
-
-          {activeStep === 2 && (
-            <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  Adapt Material
-                </Typography>
-
-                {!adaptedStudents.length ? (
-                  <Box sx={{ textAlign: "center", py: 3 }}>
-                    <Button
-                      variant="contained"
-                      onClick={handleAdaptMaterial}
-                      disabled={isAdapting}
-                      size="large"
-                    >
-                      {isAdapting ? (
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <CircularProgress size={20} color="inherit" />
-                          Adapting Material...
-                        </Box>
-                      ) : (
-                        "Start Adaptation"
-                      )}
-                    </Button>
-                  </Box>
-                ) : (
-                  <Box>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
-                      Adapted Materials Ready for Download
-                    </Typography>
-
-                    <Paper sx={{ overflowX: "auto", mt: 2, p: 2 }}>
-                      <Box
-                        component="table"
-                        sx={{
-                          width: "100%",
-                          borderCollapse: "collapse",
-                          tableLayout: "fixed",
-                        }}
-                      >
-                        <Box component="thead">
-                          <Box component="tr">
-                            <Box component="th" sx={tableHeaderStyle}>Student Name</Box>
-                            <Box component="th" sx={tableHeaderStyle}>Adapted File</Box>
-                            <Box component="th" sx={tableHeaderStyle}>Audio</Box>
-                          </Box>
-                        </Box>
-                        <Box component="tbody">
-                          {adaptedStudents.map((st) => (
-                            <Box component="tr" key={st.id}>
-                              <Box component="td" sx={tableCellStyle}>
-                                {st.first_name} {st.last_name}
-                              </Box>
-                              <Box component="td" sx={tableCellStyle}>
-                                {st.file_url
-                                  ? (
-                                    <Button
-                                      variant="contained"
-                                      size="small"
-                                      href={`${BACKEND}${st.file_url}`}
-                                      download
-                                      startIcon={<DownloadIcon />}
-                                    >
-                                      Download
-                                    </Button>
-                                  )
-                                  : "—"}
-                              </Box>
-                              <Box component="td" sx={{ ...tableCellStyle, textAlign: "center" }}>
-                                {st.audio_url
-                                  ? (
-                                    <>
-                                      <audio
-                                        controls
-                                        style={{ width: "100%", outline: "none" }}
-                                      >
-                                        <source
-                                          src={`${BACKEND}${st.audio_url}`}
-                                          type="audio/mpeg"
-                                        />
-                                        Your browser doesn't support audio.
-                                      </audio>
-                                      <Button
-                                        variant="contained"
-                                        size="small"
-                                        sx={{ mt: 1 }}
-                                        href={`${BACKEND}${st.audio_url}`}
-                                        download
-                                        startIcon={<DownloadIcon />}
-                                      >
-                                        Download
-                                      </Button>
-                                    </>
-                                  )
-                                  : "—"}
-                              </Box>
-                            </Box>
-                          ))}
-                        </Box>
-                      </Box>
-                    </Paper>
-
-                    <Box
-                      sx={{
-                        mt: 3,
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Button onClick={handleBack}>Back</Button>
-                      <Button
-                        variant="contained"
-                        onClick={() => {
-                          setActiveStep(0);
-                          setTitle("");
-                          setFile(null);
-                          setLearningObjective("");
-                          setSelectedClass("");
-                          setMaterialId(null);
-                          setAdaptedStudents([]);
-                        }}
-                      >
-                        Upload New Material
-                      </Button>
-                    </Box>
-                  </Box>
-                )}
-              </CardContent>
-            </StyledCard>
-          )}
-        </div>
-      </Fade>
-
+      {/* Success Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert onClose={handleSnackbarClose} severity="error">
-          {uploadError}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={6000}
-        onClose={() => setSuccessMessage("")}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert onClose={() => setSuccessMessage("")} severity="success">
-          {successMessage}
-        </Alert>
-      </Snackbar>
-    </>
+        message={successMessage}
+      />
+    </Container>
   );
-};
-
-const tableHeaderStyle = {
-  padding: "16px",
-  textAlign: "left",
-  backgroundColor: "#f5f5f5",
-  borderBottom: "1px solid #e0e0e0",
-};
-
-const tableCellStyle = {
-  padding: "16px",
-  borderBottom: "1px solid #e0e0e0",
 };
 
 export default AIAssistantUpload;

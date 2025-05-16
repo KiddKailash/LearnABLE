@@ -6,6 +6,10 @@
 
 import React from 'react';
 
+// Components
+import DashboardCard from './DashboardCard';
+import EmptyState from '../../../../components/EmptyState';
+
 // MUI Components
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -17,10 +21,6 @@ import Button from '@mui/material/Button';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import AddIcon from '@mui/icons-material/Add';
 import ClassIcon from '@mui/icons-material/Class';
-
-// Components
-import DashboardCard from '../DashboardCard';
-import EmptyState from '../EmptyState';
 
 /**
  * ClassesList component for displaying the list of classes

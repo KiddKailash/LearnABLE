@@ -1,3 +1,10 @@
+/**
+ * @file NCCDReportSelection.jsx
+ * @description Component for selecting a student and initiating the NCCD report creation process.
+ * Provides a user interface for selecting students and managing the report creation workflow.
+ * 
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +27,12 @@ import api from '../../../services/api';
 // Components
 import NCCDReportForm from './NCCDReportForm';
 
+/**
+ * Component for selecting a student and initiating NCCD report creation
+ * 
+ * @component
+ * @returns {JSX.Element} The student selection interface
+ */
 const NCCDReportSelection = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -28,6 +41,7 @@ const NCCDReportSelection = () => {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
 
+  // Fetch students on component mount
   useEffect(() => {
     const fetchStudents = async () => {
       try {
@@ -35,7 +49,7 @@ const NCCDReportSelection = () => {
         const data = await api.students.getAll();
         setStudents(data);
         
-        // If there's only one student, auto-select them
+        // Auto-select if only one student exists
         if (data.length === 1) {
           setSelectedStudent(data[0].id);
         }
@@ -50,6 +64,10 @@ const NCCDReportSelection = () => {
     fetchStudents();
   }, []);
 
+  /**
+   * Handles form submission and initiates report creation
+   * @param {Event} e - The form submission event
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!selectedStudent) {
@@ -60,14 +78,22 @@ const NCCDReportSelection = () => {
     setShowForm(true);
   };
 
+  /**
+   * Handles successful report creation
+   * @param {Object} report - The created report object
+   */
   const handleFormSuccess = (report) => {
     navigate(`/reporting/${report.id}`);
   };
 
+  /**
+   * Handles cancellation of report creation
+   */
   const handleCancel = () => {
     navigate('/reporting');
   };
 
+  // Show loading state
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
@@ -76,9 +102,10 @@ const NCCDReportSelection = () => {
     );
   }
 
+  // Show report form when student is selected
   if (showForm) {
     return <NCCDReportForm
-      open={showForm} // pass showForm to open the form 
+      open={showForm}
       studentId={selectedStudent} 
       onSuccess={handleFormSuccess}
       onCancel={handleCancel}
