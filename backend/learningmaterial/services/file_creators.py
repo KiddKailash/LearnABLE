@@ -12,7 +12,7 @@ from reportlab.lib.colors import Color
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from gtts import gTTS
 import os
-import re
+import re, textwrap
 import requests
 from docx.oxml.ns import qn
 from docx import Document
@@ -22,70 +22,167 @@ from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.util import Emu, Inches, Pt
+from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, ListFlowable, ListItem, HRFlowable
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib import colors
+
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
-def create_docx_from_text(text, path):
-    # Join list into a string if needed
-    if isinstance(text, list):
-        text = "\n".join(text)
+def create_docx_from_text(text, path, title=None):
+    """
+    Create a .docx file from plain text, inferring a title if not provided, stripping unwanted tips/reminders,
+    and styling headings ending with a colon.
+    """
+    # Strip trailing tips/reminders
+    body = re.split(r"Tips for Using Tools:", text)[0]
+    body = re.split(r"Remember,", body)[0]
 
+    # Normalize to lines & remove [Heading X] prefixes
+    lines = [re.sub(r"^\[Heading \d+\]\s*", "", l) for l in body.splitlines()]
+
+    # Infer title from first non-empty line if not given
+    if title is None:
+        for i, line in enumerate(lines):
+            if line.strip():
+                title = line.strip()
+                lines.pop(i)
+                break
+
+    # Build document
     doc = Document()
     style = doc.styles['Normal']
-    font = style.font
-    font.name = 'Calibri'
-    font.size = Pt(11)
+    style.font.name = 'Calibri'
+    style.font.size = Pt(11)
 
-    paragraphs = text.split('\n')
+    # Add title
+    if title:
+        p = doc.add_paragraph(title, style='Title')
+        p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+        doc.add_paragraph()
 
-    for i, para in enumerate(paragraphs):
-        para = para.strip()
-        if not para:
+    # Process lines
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
             doc.add_paragraph()
             continue
 
-        # Main Title (first non-empty line)
-        if i == 0:
-            doc.add_paragraph(para, style='Title')
+        # Generic heading: ends with ':'
+        if stripped.endswith(':') and not stripped[0] in ('-', '*', '•'):
+            doc.add_paragraph(stripped.rstrip(':'), style='Heading 2')
             continue
 
-        # Bolded section title followed by colon (e.g. **Learning Objective:**)
-        match = re.match(r"\*\*(.+?)\*\*:(.*)", para)
-        if match:
-            title, content = match.groups()
+        # Headings: **Heading** or **Heading**:
+        m = re.match(r"^\*\*(.+?)\*\*(?::)?$", stripped)
+        if m:
+            doc.add_paragraph(m.group(1).strip(), style='Heading 2')
+            continue
+
+        # Bold label: **Label:** content
+        m = re.match(r"^\*\*(.+?)\*\*:\s*(.*)$", stripped)
+        if m:
             p = doc.add_paragraph()
-            run = p.add_run(f"{title.strip()}: ")
+            run = p.add_run(f"{m.group(1).strip()}: ")
             run.bold = True
             run.font.size = Pt(12)
-            p.add_run(content.strip())
+            p.add_run(m.group(2).strip())
             continue
 
-        # Full-line subheading (e.g. **Why is Photosynthesis Important?**)
-        if re.match(r"\*\*(.+?)\*\*", para) and para.endswith("**"):
-            heading_text = re.findall(r"\*\*(.+?)\*\*", para)[0]
-            doc.add_paragraph(heading_text, style='Heading 2')
+        # Bullets: -, *, or •
+        m = re.match(r"^[\-\*•]\s+(.*)$", stripped)
+        if m:
+            doc.add_paragraph(m.group(1).strip(), style='List Bullet')
             continue
 
-        # Bullet list (• ...)
-        if para.startswith("•"):
-            line = para.lstrip("• ").strip()
-            match = re.match(r"\*\*(.+?)\*\*:(.*)", line)
-            if match:
-                label, rest = match.groups()
-                p = doc.add_paragraph(style='List Bullet')
-                run = p.add_run(f"{label.strip()}: ")
-                run.bold = True
-                p.add_run(rest.strip())
-            else:
-                doc.add_paragraph(line, style='List Bullet')
-            continue
-
-        # Plain paragraph or equation
-        doc.add_paragraph(para)
+        # Regular paragraph
+        doc.add_paragraph(stripped)
 
     doc.save(path)
 
+
+def create_pdf_from_text(text, path, title=None):
+    """
+    Generate a cleanly styled PDF with header line, title, sections, bullets & wrapped text.
+    """
+    # Strip off any trailing tips/reminders
+    body = re.split(r"Tips for Using Tools:", text)[0]
+    body = re.split(r"Remember,", body)[0]
+    lines = [l for l in body.splitlines() if l.strip()]
+
+    # Infer title if not provided
+    if title is None and lines:
+        title = lines.pop(0).strip()
+
+    # Build a simple doc template with a single frame
+    doc = BaseDocTemplate(path, pagesize=A4,
+                          leftMargin=inch*0.75, rightMargin=inch*0.75,
+                          topMargin=inch*0.75, bottomMargin=inch*0.75)
+    frame = Frame(doc.leftMargin, doc.bottomMargin,
+                  doc.width, doc.height, id='normal')
+    doc.addPageTemplates([PageTemplate(id='OneCol', frames=frame)])
+
+    # Styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle('Title', parent=styles['Title'],
+                                 fontName='Helvetica-Bold', fontSize=20,
+                                 textColor=colors.HexColor('#2E74B5'),
+                                 spaceAfter=12, alignment=1)
+    section_style = ParagraphStyle('Section', parent=styles['Heading2'],
+                                   fontName='Helvetica-Bold', fontSize=14,
+                                   textColor=colors.HexColor('#2E74B5'),
+                                   spaceBefore=12, spaceAfter=6)
+    body_style = ParagraphStyle('Body', parent=styles['BodyText'],
+                                fontName='Helvetica', fontSize=11,
+                                leading=14)
+
+    elements = []
+    # Draw a top rule line
+    elements.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#2E74B5'), spaceBefore=0, spaceAfter=12))
+    # Title
+    if title:
+        elements.append(Paragraph(title, title_style))
+
+    # Process remaining lines
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        # Section headings marked **Heading**
+        m = re.match(r"^\*\*(.+?)\*\*(?::)?$", line)
+        if m:
+            elements.append(Paragraph(m.group(1).strip(), section_style))
+            i += 1
+            continue
+
+        # Bold label paragraphs **Label:** content
+        m = re.match(r"^\*\*(.+?)\*\*:\s*(.*)$", line)
+        if m:
+            label, content = m.groups()
+            wrapped = textwrap.wrap(f"<b>{label}:</b> {content}", width=100)
+            for w in wrapped:
+                elements.append(Paragraph(w, body_style))
+            i += 1
+            continue
+
+        # Bullet lists if line starts with -, *, or •
+        if line and line[0] in ('-', '*', '•'):
+            items = []
+            while i < len(lines) and lines[i].strip()[0] in ('-', '*', '•'):
+                item_text = lines[i].strip()[1:].strip()
+                items.append(ListItem(Paragraph(item_text, body_style)))
+                i += 1
+            elements.append(ListFlowable(items, bulletType='bullet', leftIndent=12, spaceBefore=4, spaceAfter=4))
+            continue
+
+        # Regular paragraph
+        wrapped = textwrap.wrap(line, width=100)
+        for w in wrapped:
+            elements.append(Paragraph(w, body_style))
+        i += 1
+
+    doc.build(elements)
+    
 
 def create_pptx_from_text(slide_pairs, path):
     """
@@ -158,110 +255,6 @@ def create_pptx_from_text(slide_pairs, path):
     # Save PPTX
     os.makedirs(os.path.dirname(path), exist_ok=True)
     prs.save(path)
-
-
-
-def create_pdf_from_text(text, path):
-    c = canvas.Canvas(path, pagesize=A4)
-    width, height = A4
-    margin = 50
-    max_width = width - 2 * margin
-    y = height - margin
-    line_height = 16
-
-    font_name = "Helvetica"
-    font_size = 12
-    heading_font_size = 16
-    subheading_font_size = 14
-    label_font_size = 12
-    heading_color = Color(46/255, 116/255, 181/255)  # Blue
-    label_color = Color(0, 0, 0)  # Black
-
-    def draw_line(line, font=font_name, size=font_size, color=(0, 0, 0)):
-        nonlocal y
-        c.setFont(font, size)
-        c.setFillColorRGB(*color)
-        words = line.split()
-        current_line = ""
-
-        for word in words:
-            test_line = current_line + (" " if current_line else "") + word
-            if stringWidth(test_line, font, size) <= max_width:
-                current_line = test_line
-            else:
-                if y < margin:
-                    c.showPage()
-                    y = height - margin
-                    c.setFont(font, size)
-                c.drawString(margin, y, current_line)
-                y -= line_height
-                current_line = word
-
-        if current_line:
-            if y < margin:
-                c.showPage()
-                y = height - margin
-                c.setFont(font, size)
-            c.drawString(margin, y, current_line)
-            y -= line_height
-
-    paragraphs = text.split("\n")
-
-    for i, para in enumerate(paragraphs):
-        para = para.strip()
-        if not para:
-            y -= line_height
-            continue
-
-        # Main title (first non-empty paragraph)
-        if i == 0:
-            c.setFont("Helvetica-Bold", heading_font_size + 2)
-            c.setFillColor(heading_color)
-            c.drawString(margin, y, para)
-            y -= line_height * 2
-            continue
-
-        # Subheading (e.g., **Why Photosynthesis Matters**)
-        if re.match(r"\*\*(.+?)\*\*$", para):
-            heading = re.findall(r"\*\*(.+?)\*\*", para)[0]
-            c.setFont("Helvetica-Bold", subheading_font_size)
-            c.setFillColor(heading_color)
-            c.drawString(margin, y, heading)
-            y -= line_height * 1.5
-            continue
-
-        # Bold label + content (e.g., **Definition:** The process by which ...)
-        match = re.match(r"\*\*(.+?)\*\*:(.*)", para)
-        if match:
-            label, content = match.groups()
-            label = label.strip() + ": "
-            content = content.strip()
-            if y < margin:
-                c.showPage()
-                y = height - margin
-            c.setFont("Helvetica-Bold", label_font_size)
-            c.setFillColorRGB(0, 0, 0)
-            c.drawString(margin, y, label)
-            label_width = stringWidth(label, "Helvetica-Bold", label_font_size)
-            c.setFont("Helvetica", font_size)
-            c.drawString(margin + label_width, y, content)
-            y -= line_height
-            continue
-
-        # Bullet points
-        if para.startswith("•"):
-            bullet = u"\u2022 " + para[1:].strip()
-            draw_line(bullet)
-            y -= line_height * 0.5
-            continue
-
-        # Regular paragraph
-        draw_line(para)
-        y -= line_height * 0.5
-
-    c.save()
-
-
 
 
 # nova – female, natural and calm
