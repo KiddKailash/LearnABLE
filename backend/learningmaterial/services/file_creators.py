@@ -18,10 +18,10 @@ from docx.oxml.ns import qn
 from docx import Document
 from docx.shared import Pt, RGBColor
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Emu, Inches, Pt
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -87,47 +87,76 @@ def create_docx_from_text(text, path):
     doc.save(path)
 
 
-
 def create_pptx_from_text(slide_pairs, path):
+    """
+    slide_pairs: list of tuples (title: str, content: str, images: list).
+                 images may be dicts with keys 'path','left','top','width','height'
+                 or plain string filepaths.
+    path:       output .pptx filepath.
+    """
     prs = Presentation()
-    title_font_size = Pt(36)
+    title_font_size   = Pt(36)
     content_font_size = Pt(20)
 
     for idx, (title, content, images) in enumerate(slide_pairs):
         slide = prs.slides.add_slide(prs.slide_layouts[6])
 
-        # Title
+        # — Title box —
         title_box = slide.shapes.add_shape(
-            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(0.3), Inches(9), Inches(1)
+            MSO_SHAPE.ROUNDED_RECTANGLE,
+            Inches(0.5), Inches(0.3), Inches(9), Inches(1)
         )
         title_box.fill.solid()
         title_box.fill.fore_color.rgb = RGBColor(91, 155, 213)
-        title_box.text = title.strip()
-        title_frame = title_box.text_frame
-        title_frame.paragraphs[0].font.size = title_font_size
-        title_frame.paragraphs[0].font.bold = True
-        title_frame.paragraphs[0].font.color.rgb = RGBColor(255, 255, 255)
+        tb = title_box.text_frame
+        tb.text = title.strip()
+        p = tb.paragraphs[0]
+        p.font.size  = title_font_size
+        p.font.bold  = True
+        p.font.color.rgb = RGBColor(255, 255, 255)
 
-        # Content
-        content_box = slide.shapes.add_textbox(Inches(0.7), Inches(1.5), Inches(8), Inches(4))
+        # — Content box —
+        content_box = slide.shapes.add_textbox(
+            Inches(0.7), Inches(1.5), Inches(8), Inches(4)
+        )
         tf = content_box.text_frame
         tf.word_wrap = True
-        lines = content.strip().split("\n")
-        for i, line in enumerate(lines):
-            if not line:
+        for i, line in enumerate(content.split("\n")):
+            if not line.strip():
                 continue
-            p = tf.add_paragraph() if i != 0 else tf.paragraphs[0]
-            p.text = line
-            p.level = 0
-            p.font.size = content_font_size
-            p.font.name = "Calibri"
-            p.font.color.rgb = RGBColor(50, 50, 50)
+            paragraph = tf.add_paragraph() if i else tf.paragraphs[0]
+            paragraph.text       = line.strip()
+            paragraph.level      = 0
+            paragraph.font.size  = content_font_size
+            paragraph.font.name  = "Calibri"
+            paragraph.font.color.rgb = RGBColor(50, 50, 50)
 
-        # Add image(s)
-        for i, img_path in enumerate(images or []):
-            if os.path.exists(img_path):
-                slide.shapes.add_picture(img_path, Inches(6.5), Inches(4.8 + i * 1.5), Inches(2), Inches(1.5))
+        # — Images —
+        for img_idx, img in enumerate(images or []):
+            # dict with position/size?
+            if isinstance(img, dict):
+                img_path = img.get("path")
+                if img_path and os.path.exists(img_path):
+                    slide.shapes.add_picture(
+                        img_path,
+                        left   = Emu(img["left"]),
+                        top    = Emu(img["top"]),
+                        width  = Emu(img["width"]),
+                        height = Emu(img["height"])
+                    )
+            # plain string filepath?
+            elif isinstance(img, str):
+                if os.path.exists(img):
+                    slide.shapes.add_picture(
+                        img,
+                        Inches(6.5),
+                        Inches(4.8 + img_idx * 1.5),
+                        Inches(2),
+                        Inches(1.5)
+                    )
 
+    # Save PPTX
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     prs.save(path)
 
 

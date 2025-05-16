@@ -19,6 +19,7 @@ const aiApi = {
    */
   generate: async (requestData) => {
     return httpClient.post('/api/ai/generate/', requestData);
+    
   }
 };
 

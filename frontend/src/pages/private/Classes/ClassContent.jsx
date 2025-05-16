@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useContext } from "react";
 import UserContext from "../../../store/UserObject";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -58,10 +60,13 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const AIAssistantUpload = () => {
+  const location = useLocation();
   const BACKEND = process.env.REACT_APP_SERVER_URL;
   const { user } = useContext(UserContext);
   const userId = user?.id || user?.email || "guest";
   const tutorialKey = `aiUploadTutorialDismissed_${userId}`;
+  const [objectiveMismatchDialogOpen, setObjectiveMismatchDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
@@ -84,15 +89,43 @@ const AIAssistantUpload = () => {
   const fileInputRef = useRef(null);
   const viewerRef = useRef(null);
 
-  const steps = ["Select Class", "Upload Material", "Review & Adapt"];
+  useEffect(() => {
+    if (file && typeof window !== "undefined" && viewerRef.current) {
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+  
+      // Determine if the file is supported for Office preview
+      const isOffice = ['docx', 'pptx'].includes(fileExtension);
+  
+      viewerRef.current.innerHTML = "";
+  
+      import("@pdftron/webviewer")
+        .then(({ default: WebViewer }) => {
+          WebViewer(
+            {
+              path: "/webviewer",
+              initialDoc: URL.createObjectURL(file),
+              extension: fileExtension,
+              officeEditor: isOffice,
+              enableOfficeEditing: isOffice,
+              fullAPI: true,
+            },
+            viewerRef.current
+          );
+        })
+        .catch((e) => console.error("WebViewer load failed:", e));
+    }
+  }, [file]);
+  
+
+  const steps = ["Upload Material", "Review & Adapt"];
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
   };
 
   const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
+    navigate("/classes");
+  };  
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -121,6 +154,15 @@ const AIAssistantUpload = () => {
       setShowTutorial(true);
     }
   }, [tutorialKey]);
+
+  useEffect(() => {
+    const preselected = location?.state?.preselectedClassId;
+    if (preselected) {
+      setSelectedClass(preselected);
+      setActiveStep(1); // Skip directly to upload material
+    }
+  }, [location]);
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -158,10 +200,10 @@ const AIAssistantUpload = () => {
       setUploadError("Please complete all fields.");
       return;
     }
-
+  
     setIsUploading(true);
     setUploadError("");
-
+  
     try {
       const response = await api.learningMaterials.create({
         title,
@@ -169,10 +211,18 @@ const AIAssistantUpload = () => {
         objective: learningObjective,
         class_assigned: selectedClass,
       });
-
+  
+      // Check alignment in response
+      if (
+        response?.alignment_check?.alignment === "not_aligned"
+      ) {
+        console.warn("Alignment mismatch detected during upload.");
+        setObjectiveMismatchDialogOpen(true);
+        return;
+      }
+  
       setMaterialId(response.id);
       setPreviewUrl(URL.createObjectURL(file));
-
       setSuccessMessage("Material uploaded successfully!");
       handleNext();
     } catch (error) {
@@ -184,6 +234,7 @@ const AIAssistantUpload = () => {
       setIsUploading(false);
     }
   };
+  
 
   const handleAdaptMaterial = async () => {
     if (!materialId) {
@@ -196,11 +247,27 @@ const AIAssistantUpload = () => {
 
     try {
       const response = await api.learningMaterials.adapt(materialId);
+      console.log("Adapt response:", response);
 
-      // Handle the response based on its structure
+      // Check for alignment failure from backend
+      if (response?.error === "learning_objectives_mismatch") {
+        console.warn("Detected objective mismatch. Redirecting to /classes");
+        setUploadError("The learning objectives do not align with the uploaded material. Please revise them.");
+        setAdaptedStudents([]);
+        setMaterialId(null);
+        setActiveStep(1);
+        setSnackbarOpen(true);
+        setObjectiveMismatchDialogOpen(true);
+        console.warn("Navigate called");
+        return;
+      }
+      // Continue normal flow with response
       if (!response) {
         throw new Error("No response received from adaptation service");
       }
+
+      // Handle the response based on its structure...
+
 
       // If response is an array, use it directly
       if (Array.isArray(response)) {
@@ -297,6 +364,31 @@ const AIAssistantUpload = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={objectiveMismatchDialogOpen}
+        onClose={() => setObjectiveMismatchDialogOpen(false)}
+        PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
+      >
+        <DialogTitle>
+          Learning Objectives and Content Mismatch
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+          The uploaded material does not adequately align with the provided learning objectives. Please adjust the objectives or select content that better matches them.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => setObjectiveMismatchDialogOpen(false)}
+            autoFocus
+          >
+            OK
+          </Button>
+        </DialogActions>
+      </Dialog>
+
 
       <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
         Learning Material Upload
