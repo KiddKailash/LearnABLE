@@ -64,14 +64,14 @@ Classify the alignment as one of the following:
 - partially_aligned
 - not_aligned
 
-Provide a brief justification.
-
 Output JSON:
 {format_instructions}
 """,
     input_variables=["objectives", "text"],
     partial_variables={"format_instructions": alignment_parser.get_format_instructions()}
 )
+
+
 
 classify_prompt = PromptTemplate(
     template="""
@@ -87,6 +87,8 @@ Output JSON:
     partial_variables={"format_instructions": class_parser.get_format_instructions()}
 )
 
+
+
 strategy_prompt = PromptTemplate(
     template="""
 You are an adaptation strategist.
@@ -101,29 +103,40 @@ Output JSON:
     partial_variables={"format_instructions": strat_parser.get_format_instructions()}
 )
 
+
+
 adapt_prompt = PromptTemplate(
     template="""
-You are an educational assistant creating adapted lesson materials.
+You are an expert educational designer. Given the original lesson content and learning objectives, produce an adapted version tailored to the learners needs—with no mention that its been modified.
 
-Category: {category}
-Adaptation steps:
+Given the student description:
+" {disability_info} "
+
+Disability category: {category}
+
+Adaptation steps to apply:
 {steps}
-Original objectives: {objectives}
-Lesson content:
+
+Original objectives:
+{objectives}
+
+Original lesson content:
 {text}
 
-Output only the adapted lesson as JSON using the format below. Do not restate or summarize the original content.
+Deliverable:
+- Return only valid JSON matching this schema (no extra fields).
+- Keep titles, sections and structure from the original; and just refactor the content to meet student learning needs and adapt the content according to the steps.
+- Do not introduce new teaching methods or overtly call out adaptations.
 
-Output JSON:
+JSON format:
 {format_instructions}
-
----
 
 {slide_instructions}
 """,
-    input_variables=["category", "steps", "objectives", "text", "slide_instructions"],
+    input_variables=["disability_info", "category", "steps", "objectives", "text", "slide_instructions"],
     partial_variables={"format_instructions": adapt_parser.get_format_instructions()}
 )
+
 
 
 # Utility to extract raw text
@@ -209,6 +222,7 @@ def generate_adapted_lessons(material, students, return_file=False):
         )
 
         adapt_input = adapt_prompt.format(
+            disability_info=info,  
             category=category,
             steps=steps_list,
             objectives=material.objective or "",
