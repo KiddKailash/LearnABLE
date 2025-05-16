@@ -8,7 +8,7 @@ import api from "../../services/api";
 // MUI Components
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid2";
+import Grid from "@mui/material/Grid";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
