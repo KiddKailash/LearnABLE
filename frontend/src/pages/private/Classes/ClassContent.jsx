@@ -5,13 +5,6 @@
  * to meet the needs of students with disabilities. It includes features for file preview,
  * learning objective alignment checks, and material adaptation.
  * 
- * Features:
- * - Learning material upload and preview
- * - Learning objective alignment checking
- * - Material adaptation for accessibility
- * - File type support (PDF, DOCX, PPTX)
- * - Interactive tutorial for new users
- * - Progress tracking and validation
  */
 
 import React, { useState, useEffect, useRef } from "react";

@@ -5,13 +5,6 @@
  * as well as bulk uploading students via CSV. It includes features for handling student
  * data validation, duplicate checking, and error handling.
  * 
- * Features:
- * - Student list display with sorting and filtering
- * - Individual student management (add, edit, delete)
- * - Bulk student upload via CSV
- * - Student data validation
- * - Error handling and user feedback
- * - Responsive design
  */
 
 import React, { useEffect, useState, useRef, useContext } from "react";

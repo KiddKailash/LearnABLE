@@ -5,13 +5,6 @@
  * and uploading unit plans. It uses a stepper interface to break down the process into
  * manageable steps and provides optional steps for additional setup.
  * 
- * Features:
- * - Multi-step class creation process
- * - Student roster upload via CSV
- * - Unit plan document upload
- * - Progress tracking and validation
- * - Error handling and recovery
- * - Responsive design
  */
 
 import React, { useState, useRef, useContext } from "react";

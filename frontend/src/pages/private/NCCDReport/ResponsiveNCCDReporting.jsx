@@ -4,10 +4,6 @@
  * of the NCCD reporting page based on the screen size. Uses Material-UI's useMediaQuery hook to determine
  * the appropriate layout.
  * 
- * Features:
- * - Responsive layout switching based on screen size
- * - Uses Material-UI's breakpoint system
- * - Seamless integration with both desktop and mobile reporting components
  */
 
 import React from "react";

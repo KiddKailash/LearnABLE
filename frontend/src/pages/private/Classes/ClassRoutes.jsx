@@ -3,12 +3,6 @@
  * This component handles the navigation between different views of a class (learning materials and students),
  * manages class and student data fetching, and provides error handling and loading states.
  * 
- * Features:
- * - Tab-based navigation between class views
- * - Breadcrumb navigation
- * - Class and student data management
- * - Loading and error states
- * - Responsive design
  */
 
 import React, { useState, useEffect, useContext } from "react";

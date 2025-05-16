@@ -5,13 +5,6 @@
  * quick actions, and NCCD report summaries. It handles data fetching for classes, students, and reports,
  * and displays loading and error states as needed.
  *
- * Features:
- * - User greeting and overview
- * - Stats cards for classes and students
- * - Recent classes list
- * - Quick actions panel
- * - NCCD reports summary
- * - Loading and error handling
  */
 
 import React, { useContext, useEffect, useState } from "react";

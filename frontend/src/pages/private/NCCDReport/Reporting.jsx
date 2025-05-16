@@ -4,13 +4,6 @@
  * for viewing, creating, editing, and deleting reports. Includes filtering, search, and
  * detailed report management capabilities.
  * 
- * Features:
- * - Report listing with filtering and search
- * - Report creation and editing
- * - Report deletion with confirmation
- * - Status tracking and management
- * - Student information integration
- * - Error handling and loading states
  */
 
 import React, { useState, useEffect } from "react";

@@ -5,13 +5,6 @@
  * as well as managing students within classes. It includes features for bulk student uploads
  * and individual student additions.
  * 
- * Features:
- * - Class listing and management
- * - Class creation and editing
- * - Student management (add/remove)
- * - Bulk student upload via CSV
- * - Class deletion with confirmation
- * - Responsive grid layout for class cards
  */
 
 import React, { useEffect, useRef, useState, useContext } from "react";

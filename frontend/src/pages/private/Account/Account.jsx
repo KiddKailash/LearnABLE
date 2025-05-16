@@ -4,12 +4,6 @@
  * appearance preferences, and account management features. This component serves as a container
  * for various account-related tabs and manages the overall state and API interactions.
  * 
- * Features:
- * - Profile management (personal info, bio, profile picture)
- * - Security settings (password, 2FA)
- * - Appearance preferences (theme)
- * - Account data export
- * - Account deletion
  */
 
 import React, { useState, useEffect, useContext } from "react";

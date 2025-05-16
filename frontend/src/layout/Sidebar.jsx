@@ -52,12 +52,6 @@ const settingsItems = [
 /**
  * Sidebar component that renders a collapsible navigation sidebar.
  *
- * The sidebar features:
- * - A toggle button to expand or collapse the sidebar.
- * - Navigation items with icons (and text when expanded).
- * - Tooltips that display item text when the sidebar is collapsed.
- * - A settings section with additional options.
- *
  * @component
  * @returns {JSX.Element} The rendered Sidebar component.
  */

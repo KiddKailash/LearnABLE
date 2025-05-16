@@ -1,11 +1,7 @@
 /**
  * @file errorHandling.js
  * @description Error handling utilities for the frontend application.
- * Features:
- * - Error type classification
- * - User-friendly error messages
- * - Error logging and monitoring
- * - Context-aware error information
+ * 
  */
 
 /**

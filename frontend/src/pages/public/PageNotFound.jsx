@@ -3,10 +3,6 @@
  * @description Renders a 404 Page Not Found component that informs the user that the requested page does not exist
  * and provides a button to navigate back to the login page.
  *
- * Features:
- * - Displays a 404 error message
- * - Button to navigate back to the login page
- * - Uses Material-UI for layout and styling
  */
 
 import React from "react";

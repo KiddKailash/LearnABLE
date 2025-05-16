@@ -2,11 +2,6 @@
  * @file AuthPage.jsx
  * @description Authentication page for LearnABLE, providing login, registration, and two-factor authentication (2FA) flows for users.
  *
- * Features:
- * - Login and registration forms with validation
- * - Two-factor authentication dialog
- * - Error and loading state handling
- * - Uses context for user and snackbar notifications
  */
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";

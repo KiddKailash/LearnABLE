@@ -4,12 +4,6 @@
  * for teachers to report on student adjustments and effectiveness. Features a step-by-step
  * process for class selection and student reporting.
  * 
- * Features:
- * - Class selection interface
- * - Student-by-student reporting workflow
- * - Effectiveness tracking
- * - Progress indicators
- * - Error handling and notifications
  */
 
 import React, { useState, useEffect, useContext } from "react";

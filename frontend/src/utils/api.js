@@ -1,11 +1,7 @@
 /**
  * @file api.js
  * @description API client configuration and methods for making HTTP requests to the backend.
- * Features:
- * - Axios instance with default configuration
- * - Request interceptor for authentication
- * - Response interceptor for error handling and token refresh
- * - HTTP method wrappers (GET, POST, PUT, PATCH, DELETE)
+ * 
  */
 
 import axios from 'axios';

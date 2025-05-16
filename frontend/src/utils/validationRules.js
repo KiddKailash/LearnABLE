@@ -1,13 +1,7 @@
 /**
  * @file validationRules.js
  * @description Common validation rules used across the application.
- * Features:
- * - Email validation
- * - Password validation with configurable requirements
- * - Required field validation
- * - Length validation
- * - Number range validation
- * - File upload validation
+ * 
  */
 
 /**

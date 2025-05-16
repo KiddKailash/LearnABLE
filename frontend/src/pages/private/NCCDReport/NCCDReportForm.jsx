@@ -4,12 +4,6 @@
  * Implements a stepper interface for collecting information about student adjustments
  * and disability categories.
  * 
- * Features:
- * - Multi-step form with validation
- * - Support for both creation and editing modes
- * - Integration with NCCD reporting standards
- * - Form state management
- * - Error handling and notifications
  */
 
 import React, { useState, useEffect } from 'react';

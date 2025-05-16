@@ -3,12 +3,6 @@
  * @description Component for selecting a student and initiating the NCCD report creation process.
  * Provides a user interface for selecting students and managing the report creation workflow.
  * 
- * Features:
- * - Student selection interface
- * - Auto-selection for single student cases
- * - Integration with NCCD report form
- * - Navigation controls
- * - Error handling and loading states
  */
 
 import React, { useState, useEffect } from 'react';
