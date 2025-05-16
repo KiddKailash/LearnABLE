@@ -1,3 +1,17 @@
+"""
+Views for handling NCCD reports and lesson effectiveness records.
+
+Includes endpoints to:
+- Retrieve all reports or reports by student
+- Retrieve, update, or delete individual reports
+- Create reports (with duplicate prevention)
+- Ensure reports exist for students in a class based on disability info
+- Record lesson effectiveness linked to reports
+- Provide effectiveness trends over time for a student
+
+All endpoints require user authentication.
+"""
+
 from rest_framework import serializers
 from .models import Student
 from cryptography.fernet import Fernet
@@ -6,7 +20,6 @@ from decouple import config
 # Initialize the Fernet encryption key
 fernet = Fernet(config("FERNET_KEY").encode())
 
-
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
@@ -14,7 +27,17 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         """
-        Decrypt the relevant fields when serializing the instance.
+        Override default serialization to decrypt sensitive fields.
+
+        Converts the model instance into a dictionary of primitive data types,
+        replacing encrypted fields 'first_name', 'last_name', and 'disability_info'
+        with their decrypted values for readable API output.
+
+        Args:
+            instance (Student): The Student model instance to serialize.
+
+        Returns:
+            dict: Serialized data with decrypted fields.
         """
         data = super().to_representation(instance)
         try:
@@ -32,7 +55,17 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def to_internal_value(self, data):
         """
-        Encrypt the relevant fields before saving them.
+        Override default deserialization to encrypt sensitive fields before saving.
+
+        Transforms incoming primitive data into validated data suitable for
+        model instance creation or update, encrypting 'first_name', 'last_name',
+        and 'disability_info' fields to ensure data security.
+
+        Args:
+            data (dict): Incoming data from request.
+
+        Returns:
+            dict: Validated and encrypted data ready for model save.
         """
         internal_data = super().to_internal_value(data)
         

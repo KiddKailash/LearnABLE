@@ -1,3 +1,13 @@
+"""
+Views for the 'classes' app.
+
+Provides endpoints to:
+- Create classes
+- Retrieve all classes for a teacher
+- Add a student to a class
+- Upload students via CSV
+- Update and delete classes
+"""
 import csv
 import io
 from rest_framework.decorators import api_view, parser_classes, authentication_classes
@@ -21,18 +31,12 @@ from .serializers import ClassSerializer
 @permission_classes([IsAuthenticated])
 def create_class(request):
     """
-    Creates a class and automatically assigns it to the logged-in teacher.
+    Creates a class and assigns it to the logged-in teacher.
     """
     try:
-        # Get the teacher instance associated with the authenticated user
         teacher = Teacher.objects.get(user=request.user)
-        
-        # Make a mutable copy of the request data
         data = request.data.copy()
-        
-        # Assign the teacher's ID, not the user's ID
-        data['teacher'] = teacher.id
-        
+        data['teacher'] = teacher.id  # Set the teacher ID explicitl
         serializer = ClassSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -54,7 +58,7 @@ def create_class(request):
 @permission_classes([IsAuthenticated])
 def get_all_classes(request):
     """
-    Retrieve a list of classes for the authenticated teacher only.
+    Retrieve a list of all classes for the authenticated teacher.
     """
     try:
         # Get the teacher linked to the current user
@@ -76,7 +80,7 @@ def get_all_classes(request):
 @permission_classes([IsAuthenticated])
 def add_student_to_class(request, class_id):
     """
-    Add a student to a class.
+    Add a student to a specific class.
     """
     student_id = request.data.get("student_id")
     if not student_id:
@@ -98,7 +102,7 @@ def add_student_to_class(request, class_id):
 @permission_classes([IsAuthenticated])
 def upload_students_csv(request):
     """
-    Upload a CSV file to add students to a class.
+    Upload a CSV file to add multiple students to a class.
     """
     if request.method == 'GET':
         return HttpResponse(
@@ -163,7 +167,7 @@ def upload_students_csv(request):
 @permission_classes([IsAuthenticated])
 def class_detail(request, class_id):
     """
-    Update or delete a class.
+    Update (PUT) or delete (DELETE) a class.
     """
     try:
         cls = Classes.objects.get(id=class_id)

@@ -1,3 +1,13 @@
+"""
+URL routing configuration for the teachers app.
+
+Defines endpoints for teacher registration, login with two-factor authentication,
+profile management (including updates, password changes, and preferences),
+session management, profile picture uploads, and account data export and deletion.
+
+Includes conditional serving of media files during development.
+"""
+
 from django.urls import path
 from .views import register_teacher, login_teacher, verify_login_2fa
 from django.conf import settings

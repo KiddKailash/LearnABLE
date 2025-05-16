@@ -1,3 +1,10 @@
+"""
+Configuration for the Students app.
+
+Defines the StudentsConfig class which registers the app and
+executes startup code such as importing signals when the app is ready.
+"""
+
 from django.apps import AppConfig
 
 

@@ -1,3 +1,10 @@
+"""
+Signal handlers for automatic management of Teacher and related model lifecycle events.
+
+Includes creation of Teacher profiles upon User creation and comprehensive cleanup of
+related data when a Teacher instance is deleted, to maintain data integrity.
+"""
+
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
@@ -6,13 +13,31 @@ from django.apps import apps
 
 @receiver(post_save, sender=User)
 def create_teacher_profile(sender, instance, created, **kwargs):
+    """
+    Signal handler to automatically create a Teacher profile when a new User is created.
+
+    Args:
+        sender (Model): The model class sending the signal (User).
+        instance (User): The User instance that was saved.
+        created (bool): Indicates whether a new User was created.
+        **kwargs: Additional keyword arguments.
+    """
     if created:  # Remove the instance.is_staff condition
         Teacher.objects.create(user=instance)
 
 @receiver(pre_delete, sender=Teacher)
 def clean_up_teacher_relations(sender, instance, **kwargs):
     """
-    This signal ensures that when a Teacher is deleted, any orphaned related records are also cleaned up.
+    Signal handler to clean up related objects when a Teacher instance is deleted.
+
+    This includes deletion of device sessions, classes, class students, learning materials,
+    assessments, student grades, attendance sessions, and student attendance records
+    related to the teacher to prevent orphaned data.
+
+    Args:
+        sender (Model): The model class sending the signal (Teacher).
+        instance (Teacher): The Teacher instance about to be deleted.
+        **kwargs: Additional keyword arguments.
     """
     try:
         # Handle DeviceSession
