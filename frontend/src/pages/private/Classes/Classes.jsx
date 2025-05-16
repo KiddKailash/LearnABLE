@@ -461,7 +461,9 @@ const Classes = () => {
                             fullWidth
                             size="medium"
                             onClick={() =>
-                              navigate(`/classes/${cls.id}/content`)
+                              navigate(`/classes/${cls.id}/content`, {
+                                state: { preselectedClassId: cls.id }
+                              })
                             }
                             sx={{
                               justifyContent: "flex-start",
