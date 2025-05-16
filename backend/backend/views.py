@@ -54,5 +54,13 @@ def ask_openai(request):
 
 
 def api_view(request):
+    """
+    A simple API health check endpoint.
+
+    Method: GET
+
+    Returns:
+        JsonResponse: Welcome message.
+    """
     data = {"message": "Welcome to the LearnABLE. The new innovative learning platform!"}
     return JsonResponse(data)
