@@ -23,7 +23,7 @@ import Typography from '@mui/material/Typography';
 const StatsCard = ({ label, value, icon, color }) => {
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
         p: 3,
         height: '100%',
@@ -32,11 +32,7 @@ const StatsCard = ({ label, value, icon, color }) => {
         alignItems: 'center',
         transition: 'transform 0.2s ease, box-shadow 0.2s ease',
         backgroundColor: (theme) =>
-          theme.palette.mode === 'dark' ? theme.palette.background.paper : color,
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: 3,
-        },
+          theme.palette.mode === 'dark' ? theme.palette.background.paper : color
       }}
     >
       <Box sx={{ mr: 2 }}>{icon}</Box>

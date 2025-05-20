@@ -137,7 +137,7 @@ const NCCDReportSelection = () => {
         </Alert>
       )}
 
-      <Paper elevation={2} sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
+      <Paper elevation={0} sx={{ p: 3, mx: 'auto' }}>
         <Typography variant="h6" gutterBottom>
           Select a student for the NCCD report
         </Typography>

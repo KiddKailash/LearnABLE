@@ -227,7 +227,7 @@ const StudentListPage = () => {
         </Grid>
       </Grid>
 
-      <Paper elevation={3}>
+      <Paper elevation={0}>
         <Table>
           <TableHead>
             <TableRow>

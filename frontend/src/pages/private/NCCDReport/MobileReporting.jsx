@@ -141,7 +141,7 @@ const MobileReportingPage = () => {
 
       {/* Class selection step */}
       {!reportingComplete && reportsQueue.length === 0 && (
-        <Paper elevation={3} sx={{ p: 2, mb: 3 }}>
+        <Paper elevation={0} sx={{ p: 2, mb: 3 }}>
           <Typography>Select a Class:</Typography>
           <Select
             fullWidth
@@ -174,7 +174,7 @@ const MobileReportingPage = () => {
 
       {/* Student reporting interface */}
       {!reportingComplete && reportsQueue.length > 0 && (
-        <Paper elevation={3} sx={{ p: 3 }}>
+        <Paper elevation={0} sx={{ p: 3 }}>
           <Typography variant="h6" gutterBottom>
             Student {currentReportIndex + 1} of {reportsQueue.length}
           </Typography>

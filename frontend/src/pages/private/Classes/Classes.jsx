@@ -329,7 +329,7 @@ const Classes = () => {
             {classes.map((cls) => (
               <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={cls.id}>
                 <Card
-                  elevation={3}
+                  elevation={0}
                   sx={{
                     height: "100%",
                     display: "flex",

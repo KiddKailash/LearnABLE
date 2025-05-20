@@ -169,7 +169,7 @@ const FileUploadZone = ({ file, onClick, icon, title, subtitle }) => {
         p: 3,
         textAlign: "center",
         cursor: "pointer",
-        borderStyle: "dashed",
+        borderStyle: "solid",
         borderRadius: 2,
         borderColor: file ? "success.main" : "divider",
         bgcolor: file

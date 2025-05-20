@@ -44,12 +44,12 @@ const UploadZone = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
   textAlign: "center",
   cursor: "pointer",
-  border: `2px dashed ${theme.palette.primary.main}`,
+  border: `0.5px solid ${theme.palette.primary.main}`,
   borderRadius: theme.shape.borderRadius,
   backgroundColor: theme.palette.background.default,
   transition: "border 0.3s ease-in-out",
   "&:hover": {
-    border: `2px dashed ${theme.palette.primary.dark}`,
+    border: `0.5px solid ${theme.palette.primary.dark}`,
   },
 }));
 
@@ -66,8 +66,8 @@ const AIAssistantUpload = () => {
   const { user } = useContext(UserContext);
   const userId = user?.id || user?.email || "guest";
   const tutorialKey = `aiUploadTutorialDismissed_${userId}`;
-  const [objectiveMismatchDialogOpen, setObjectiveMismatchDialogOpen] = useState(false);
-  const navigate = useNavigate();
+  const [objectiveMismatchDialogOpen, setObjectiveMismatchDialogOpen] =
+    useState(false);
 
   // State management
   const [activeStep, setActiveStep] = useState(0);
@@ -92,13 +92,13 @@ const AIAssistantUpload = () => {
 
   useEffect(() => {
     if (file && typeof window !== "undefined" && viewerRef.current) {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-  
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+
       // Determine if the file is supported for Office preview
-      const isOffice = ['docx', 'pptx'].includes(fileExtension);
-  
+      const isOffice = ["docx", "pptx"].includes(fileExtension);
+
       viewerRef.current.innerHTML = "";
-  
+
       import("@pdftron/webviewer")
         .then(({ default: WebViewer }) => {
           WebViewer(
@@ -116,7 +116,6 @@ const AIAssistantUpload = () => {
         .catch((e) => console.error("WebViewer load failed:", e));
     }
   }, [file]);
-  
 
   const steps = ["Upload Material", "Review & Adapt"];
 
@@ -126,7 +125,7 @@ const AIAssistantUpload = () => {
 
   const handleBack = () => {
     setActiveStep((prevStep) => Math.max(0, prevStep - 1));
-  };  
+  };
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -171,7 +170,6 @@ const AIAssistantUpload = () => {
     }
   }, [location, classId]);
 
-
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -208,10 +206,10 @@ const AIAssistantUpload = () => {
       setUploadError("Please complete all fields.");
       return;
     }
-  
+
     setIsUploading(true);
     setUploadError("");
-  
+
     try {
       const response = await api.learningMaterials.create({
         title,
@@ -219,16 +217,14 @@ const AIAssistantUpload = () => {
         objective: learningObjective,
         class_assigned: selectedClass,
       });
-  
+
       // Check alignment in response
-      if (
-        response?.alignment_check?.alignment === "not_aligned"
-      ) {
+      if (response?.alignment_check?.alignment === "not_aligned") {
         console.warn("Alignment mismatch detected during upload.");
         setObjectiveMismatchDialogOpen(true);
         return;
       }
-  
+
       setMaterialId(response.id);
       setPreviewUrl(URL.createObjectURL(file));
       setSuccessMessage("Material uploaded successfully!");
@@ -242,7 +238,6 @@ const AIAssistantUpload = () => {
       setIsUploading(false);
     }
   };
-  
 
   const handleAdaptMaterial = async () => {
     if (!materialId) {
@@ -260,7 +255,9 @@ const AIAssistantUpload = () => {
       // Check for alignment failure from backend
       if (response?.error === "learning_objectives_mismatch") {
         console.warn("Detected objective mismatch. Redirecting to /classes");
-        setUploadError("The learning objectives do not align with the uploaded material. Please revise them.");
+        setUploadError(
+          "The learning objectives do not align with the uploaded material. Please revise them."
+        );
         setAdaptedStudents([]);
         setMaterialId(null);
         setActiveStep(1);
@@ -275,7 +272,6 @@ const AIAssistantUpload = () => {
       }
 
       // Handle the response based on its structure...
-
 
       // If response is an array, use it directly
       if (Array.isArray(response)) {
@@ -326,15 +322,6 @@ const AIAssistantUpload = () => {
     }
   };
 
-  const handleChangeClass = () => {
-    setSelectedClass("");
-    setAdaptedStudents([]);
-    setMaterialId(null);
-    setTitle("");
-    setFile(null);
-    setLearningObjective("");
-  };
-
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -357,13 +344,27 @@ const AIAssistantUpload = () => {
   return (
     <>
       {/* Standalone Tutorial Notification Box */}
-      <Dialog open={showTutorial} onClose={handleCloseTutorial} PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}>
-        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+      <Dialog
+        open={showTutorial}
+        onClose={handleCloseTutorial}
+        PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
+          }}
+        >
           Welcome to Learning Material Upload
         </DialogTitle>
         <DialogContent>
           <Typography variant="body1" color="text.secondary">
-            Here you can upload your learning materials and let the AI help adapt them for your students. Select a class, upload your file, and review the AI-generated adaptations tailored for each student's needs.
+            Here you can upload your learning materials and let the AI help
+            adapt them for your students. Select a class, upload your file, and
+            review the AI-generated adaptations tailored for each student's
+            needs.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -378,12 +379,12 @@ const AIAssistantUpload = () => {
         onClose={() => setObjectiveMismatchDialogOpen(false)}
         PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
       >
-        <DialogTitle>
-          Learning Objectives and Content Mismatch
-        </DialogTitle>
+        <DialogTitle>Learning Objectives and Content Mismatch</DialogTitle>
         <DialogContent>
           <Typography>
-          The uploaded material does not adequately align with the provided learning objectives. Please adjust the objectives or select content that better matches them.
+            The uploaded material does not adequately align with the provided
+            learning objectives. Please adjust the objectives or select content
+            that better matches them.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -409,7 +410,9 @@ const AIAssistantUpload = () => {
         <div>
           {activeStep === 0 && (
             <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <CardContent
+                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+              >
                 <Typography variant="h6" gutterBottom>
                   Select Class
                 </Typography>
@@ -440,7 +443,9 @@ const AIAssistantUpload = () => {
 
           {activeStep === 1 && (
             <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <CardContent
+                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+              >
                 <Typography variant="h6" gutterBottom>
                   Material Details
                 </Typography>
@@ -498,10 +503,12 @@ const AIAssistantUpload = () => {
                         />
                         <Typography variant="body1">{file.name}</Typography>
                       </Box>
-                      <IconButton onClick={(e) => {
-                        e.stopPropagation();
-                        clearFile();
-                      }}>
+                      <IconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearFile();
+                        }}
+                      >
                         <DeleteIcon color="error" />
                       </IconButton>
                     </Box>
@@ -568,7 +575,9 @@ const AIAssistantUpload = () => {
 
           {activeStep === 2 && (
             <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+              <CardContent
+                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+              >
                 <Typography variant="h6" gutterBottom>
                   Adapt Material
                 </Typography>
@@ -610,9 +619,15 @@ const AIAssistantUpload = () => {
                       >
                         <Box component="thead">
                           <Box component="tr">
-                            <Box component="th" sx={tableHeaderStyle}>Student Name</Box>
-                            <Box component="th" sx={tableHeaderStyle}>Adapted File</Box>
-                            <Box component="th" sx={tableHeaderStyle}>Audio</Box>
+                            <Box component="th" sx={tableHeaderStyle}>
+                              Student Name
+                            </Box>
+                            <Box component="th" sx={tableHeaderStyle}>
+                              Adapted File
+                            </Box>
+                            <Box component="th" sx={tableHeaderStyle}>
+                              Audio
+                            </Box>
                           </Box>
                         </Box>
                         <Box component="tbody">
@@ -622,47 +637,50 @@ const AIAssistantUpload = () => {
                                 {st.first_name} {st.last_name}
                               </Box>
                               <Box component="td" sx={tableCellStyle}>
-                                {st.file_url
-                                  ? (
+                                {st.file_url ? (
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    href={`${BACKEND}${st.file_url}`}
+                                    download
+                                    startIcon={<DownloadIcon />}
+                                  >
+                                    Download
+                                  </Button>
+                                ) : (
+                                  "—"
+                                )}
+                              </Box>
+                              <Box
+                                component="td"
+                                sx={{ ...tableCellStyle, textAlign: "center" }}
+                              >
+                                {st.audio_url ? (
+                                  <>
+                                    <audio
+                                      controls
+                                      style={{ width: "100%", outline: "none" }}
+                                    >
+                                      <source
+                                        src={`${BACKEND}${st.audio_url}`}
+                                        type="audio/mpeg"
+                                      />
+                                      Your browser doesn't support audio.
+                                    </audio>
                                     <Button
                                       variant="contained"
                                       size="small"
-                                      href={`${BACKEND}${st.file_url}`}
+                                      sx={{ mt: 1 }}
+                                      href={`${BACKEND}${st.audio_url}`}
                                       download
                                       startIcon={<DownloadIcon />}
                                     >
                                       Download
                                     </Button>
-                                  )
-                                  : "—"}
-                              </Box>
-                              <Box component="td" sx={{ ...tableCellStyle, textAlign: "center" }}>
-                                {st.audio_url
-                                  ? (
-                                    <>
-                                      <audio
-                                        controls
-                                        style={{ width: "100%", outline: "none" }}
-                                      >
-                                        <source
-                                          src={`${BACKEND}${st.audio_url}`}
-                                          type="audio/mpeg"
-                                        />
-                                        Your browser doesn't support audio.
-                                      </audio>
-                                      <Button
-                                        variant="contained"
-                                        size="small"
-                                        sx={{ mt: 1 }}
-                                        href={`${BACKEND}${st.audio_url}`}
-                                        download
-                                        startIcon={<DownloadIcon />}
-                                      >
-                                        Download
-                                      </Button>
-                                    </>
-                                  )
-                                  : "—"}
+                                  </>
+                                ) : (
+                                  "—"
+                                )}
                               </Box>
                             </Box>
                           ))}
