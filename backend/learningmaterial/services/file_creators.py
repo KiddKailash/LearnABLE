@@ -267,7 +267,7 @@ def create_pptx_from_text(slide_pairs, path):
 
 # fable – male, slightly theatrical
 
-def create_audio_from_text(text, path, voice="nova", speed=1.0):
+def create_audio_from_text(text, path, voice="nova", speed=0.95):
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
         
