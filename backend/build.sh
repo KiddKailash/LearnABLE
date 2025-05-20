@@ -10,7 +10,7 @@ python manage.py collectstatic --no-input
 
 # Apply database migrations with better handling
 echo "=== Creating migrations for all apps ==="
-python manage.py makemigrations assessments attendancesessions classes classstudents learningmaterial nccdreports studentattendance students subjects teachers studentgrades auth
+python manage.py makemigrations classes learningmaterial nccdreports students teachers auth
 
 # Migrate
 echo "=== Migrating apps ==="
