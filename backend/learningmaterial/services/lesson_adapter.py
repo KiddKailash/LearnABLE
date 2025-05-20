@@ -199,7 +199,7 @@ async def process_student(material, student, base_text, file_ext, original_slide
         os.makedirs(out_dir, exist_ok=True)
         fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
         audio_path = os.path.join(out_dir, fname)
-        success = create_audio_from_text(base_text, audio_path)
+        success = await asyncio.to_thread(create_audio_from_text, base_text, audio_path)
         return {
             'student_id': student.id,
             'disability': info,
@@ -246,7 +246,7 @@ async def process_student(material, student, base_text, file_ext, original_slide
         os.makedirs(out_dir, exist_ok=True)
         fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
         audio_path = os.path.join(out_dir, fname)
-        create_audio_from_text(base_text, audio_path)
+        await asyncio.to_thread(create_audio_from_text, base_text, audio_path)
         parsed['audio_url'] = f"{settings.MEDIA_URL}adapted_output/{fname}"
 
     # 6. File writing
@@ -260,9 +260,11 @@ async def process_student(material, student, base_text, file_ext, original_slide
         content = parsed.get('adapted_content', '')
 
         if file_ext == 'pdf':
-            create_pdf_from_text(content, output_path)
+            await asyncio.to_thread(create_pdf_from_text, content, output_path)
+
         elif file_ext == 'docx':
-            create_docx_from_text(content, output_path)
+            await asyncio.to_thread(create_docx_from_text, content, output_path)
+
         elif file_ext == 'pptx':
             slides = re.findall(
                 r"\[Slide\]\s*Title:\s*(.*?)\s*Content:\s*(.*?)(?=\n\s*\[Slide\]|\Z)",
@@ -277,7 +279,9 @@ async def process_student(material, student, base_text, file_ext, original_slide
                 slide_content = slide_content.replace('### Slide', '').strip()
                 images = original_slides[i]['images'] if i < len(original_slides) else []
                 adapted_slides.append((title, slide_content, images))
-            create_pptx_from_text(adapted_slides, output_path)
+
+            await asyncio.to_thread(create_pptx_from_text, adapted_slides, output_path)
+
 
         parsed['file'] = output_path
         parsed['file_url'] = f"{settings.MEDIA_URL}adapted_output/{filename}"
