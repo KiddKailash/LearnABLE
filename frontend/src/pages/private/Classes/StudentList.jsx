@@ -32,6 +32,9 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 // Local Imports
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import StudentFormDialog from "../../../components/StudentFormDialog";
+import studentsApi from "../../../services/studentsApi";
+import classesApi from "../../../services/classesApi";
+import httpClient from "../../../services/httpClient";
 
 const StudentListPage = () => {
   const { classId } = useParams();
@@ -54,11 +57,6 @@ const StudentListPage = () => {
   const [studentToDelete, setStudentToDelete] = useState(null);
   const fileInputRef = useRef(null);
 
-  const authHeader = () => ({
-    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-    "Content-Type": "application/json",
-  });
-
   const handleAuthError = () => {
     showSnackbar("Session expired. Please log in again.", "warning");
     localStorage.clear();
@@ -66,19 +64,14 @@ const StudentListPage = () => {
   };
 
   const fetchStudents = async () => {
-    const res = await fetch(
-      `http://localhost:8000/api/students/classes/${classId}/`,
-      {
-        //confusing url
-        headers: authHeader(),
-      }
-    );
-
-    if (res.status === 401) return handleAuthError();
-
-    const data = await res.json();
-    setStudents(data.students || []);
-    setClassName(data.class_name || `#${classId}`);
+    try {
+      const data = await httpClient.get(`/api/students/classes/${classId}/`);
+      setStudents(data.students || []);
+      setClassName(data.class_name || `#${classId}`);
+    } catch (error) {
+      if (error.status === 401) return handleAuthError();
+      showSnackbar("Failed to fetch students", "error");
+    }
   };
 
   useEffect(() => {
@@ -89,20 +82,12 @@ const StudentListPage = () => {
   const handleDelete = async () => {
     if (!studentToDelete) return;
 
-    const res = await fetch(
-      `http://localhost:8000/api/students/${studentToDelete.id}/delete/`,
-      {
-        method: "DELETE",
-        headers: authHeader(),
-      }
-    );
-
-    if (res.status === 401) return handleAuthError();
-
-    if (res.ok) {
+    try {
+      await studentsApi.delete(studentToDelete.id);
       setStudents((prev) => prev.filter((s) => s.id !== studentToDelete.id));
       showSnackbar("Student deleted successfully", "success");
-    } else {
+    } catch (error) {
+      if (error.status === 401) return handleAuthError();
       showSnackbar("Failed to delete student", "error");
     }
 
@@ -121,22 +106,13 @@ const StudentListPage = () => {
   };
 
   const handleSave = async () => {
-    const res = await fetch(
-      `http://localhost:8000/api/students/${editingStudent}/patch/`,
-      {
-        method: "PATCH",
-        headers: authHeader(),
-        body: JSON.stringify(form),
-      }
-    );
-
-    if (res.status === 401) return handleAuthError();
-
-    if (res.ok) {
+    try {
+      await studentsApi.update(editingStudent, form);
       setEditingStudent(null);
       await fetchStudents();
       showSnackbar("Student updated successfully", "success");
-    } else {
+    } catch (error) {
+      if (error.status === 401) return handleAuthError();
       showSnackbar("Failed to update student", "error");
     }
   };
@@ -149,20 +125,10 @@ const StudentListPage = () => {
     formData.append("file", file);
     formData.append("class_id", classId);
 
-    const res = await fetch("http://localhost:8000/api/classes/upload-csv/", {
-      method: "POST",
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
-    });
-
-    if (res.status === 401) return handleAuthError();
-
-    const result = await res.json();
-
-    if (res.ok) {
+    try {
+      const result = await classesApi.uploadStudentCSV(formData);
       await fetchStudents();
+      
       if (result.duplicates?.length > 0) {
         showSnackbar(
           "CSV uploaded. Some students were already in the class.",
@@ -171,9 +137,10 @@ const StudentListPage = () => {
       } else {
         showSnackbar("CSV uploaded successfully", "success");
       }
-    } else {
+    } catch (error) {
+      if (error.status === 401) return handleAuthError();
       showSnackbar(
-        `CSV upload failed: ${result.error || "Unknown error"}`,
+        `CSV upload failed: ${error.message || "Unknown error"}`,
         "error"
       );
     }
@@ -190,29 +157,12 @@ const StudentListPage = () => {
       return;
     }
 
-    const existingStudentRes = await fetch(
-      "http://localhost:8000/api/students/by-email/",
-      {
-        method: "POST",
-        headers: authHeader(),
-        body: JSON.stringify({ student_email: newStudent.student_email }),
-      }
-    );
+    try {
+      const existingStudent = await studentsApi.findByEmail(newStudent.student_email);
 
-    if (existingStudentRes.status === 401) return handleAuthError();
-    const existingStudent = await existingStudentRes.json();
-
-    if (existingStudent && existingStudent.id) {
-      const linkRes = await fetch(
-        `http://localhost:8000/api/classes/${classId}/add-student/`,
-        {
-          method: "POST",
-          headers: authHeader(),
-          body: JSON.stringify({ student_id: existingStudent.id }),
-        }
-      );
-
-      if (linkRes.ok) {
+      if (existingStudent && existingStudent.id) {
+        await classesApi.addStudent(classId, existingStudent.id);
+        
         // ✅ Clear form before closing
         setNewStudent({
           first_name: "",
@@ -224,35 +174,14 @@ const StudentListPage = () => {
         setNewStudentDialog(false);
         await fetchStudents();
         showSnackbar("Student added to class successfully", "success");
-      } else {
-        showSnackbar("Failed to link student to class", "error");
+        return;
       }
-      return;
-    }
 
-    const createRes = await fetch(
-      "http://localhost:8000/api/students/create/",
-      {
-        method: "POST",
-        headers: authHeader(),
-        body: JSON.stringify(newStudent),
-      }
-    );
+      const newStudentData = await studentsApi.create(newStudent);
 
-    if (createRes.status === 401) return handleAuthError();
-    const newStudentData = await createRes.json();
-
-    if (createRes.ok) {
-      const linkRes = await fetch(
-        `http://localhost:8000/api/classes/${classId}/add-student/`,
-        {
-          method: "POST",
-          headers: authHeader(),
-          body: JSON.stringify({ student_id: newStudentData.id }),
-        }
-      );
-
-      if (linkRes.ok) {
+      if (newStudentData && newStudentData.id) {
+        await classesApi.addStudent(classId, newStudentData.id);
+        
         // ✅ Clear form before closing
         setNewStudent({
           first_name: "",
@@ -264,11 +193,10 @@ const StudentListPage = () => {
         setNewStudentDialog(false);
         await fetchStudents();
         showSnackbar("Student created and added to class", "success");
-      } else {
-        showSnackbar("Student created but failed to link to class", "error");
       }
-    } else {
-      showSnackbar("Error creating student", "error");
+    } catch (error) {
+      if (error.status === 401) return handleAuthError();
+      showSnackbar(error.message || "Error creating/adding student", "error");
     }
   };
 

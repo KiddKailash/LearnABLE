@@ -68,7 +68,7 @@ const studentsApi = {
    * @returns {Promise<Object>} Student data if found
    */
   findByEmail: async (email) => {
-    return httpClient.post("/api/students/by-email/", { email });
+    return httpClient.post("/api/students/by-email/", { student_email: email });
   },
 };
 
