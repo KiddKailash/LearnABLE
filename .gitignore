@@ -12,11 +12,6 @@
 # testing
 /coverage
 
-# Ignore all migration files
-backend/**/migrations/*.py
-!backend/**/migrations/__init__.py
-backend/**/migrations/*.pyc
-
 # production
 /build
 
