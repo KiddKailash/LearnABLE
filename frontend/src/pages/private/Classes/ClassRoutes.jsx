@@ -1,10 +1,3 @@
-/**
- * @fileoverview ClassRoutes.jsx manages the routing and display of class-specific content in LearnABLE.
- * This component handles the navigation between different views of a class (learning materials and students),
- * manages class and student data fetching, and provides error handling and loading states.
- * 
- */
-
 import React, { useState, useEffect, useContext } from "react";
 import {
   useParams,
@@ -36,10 +29,6 @@ import Button from "@mui/material/Button";
 // MUI Icons
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
-/**
- * LoadingState component displays a centered loading spinner with message
- * @returns {JSX.Element} Loading state UI
- */
 const LoadingState = () => (
   <Box
     sx={{
@@ -58,10 +47,6 @@ const LoadingState = () => (
   </Box>
 );
 
-/**
- * ClassRoutes component manages the routing and display of class-specific content
- * @returns {JSX.Element} The class routes interface with navigation and content
- */
 const ClassRoutes = () => {
   const { classId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -74,10 +59,7 @@ const ClassRoutes = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  /**
-   * Fetches class data from the API
-   * @returns {Promise<void>}
-   */
+  // Fetch class data
   const fetchClassData = async () => {
     try {
       const response = await api.classes.getById(classId);
@@ -90,10 +72,7 @@ const ClassRoutes = () => {
     }
   };
 
-  /**
-   * Fetches students data for the current class
-   * @returns {Promise<void>}
-   */
+  // Fetch students data
   const fetchStudents = async () => {
     try {
       const response = await api.students.getAllByClassId(classId);
@@ -105,7 +84,7 @@ const ClassRoutes = () => {
     }
   };
 
-  // Load all data on component mount and when classId changes
+  // Load all data
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -124,16 +103,10 @@ const ClassRoutes = () => {
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classId]);
 
-  /**
-   * Handles tab change events and updates the URL search params
-   * @param {Event} event - The change event
-   * @param {string} newValue - The new tab value
-   */
   const handleTabChange = (event, newValue) => {
     setSearchParams({ mode: newValue });
   };
 
-  // Render loading state
   if (loading) {
     return (
       <Box sx={{ width: "100%" }}>
@@ -174,7 +147,6 @@ const ClassRoutes = () => {
     );
   }
 
-  // Render error state
   if (error) {
     return (
       <Box sx={{ width: "100%" }}>
@@ -230,7 +202,6 @@ const ClassRoutes = () => {
     );
   }
 
-  // Render main content
   return (
     <Box sx={{ width: "100%" }}>
       <Breadcrumbs
@@ -278,8 +249,8 @@ const ClassRoutes = () => {
         />
       ) : (
         <StudentListPage 
-          classId={classId}
-          className={classData?.class_name}
+          classData={classData}
+          students={students}
           onStudentsUpdate={fetchStudents}
         />
       )}
