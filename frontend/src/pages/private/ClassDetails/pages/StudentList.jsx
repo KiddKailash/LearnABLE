@@ -36,7 +36,6 @@ const StudentListPage = () => {
   const { classId } = useParams();
   const { showSnackbar } = useContext(SnackbarContext);
 
-  const [setClassName] = useState("");
   const [students, setStudents] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
   const [form, setForm] = useState({});
@@ -63,7 +62,6 @@ const StudentListPage = () => {
     try {
       const data = await httpClient.get(`/api/students/classes/${classId}/`);
       setStudents(data.students || []);
-      setClassName(data.class_name || `#${classId}`);
     } catch (error) {
       if (error.status === 401) return handleAuthError();
       showSnackbar("Failed to fetch students", "error");
@@ -199,7 +197,7 @@ const StudentListPage = () => {
   return (
     <>
       <Grid container spacing={2} mb={2}>
-        <Grid item>
+        <Grid>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -208,7 +206,7 @@ const StudentListPage = () => {
             Add Student
           </Button>
         </Grid>
-        <Grid item>
+        <Grid>
           <input
             type="file"
             accept=".csv"
