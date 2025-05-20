@@ -237,30 +237,41 @@ const StudentListPage = () => {
         Students in {className}
       </Typography>
 
-      <Grid container spacing={2} mb={2}>
-        <Grid>
-          <Button
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setNewStudentDialog(true)}
-          >
-            Add Student
-          </Button>
+      <Grid container spacing={2} mb={2} justifyContent="space-between">
+        <Grid item container spacing={2} sx={{ width: 'auto' }}>
+          <Grid item>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={() => setNewStudentDialog(true)}
+            >
+              Add Student
+            </Button>
+          </Grid>
+          <Grid item>
+            <input
+              type="file"
+              accept=".csv"
+              hidden
+              ref={fileInputRef}
+              onChange={handleFileChange}
+            />
+            <Button
+              variant="outlined"
+              startIcon={<UploadFile />}
+              onClick={() => fileInputRef.current.click()}
+            >
+              Upload CSV
+            </Button>
+          </Grid>
         </Grid>
-        <Grid>
-          <input
-            type="file"
-            accept=".csv"
-            hidden
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
+        <Grid item>
           <Button
             variant="outlined"
-            startIcon={<UploadFile />}
-            onClick={() => fileInputRef.current.click()}
+            startIcon={<NavigateNextIcon sx={{ transform: 'rotate(180deg)' }} />}
+            onClick={() => window.history.back()}
           >
-            Upload CSV
+            BACK TO CLASSES
           </Button>
         </Grid>
       </Grid>
