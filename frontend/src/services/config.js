@@ -5,7 +5,7 @@
  */
 
 // Use environment variable for backend URL or fallback to localhost for development
-export const API_BASE_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:8000';
+export const API_BASE_URL = process.env.REACT_APP_SERVER_URL;
 
 /**
  * Creates headers with authentication token if available

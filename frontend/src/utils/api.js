@@ -9,7 +9,7 @@ import { getErrorInfo, logError } from './errorHandling';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+  baseURL: process.env.REACT_APP_SERVER_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -44,7 +44,7 @@ api.interceptors.response.use(
         // Attempt to refresh the access token
         const refreshToken = localStorage.getItem('refresh_token');
         const response = await axios.post(
-          `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/token/refresh/`,
+          `${process.env.REACT_APP_SERVER_URL}/api/token/refresh/`,
           { refresh: refreshToken }
         );
 
