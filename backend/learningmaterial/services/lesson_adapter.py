@@ -4,6 +4,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 from dotenv import load_dotenv
+import asyncio
 from django.conf import settings
 
 from utils.encryption import decrypt
@@ -16,7 +17,7 @@ from learningmaterial.services.file_creators import (
 
 load_dotenv()
 
-# Initialize LLM
+# Initialize LLM (async)
 llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
 
 # Define schemas
@@ -155,9 +156,118 @@ def get_base_text(path: str) -> str:
     raise ValueError(f"Unsupported file type: {ext}")
 
 
+async def process_student(material, student, base_text, file_ext, original_slides, return_file):
+    info = student.disability_info.strip()
+    if not info:
+        return None
 
-# Main pipeline
-def generate_adapted_lessons(material, students, return_file=False):
+    # 1. Classification
+    cls_input = classify_prompt.format(disability_info=info)
+    cls_resp = await asyncio.to_thread(llm.invoke, cls_input)
+    cls = class_parser.parse(cls_resp.content)
+    category = cls['category']
+    notes = cls.get('notes', '')
+
+    # 2. Visual-impairment override
+    if category == 'visual_impairment':
+        out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
+        os.makedirs(out_dir, exist_ok=True)
+        fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
+        audio_path = os.path.join(out_dir, fname)
+        success = create_audio_from_text(base_text, audio_path)
+        return {
+            'student_id': student.id,
+            'disability': info,
+            'category': category,
+            'notes': notes,
+            'adapted_title': material.title,
+            'adapted_objectives': [],
+            'adapted_content': '',
+            'audio_url': f"{settings.MEDIA_URL}adapted_output/{fname}" if success else None,
+        }
+
+    # 3. Strategy generation
+    strat_input = strategy_prompt.format(category=category, notes=notes)
+    strat_resp = await asyncio.to_thread(llm.invoke, strat_input)
+    strategy = strat_parser.parse(strat_resp.content)['steps']
+
+    # 4. Lesson adaptation
+    steps_list = "\n".join(f"- {s}" for s in strategy)
+    slide_instructions = (
+        """If the output will be used for a PowerPoint presentation (PPTX), structure the `adapted_content` field using this format:
+
+        [Slide]
+        Title: <title>
+        Content: <content>
+        (use double line breaks between paragraphs)
+
+        Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
+        if file_ext == 'pptx' else ""
+    )
+    adapt_input = adapt_prompt.format(
+        disability_info=info,
+        category=category,
+        steps=steps_list,
+        objectives=material.objective or "",
+        text=base_text,
+        slide_instructions=slide_instructions
+    )
+    adapt_resp = await asyncio.to_thread(llm.invoke, adapt_input)
+    parsed = adapt_parser.parse(adapt_resp.content)
+
+    # 5. Conditional audio
+    if any('audio narration' in s.lower() for s in strategy):
+        out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
+        os.makedirs(out_dir, exist_ok=True)
+        fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
+        audio_path = os.path.join(out_dir, fname)
+        create_audio_from_text(base_text, audio_path)
+        parsed['audio_url'] = f"{settings.MEDIA_URL}adapted_output/{fname}"
+
+    # 6. File writing
+    if return_file:
+        out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
+        os.makedirs(out_dir, exist_ok=True)
+        safe_title = material.title.replace(' ', '_').replace('/', '_')
+        user_prefix = f"{student.first_name}_{student.last_name}".replace(' ', '_').lower()
+        filename = f"{user_prefix}_{safe_title}.{file_ext}"
+        output_path = os.path.join(out_dir, filename)
+        content = parsed.get('adapted_content', '')
+
+        if file_ext == 'pdf':
+            create_pdf_from_text(content, output_path)
+        elif file_ext == 'docx':
+            create_docx_from_text(content, output_path)
+        elif file_ext == 'pptx':
+            slides = re.findall(
+                r"\[Slide\]\s*Title:\s*(.*?)\s*Content:\s*(.*?)(?=\n\s*\[Slide\]|\Z)",
+                content,
+                re.DOTALL
+            )
+            slide_pairs = [(t.strip(), c.strip()) for t, c in slides]
+            blacklist = {"Using Support Tools", "Accessing Audiobooks", "Extended Time Accommodations"}
+            slide_pairs = [(t, c) for t, c in slide_pairs if t not in blacklist]
+            adapted_slides = []
+            for i, (title, slide_content) in enumerate(slide_pairs):
+                slide_content = slide_content.replace('### Slide', '').strip()
+                images = original_slides[i]['images'] if i < len(original_slides) else []
+                adapted_slides.append((title, slide_content, images))
+            create_pptx_from_text(adapted_slides, output_path)
+
+        parsed['file'] = output_path
+        parsed['file_url'] = f"{settings.MEDIA_URL}adapted_output/{filename}"
+
+    parsed.update({
+        'student_id': student.id,
+        'disability': info,
+        'category': category,
+        'strategy': strategy,
+        'notes': notes
+    })
+    return parsed
+
+
+async def generate_adapted_lessons(material, students, return_file=False):
     file_ext = material.file.path.split('.')[-1].lower()
     adapted_lessons = {}
 
@@ -167,126 +277,22 @@ def generate_adapted_lessons(material, students, return_file=False):
         base_text = "\n\n".join(
             f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in original_slides
         )
-        print(base_text)
     else:
+        original_slides = None
         base_text = get_base_text(material.file.path)
 
+    # Run all student adaptations concurrently
+    student_tasks = [
+        process_student(material, student, base_text, file_ext, original_slides, return_file)
+        for student in students
+        if student.disability_info.strip()
+    ]
 
+    results = await asyncio.gather(*student_tasks)
 
-    for student in students:
-        info = student.disability_info.strip()
-        if not info:
-            continue
-
-        # 1. Classification
-        cls_input = classify_prompt.format(disability_info=info)
-        cls_resp = llm.invoke(cls_input)
-        cls = class_parser.parse(cls_resp.content)
-        category = cls['category']
-        notes = cls.get('notes', '')
-
-        # 2. Visual-impairment override
-        if category == 'visual_impairment':
-            out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
-            os.makedirs(out_dir, exist_ok=True)
-            fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
-            audio_path = os.path.join(out_dir, fname)
-            success = create_audio_from_text(base_text, audio_path)
-            adapted_lessons[student.id] = {
-                'disability': info,
-                'category': category,
-                'notes': notes,
-                'adapted_title': material.title,
-                'adapted_objectives': [],
-                'adapted_content': '',
-                'audio_url': f"{settings.MEDIA_URL}adapted_output/{fname}" if success else None,
-            }
-            continue
-
-        # 3. Strategy generation
-        strat_input = strategy_prompt.format(category=category, notes=notes)
-        strat_resp = llm.invoke(strat_input)
-        strategy = strat_parser.parse(strat_resp.content)['steps']
-
-        # 4. Lesson adaptation
-        steps_list = "\n".join(f"- {s}" for s in strategy)
-        slide_instructions = (
-            """If the output will be used for a PowerPoint presentation (PPTX), structure the `adapted_content` field using this format:
-
-                [Slide]
-                Title: <title>
-                Content: <content>
-                (use double line breaks between paragraphs)
-
-                Avoid including any generic tool tips or the original lesson content outside of slide blocks."""
-            if file_ext == 'pptx' else ""
-        )
-
-        adapt_input = adapt_prompt.format(
-            disability_info=info,  
-            category=category,
-            steps=steps_list,
-            objectives=material.objective or "",
-            text=base_text,
-            slide_instructions=slide_instructions
-        )
-        adapt_resp = llm.invoke(adapt_input)
-        parsed = adapt_parser.parse(adapt_resp.content)
-
-        # 5. Conditional audio supplement
-        if any('audio narration' in s.lower() for s in strategy):
-            out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
-            os.makedirs(out_dir, exist_ok=True)
-            fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
-            audio_path = os.path.join(out_dir, fname)
-            create_audio_from_text(base_text, audio_path)
-            parsed['audio_url'] = f"{settings.MEDIA_URL}adapted_output/{fname}"
-
-        # 6. File writing if requested
-        if return_file:
-            out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
-            os.makedirs(out_dir, exist_ok=True)
-            safe_title = material.title.replace(' ', '_').replace('/', '_')
-            user_prefix = f"{student.first_name}_{student.last_name}".replace(' ', '_').lower()
-            filename = f"{user_prefix}_{safe_title}.{file_ext}"
-            output_path = os.path.join(out_dir, filename)
-            content = parsed.get('adapted_content', '')
-
-            if file_ext == 'pdf':
-                create_pdf_from_text(content, output_path)
-            elif file_ext == 'docx':
-                create_docx_from_text(content, output_path)
-            elif file_ext == 'pptx':
-                slides = re.findall(
-                    r"\[Slide\]\s*Title:\s*(.*?)\s*Content:\s*(.*?)(?=\n\s*\[Slide\]|\Z)",
-                    content,
-                    re.DOTALL
-                )
-                slide_pairs = [(t.strip(), c.strip()) for t, c in slides]
-
-                # Remove generic support-tool slides
-                blacklist = {"Using Support Tools", "Accessing Audiobooks", "Extended Time Accommodations"}
-                slide_pairs = [(t, c) for t, c in slide_pairs if t not in blacklist]
-
-                # Pair adapted slides with original images
-                adapted_slides = []
-                for i, (title, slide_content) in enumerate(slide_pairs):
-                    slide_content = slide_content.replace('### Slide', '').strip()
-                    images = original_slides[i]['images'] if i < len(original_slides) else []
-                    adapted_slides.append((title, slide_content, images))
-
-                create_pptx_from_text(adapted_slides, output_path)
-
-            parsed['file'] = output_path
-            parsed['file_url'] = f"{settings.MEDIA_URL}adapted_output/{filename}"
-
-        # 7. Append to results
-        parsed.update({
-            'disability': info,
-            'category': category,
-            'strategy': strategy,
-            'notes': notes
-        })
-        adapted_lessons[student.id] = parsed
+    for result in results:
+        if result:
+            sid = result.pop('student_id')
+            adapted_lessons[sid] = result
 
     return adapted_lessons

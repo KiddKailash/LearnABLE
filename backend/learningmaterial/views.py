@@ -2,6 +2,8 @@ from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+import asyncio
+from asgiref.sync import async_to_sync
 
 from .models import LearningMaterials
 from .serializers import LearningMaterialsSerializer
@@ -82,8 +84,8 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
         Generate adapted lessons for all students in the assigned class.
         """
         material = self.get_object()
-        students = material.class_assigned.students.all()
-        adapted_outputs = generate_adapted_lessons(material, students, return_file=True)
+        students = list(material.class_assigned.students.all())
+        adapted_outputs = async_to_sync(generate_adapted_lessons)(material, students, return_file=True)
 
         if isinstance(adapted_outputs, dict) and "error" in adapted_outputs:
             return Response(adapted_outputs, status=200)
