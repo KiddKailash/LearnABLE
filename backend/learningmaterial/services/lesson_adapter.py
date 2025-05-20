@@ -108,6 +108,7 @@ Output JSON:
 adapt_prompt = PromptTemplate(
     template="""
 You are an expert educational designer. Given the original lesson content and learning objectives, produce an adapted version tailored to the learners needs—with no mention that its been modified.
+Please ensure that the content that is output is UDL (Universal Design for Learning) aligned and follows those guidelines as much as possible.
 
 Given the student description:
 " {disability_info} "
