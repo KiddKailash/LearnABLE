@@ -9,11 +9,6 @@
 /backend/.venv
 .venv
 
-# Migrations
-backend/**/migrations/*.py
-!backend/**/migrations/__init__.py
-backend/**/migrations/*.pyc
-
 # testing
 /coverage
 
