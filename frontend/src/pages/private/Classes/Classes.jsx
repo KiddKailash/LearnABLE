@@ -35,7 +35,7 @@ import Menu from "@mui/icons-material/Menu";
 
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import api from "../../../services/api";
-import StudentFormDialog from "../../../components/StudentFormDialog";
+import StudentFormDialog from "./StudentFormDialog";
 import ClassCreationStepper from "./ClassCreationStepper";
 
 const Classes = () => {
@@ -270,6 +270,16 @@ const Classes = () => {
     }
   };
 
+  const handleViewStudents = (cls) => {
+    navigate(`/classes/${cls.id}?mode=students`);
+  };
+
+  const handleUploadMaterial = (cls) => {
+    navigate(`/classes/${cls.id}?mode=content`, {
+      state: { preselectedClassId: cls.id },
+    });
+  };
+
   return (
     <>
       <Box>
@@ -446,7 +456,7 @@ const Classes = () => {
                             fullWidth
                             size="medium"
                             onClick={() =>
-                              navigate(`/classes/${cls.id}/students`)
+                              handleViewStudents(cls)
                             }
                             sx={{
                               justifyContent: "flex-start",
@@ -461,9 +471,7 @@ const Classes = () => {
                             fullWidth
                             size="medium"
                             onClick={() =>
-                              navigate(`/classes/${cls.id}/content`, {
-                                state: { preselectedClassId: cls.id }
-                              })
+                              handleUploadMaterial(cls)
                             }
                             sx={{
                               justifyContent: "flex-start",

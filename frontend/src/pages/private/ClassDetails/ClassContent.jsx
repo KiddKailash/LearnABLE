@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useContext } from "react";
 import UserContext from "../../../store/UserObject";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 // MUI Components
@@ -61,6 +61,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
 
 const AIAssistantUpload = () => {
   const location = useLocation();
+  const { classId } = useParams(); // Get classId from params
   const BACKEND = process.env.REACT_APP_SERVER_URL;
   const { user } = useContext(UserContext);
   const userId = user?.id || user?.email || "guest";
@@ -124,7 +125,7 @@ const AIAssistantUpload = () => {
   };
 
   const handleBack = () => {
-    navigate("/classes");
+    setActiveStep((prevStep) => Math.max(0, prevStep - 1));
   };  
 
   useEffect(() => {
@@ -156,12 +157,19 @@ const AIAssistantUpload = () => {
   }, [tutorialKey]);
 
   useEffect(() => {
-    const preselected = location?.state?.preselectedClassId;
-    if (preselected) {
-      setSelectedClass(preselected);
+    // Use classId from URL params if available
+    if (classId) {
+      setSelectedClass(classId);
       setActiveStep(1); // Skip directly to upload material
+    } else {
+      // Otherwise check for preselected class from location state
+      const preselected = location?.state?.preselectedClassId;
+      if (preselected) {
+        setSelectedClass(preselected);
+        setActiveStep(1); // Skip directly to upload material
+      }
     }
-  }, [location]);
+  }, [location, classId]);
 
 
   const handleDragOver = (e) => {
@@ -389,11 +397,6 @@ const AIAssistantUpload = () => {
         </DialogActions>
       </Dialog>
 
-
-      <Typography variant="h4" gutterBottom sx={{ mb: 2 }}>
-        Learning Material Upload
-      </Typography>
-
       <Stepper activeStep={activeStep} sx={{ mb: 2 }}>
         {steps.map((label) => (
           <Step key={label}>
@@ -447,7 +450,7 @@ const AIAssistantUpload = () => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   fullWidth
-                  variant="outlined"
+                  required
                 />
 
                 <TextField
@@ -457,7 +460,7 @@ const AIAssistantUpload = () => {
                   fullWidth
                   multiline
                   rows={3}
-                  variant="outlined"
+                  required
                 />
 
                 <UploadZone
@@ -466,6 +469,7 @@ const AIAssistantUpload = () => {
                   onDrop={handleDrop}
                   onClick={handleFileClick}
                   sx={{
+                    borderColor: isDragging ? "primary.dark" : "primary.main",
                     backgroundColor: isDragging
                       ? "action.hover"
                       : "background.default",
@@ -474,69 +478,65 @@ const AIAssistantUpload = () => {
                   <input
                     type="file"
                     ref={fileInputRef}
-                    onChange={handleFileChange}
                     style={{ display: "none" }}
-                    accept=".pdf,.doc,.docx,.txt,.pptx"
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx"
                   />
-
                   {file ? (
                     <Box
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
-                        gap: 2,
+                        justifyContent: "space-between",
+                        p: 2,
                       }}
                     >
-                      <CheckCircleIcon color="success" />
-                      <Typography>{file.name}</Typography>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearFile();
-                        }}
-                      >
-                        <DeleteIcon />
+                      <Box sx={{ display: "flex", alignItems: "center" }}>
+                        <CheckCircleIcon
+                          color="success"
+                          sx={{ mr: 1, fontSize: "1.5rem" }}
+                        />
+                        <Typography variant="body1">{file.name}</Typography>
+                      </Box>
+                      <IconButton onClick={(e) => {
+                        e.stopPropagation();
+                        clearFile();
+                      }}>
+                        <DeleteIcon color="error" />
                       </IconButton>
                     </Box>
                   ) : (
-                    <Box>
+                    <Box sx={{ p: 3 }}>
                       <UploadFileIcon
-                        sx={{ fontSize: 40, color: "primary.main", mb: 1 }}
+                        sx={{ fontSize: "3rem", color: "primary.main", mb: 1 }}
                       />
-                      <Typography>
-                        Drag and drop your file here or click to browse
+                      <Typography variant="h6" gutterBottom>
+                        Drag and drop your file here
                       </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        Supported formats: PDF, DOC, DOCX, TXT, PPTX
+                      <Typography variant="body2" color="text.secondary">
+                        Or click to browse (PDF, Word, PowerPoint)
                       </Typography>
                     </Box>
                   )}
                 </UploadZone>
 
                 {file && (
-                  <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Live Preview:
-                    </Typography>
-                    <Box
-                      ref={viewerRef}
-                      sx={{
-                        height: 400,
-                        border: "1px solid #ccc",
-                        borderRadius: 1,
-                        overflow: "hidden",
-                      }}
-                    />
-                  </Box>
+                  <Box
+                    ref={viewerRef}
+                    sx={{
+                      height: "500px",
+                      width: "100%",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: 1,
+                    }}
+                  />
                 )}
 
                 <Box
                   sx={{
                     display: "flex",
                     justifyContent: "space-between",
-                    mt: 2,
+                    pt: 2,
                   }}
                 >
                   <Button onClick={handleBack}>Back</Button>

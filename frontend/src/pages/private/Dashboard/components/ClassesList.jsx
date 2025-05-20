@@ -54,7 +54,7 @@ const ClassesList = ({ classes, onNavigate }) => {
           classes.map((classItem) => (
             <ListItemButton
               key={classItem.id}
-              onClick={() => onNavigate(`/classes/${classItem.id}/students`)}
+              onClick={() => onNavigate(`/classes/${classItem.id}?mode=students`)}
               sx={{
                 py: 2,
                 borderBottom: '1px solid',

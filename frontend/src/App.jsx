@@ -24,10 +24,9 @@ import PageNotFound from "./pages/public/PageNotFound";
 // Webpages - Private
 import Account from "./pages/private/Account/Account.jsx";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
-import Classes from "./pages/private/Classes/Classes";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
-import StudentListPage from "./pages/private/Classes/StudentList.jsx";
-import ClassContent from "./pages/private/Classes/ClassContent";
+import ClassDetailsContainer from "./pages/private/ClassDetails/ClassDetailsContainer";
+import Classes from "./pages/private/Classes/Classes";
 
 const App = ({ mode }) => {
   const pages = [
@@ -38,8 +37,7 @@ const App = ({ mode }) => {
     { path: "/account", component: <Account /> },
     { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },
-    { path: "/classes/:classId/students", component: <StudentListPage /> }, 
-    { path: "/classes/:classId/content", component: <ClassContent /> },
+    { path: "/classes/:classId", component: <ClassDetailsContainer /> },
     { path: "*", component: <PageNotFound /> },
   ];
 

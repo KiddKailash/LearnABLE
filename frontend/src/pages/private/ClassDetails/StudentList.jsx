@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
-import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -15,11 +15,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import Tooltip from "@mui/material/Tooltip";
 import Paper from "@mui/material/Paper";
-import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import DialogActions from "@mui/material/DialogActions";
-import Breadcrumbs from "@mui/material/Breadcrumbs";
-import Link from "@mui/material/Link";
 
 // MUI Icons
 import Edit from "@mui/icons-material/Edit";
@@ -31,7 +28,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 // Local Imports
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
-import StudentFormDialog from "../../../components/StudentFormDialog";
+import StudentFormDialog from "../Classes/StudentFormDialog";
 import studentsApi from "../../../services/studentsApi";
 import classesApi from "../../../services/classesApi";
 import httpClient from "../../../services/httpClient";
@@ -201,42 +198,7 @@ const StudentListPage = () => {
   };
 
   return (
-    <Container maxWidth="xl" sx={{ pt: 4 }}>
-      <Breadcrumbs
-        separator={<NavigateNextIcon fontSize="small" />}
-        aria-label="breadcrumb"
-        sx={{ mb: 2 }}
-      >
-        <Link
-          component={RouterLink}
-          to="/dashboard"
-          underline="none"
-          color="inherit"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          Dashboard
-        </Link>
-        <Link
-          component={RouterLink}
-          to="/classes"
-          underline="none"
-          color="inherit"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          Classes
-        </Link>
-        <Typography
-          color="text.primary"
-          sx={{ display: "flex", alignItems: "center" }}
-        >
-          {className}
-        </Typography>
-      </Breadcrumbs>
-
-      <Typography variant="h4" gutterBottom>
-        Students in {className}
-      </Typography>
-
+    <>
       <Grid container spacing={2} mb={2}>
         <Grid item>
           <Button
@@ -261,15 +223,6 @@ const StudentListPage = () => {
             onClick={() => fileInputRef.current.click()}
           >
             Upload CSV
-          </Button>
-        </Grid>
-        <Grid item sx={{ marginLeft: 'auto' }}>
-          <Button
-            variant="outlined"
-            startIcon={<NavigateNextIcon sx={{ transform: 'rotate(180deg)' }} />}
-            onClick={() => window.history.back()}
-          >
-            BACK TO CLASSES
           </Button>
         </Grid>
       </Grid>
@@ -375,7 +328,7 @@ const StudentListPage = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </>
   );
 };
 
