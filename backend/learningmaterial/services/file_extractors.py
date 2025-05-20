@@ -1,3 +1,8 @@
+"""
+Utility functions to extract text and image data from PDF, DOCX, and PPTX files.
+These help standardize content input for further AI processing or transformation.
+"""
+
 import fitz  # PyMuPDF to read pdfs and extract text
 from docx import Document
 from pptx import Presentation
@@ -9,6 +14,9 @@ tmp_dir = os.path.join(tempfile.gettempdir(), "pptx_images")
 os.makedirs(tmp_dir, exist_ok=True)
 
 def extract_text_from_pdf(path):
+    """
+    Extract all text from a PDF file, page by page, preserving reading order.
+    """
     with fitz.open(path) as doc:
         lines = []
         for page in doc:
@@ -22,6 +30,9 @@ def extract_text_from_pdf(path):
 
 
 def extract_text_from_docx(path):
+    """
+    Extract text from a DOCX file, including paragraph styles like headings.
+    """
     doc = Document(path)
     lines = []
     for para in doc.paragraphs:
@@ -38,6 +49,10 @@ def extract_text_from_docx(path):
 
 
 def extract_text_from_pptx(path):
+    """
+    Extract text and image metadata from a PowerPoint file.
+    Returns a list of slides with title, content, and image data.
+    """
     prs = Presentation(path)
     slide_data = []
 

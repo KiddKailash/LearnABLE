@@ -13,7 +13,12 @@ extract_text_from_docx, extract_text_from_pptx, alignment_prompt, alignment_pars
 
 class LearningMaterialsViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for managing learning materials.
+    ViewSet for managing learning materials, including creation, retrieval, 
+    updating, deletion, and custom actions for content processing and lesson adaptation.
+
+    Provides endpoints to:
+    - Create learning materials with automatic content extraction and alignment validation.
+    - Adapt lessons for students in assigned classes using AI-based generation.
     """
     queryset = LearningMaterials.objects.all()
     serializer_class = LearningMaterialsSerializer
@@ -26,6 +31,15 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
 )
 
     def create(self, request, *args, **kwargs):
+        """
+        Create a new LearningMaterial instance.
+
+        Automatically assigns the 'created_by' field based on the logged-in teacher user.
+        Extracts text content from the uploaded file (PDF, DOCX, or PPTX) to perform an alignment
+        check between the file content and the provided learning objectives using a language model.
+
+        Returns the serialized learning material data along with the alignment check result.
+        """
         data = request.data.copy()
         if hasattr(request.user, 'teacher'):
             data['created_by'] = request.user.teacher.id
@@ -78,6 +92,14 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def adapt(self, request, pk=None):
+        """
+        Generate adapted lessons for all students in the assigned class for the specified learning material.
+
+        Utilizes AI-powered lesson adaptation to create personalized learning content files and optional audio files
+        tailored to each student's needs.
+
+        Returns a dictionary mapping student IDs to the adaptation results, including file URLs or error messages.
+        """
         """
         Generate adapted lessons for all students in the assigned class.
         """

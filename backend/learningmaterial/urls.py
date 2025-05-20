@@ -1,3 +1,14 @@
+"""
+URL configuration for the LearningMaterials app.
+
+Defines RESTful API endpoints for managing learning materials, including:
+- Listing all materials and creating new ones
+- Retrieving, updating, and deleting individual materials by ID
+- Fetching materials by class ID
+- Processing and adapting learning materials via AI-powered endpoints
+
+"""
+
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path

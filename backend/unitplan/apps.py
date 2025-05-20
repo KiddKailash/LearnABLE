@@ -1,3 +1,11 @@
+"""
+Django AppConfig for the Unit Plans application.
+
+Defines the configuration for the 'unitplan' app including
+the default primary key field type and a human-readable
+verbose name for display in the admin interface.
+"""
+
 from django.apps import AppConfig
 
 
