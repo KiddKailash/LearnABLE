@@ -1,3 +1,8 @@
+"""
+Main AI adaptation pipeline for processing uploaded lesson files and tailoring them to student learning needs.
+Uses LLMs to classify disabilities, generate adaptation strategies, and produce personalized content outputs.
+"""
+
 import os
 import re
 from langchain_openai import ChatOpenAI
@@ -143,6 +148,9 @@ JSON format:
 
 # Utility to extract raw text
 def get_base_text(path: str) -> str:
+    """
+    Dispatch file to appropriate extractor based on extension and return extracted base text.
+    """
     ext = path.split('.')[-1].lower()
     if ext == 'pdf':
         return extract_text_from_pdf(path)
