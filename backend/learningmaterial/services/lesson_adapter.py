@@ -165,6 +165,23 @@ def get_base_text(path: str) -> str:
 
 
 async def process_student(material, student, base_text, file_ext, original_slides, return_file):
+    """
+    Processes a single student's disability information and adapts the lesson accordingly.
+
+    This includes classification of the disability, generation of adaptation strategies,
+    creation of adapted content, and optional generation of audio or output files.
+
+    Args:
+        material: The LearningMaterials instance representing the uploaded lesson.
+        student: The student object containing disability information.
+        base_text (str): Extracted base text from the original lesson file.
+        file_ext (str): The extension of the file (pdf, docx, pptx).
+        original_slides (list or None): Parsed slide data with optional image refs for PPTX.
+        return_file (bool): Whether to create and store adapted output files.
+
+    Returns:
+        dict or None: A dictionary with adapted content and metadata, or None if skipped.
+    """
     info = student.disability_info.strip()
     if not info:
         return None
@@ -276,6 +293,20 @@ async def process_student(material, student, base_text, file_ext, original_slide
 
 
 async def generate_adapted_lessons(material, students, return_file=False):
+    """
+    Orchestrates parallel adaptation of a lesson for all students in a class.
+
+    Executes the processing of each student concurrently using asyncio to improve speed,
+    and aggregates the results keyed by student ID.
+
+    Args:
+        material: The LearningMaterials instance to adapt.
+        students (list): List of student objects assigned to the material.
+        return_file (bool): Whether to generate physical files (PDF/DOCX/PPTX/audio) for each.
+
+    Returns:
+        dict: A mapping of student IDs to their respective adaptation result dictionaries.
+    """
     file_ext = material.file.path.split('.')[-1].lower()
     adapted_lessons = {}
 
