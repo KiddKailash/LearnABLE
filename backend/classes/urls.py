@@ -1,12 +1,3 @@
-from django.urls import path
-from .views import (
-    create_class,
-    get_all_classes,
-    upload_students_csv,
-    add_student_to_class,
-    class_detail,  # handles both PUT and DELETE
-)
-
 """
 URL configuration for the 'classes' app.
 
@@ -18,6 +9,15 @@ Defines the following endpoints under the `/api/classes/` prefix:
 - <id>/add-student/→ Add a single student to a class (POST)
 - <id>/            → Retrieve, update, or delete a specific class (GET, PUT, DELETE)
 """
+
+from django.urls import path
+from .views import (
+    create_class,
+    get_all_classes,
+    upload_students_csv,
+    add_student_to_class,
+    class_detail,  # handles both PUT and DELETE
+)
 
 urlpatterns = [
     path('create/', 

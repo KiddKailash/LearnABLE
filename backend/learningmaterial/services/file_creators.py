@@ -1,3 +1,8 @@
+"""
+Utility module for generating educational content in DOCX, PDF, PPTX, and audio formats.
+Provides functions to format plain text into styled documents and convert it to multimedia resources.
+"""
+
 from docx import Document
 from pptx import Presentation
 from pptx.util import Inches, Pt

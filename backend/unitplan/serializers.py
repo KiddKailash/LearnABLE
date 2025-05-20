@@ -1,3 +1,9 @@
+"""
+Serializers for the UnitPlan model to handle serialization
+and deserialization of UnitPlan instances in API requests and responses.
+Includes detailed metadata fields like file size, name, and document URL.
+"""
+
 from rest_framework import serializers
 from .models import UnitPlan
 from classes.serializers import ClassSerializer
@@ -17,7 +23,16 @@ class UnitPlanSerializer(serializers.ModelSerializer):
         read_only_fields = ['file_type', 'uploaded_at', 'updated_at', 'file_name', 'document_url']
     
     def create(self, validated_data):
-        """Override create to remove from_creation_flow before creating the model instance"""
+        """
+        Override create method to remove non-model field 'from_creation_flow' 
+        before creating the UnitPlan instance.
+        
+        Args:
+            validated_data (dict): Validated serializer data including any extra fields.
+        
+        Returns:
+            UnitPlan: The newly created UnitPlan instance.
+        """
         # Remove non-model fields from validated_data
         from_creation_flow = validated_data.pop('from_creation_flow', False)
         
@@ -29,18 +44,45 @@ class UnitPlanSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
     def get_file_size(self, obj):
+        """
+        Get the size of the uploaded document in kilobytes (KB).
+        
+        Args:
+            obj (UnitPlan): UnitPlan instance.
+        
+        Returns:
+            float or None: File size in KB rounded to 2 decimals, or None if no file.
+        """
         if obj.document and hasattr(obj.document, 'size'):
             # Return file size in KB, rounded to 2 decimal places
             return round(obj.document.size / 1024, 2)
         return None
     
     def get_file_name(self, obj):
+        """
+        Extract just the filename from the document field (excluding path).
+        
+        Args:
+            obj (UnitPlan): UnitPlan instance.
+        
+        Returns:
+            str or None: Filename string or None if no document.
+        """
         if obj.document and obj.document.name:
             # Return just the filename, not the full path
             return obj.document.name.split('/')[-1]
         return None
     
     def get_document_url(self, obj):
+        """
+        Build an absolute URL for accessing the uploaded document.
+        
+        Args:
+            obj (UnitPlan): UnitPlan instance.
+        
+        Returns:
+            str or None: Absolute URL to the document or None if no document or request context.
+        """
         if obj.document:
             request = self.context.get('request')
             if request:
@@ -56,6 +98,15 @@ class UnitPlanListSerializer(serializers.ModelSerializer):
         fields = ['id', 'class_instance', 'class_name', 'title', 'file_name', 'file_type', 'uploaded_at']
     
     def get_file_name(self, obj):
+        """
+        Extract just the filename from the document field for list views.
+        
+        Args:
+            obj (UnitPlan): UnitPlan instance.
+        
+        Returns:
+            str or None: Filename string or None if no document.
+        """
         if obj.document and obj.document.name:
             return obj.document.name.split('/')[-1]
         return None 

@@ -238,7 +238,7 @@ const StudentListPage = () => {
       </Typography>
 
       <Grid container spacing={2} mb={2}>
-        <Grid>
+        <Grid item>
           <Button
             variant="contained"
             startIcon={<Add />}
@@ -247,7 +247,7 @@ const StudentListPage = () => {
             Add Student
           </Button>
         </Grid>
-        <Grid>
+        <Grid item>
           <input
             type="file"
             accept=".csv"
@@ -261,6 +261,15 @@ const StudentListPage = () => {
             onClick={() => fileInputRef.current.click()}
           >
             Upload CSV
+          </Button>
+        </Grid>
+        <Grid item sx={{ marginLeft: 'auto' }}>
+          <Button
+            variant="outlined"
+            startIcon={<NavigateNextIcon sx={{ transform: 'rotate(180deg)' }} />}
+            onClick={() => window.history.back()}
+          >
+            BACK TO CLASSES
           </Button>
         </Grid>
       </Grid>

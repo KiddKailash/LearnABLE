@@ -8,17 +8,33 @@ from .serializers import UnitPlanSerializer, UnitPlanListSerializer
 from classes.models import Classes
 
 class UnitPlanViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing Unit Plans.
+
+    Allows teachers to create, retrieve, update, delete, and download unit plans associated with their classes.
+    Includes custom actions to fetch unit plans for a specific class and replace only the document of an existing unit plan.
+
+    Permissions:
+        Only authenticated users who are teachers can access unit plans related to their own classes.
+    """
     queryset = UnitPlan.objects.all()
     serializer_class = UnitPlanSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_serializer_class(self):
+        """
+        Return the appropriate serializer class based on the action.
+        Uses a simpler serializer for list action to reduce payload size.
+        """
         if self.action == 'list':
             return UnitPlanListSerializer
         return UnitPlanSerializer
 
     def get_queryset(self):
-        # Filter unit plans by teacher
+        """
+        Retrieve queryset of UnitPlans filtered to those belonging to classes taught by the current teacher.
+        Returns an empty queryset if the user is not a teacher.
+        """
         teacher = self.request.user.teacher
         if not teacher:
             return UnitPlan.objects.none()
@@ -27,7 +43,13 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
         return UnitPlan.objects.filter(class_instance__teacher=teacher)
     
     def create(self, request, *args, **kwargs):
-        # Debugging: Log the received data
+        """
+        Handle creation of a new UnitPlan.
+
+        Validates presence of a document file and class_instance,
+        ensures the class belongs to the requesting teacher,
+        and prevents duplicate unit plans unless updating via a 'from_creation_flow' flag.
+        """
         print(f"Unit plan create - received data keys: {list(request.data.keys())}")
         print(f"Unit plan create - received files keys: {list(request.FILES.keys())}")
         if 'document' in request.FILES:
@@ -146,7 +168,13 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
             )
     
     def update_existing_plan(self, request, instance, *args, **kwargs):
-        """Update an existing plan instead of creating a new one"""
+        """
+        Update an existing UnitPlan instance instead of creating a new one.
+
+        Handles updating the document file if provided,
+        updates other fields like title and description,
+        and deletes the old document file from storage if replaced.
+        """
         print(f"Unit plan update_existing_plan - Instance ID: {instance.id}, Class ID: {instance.class_instance.id if hasattr(instance, 'class_instance') else 'unknown'}")
         print(f"Unit plan update_existing_plan - Files: {request.FILES}")
         print(f"Unit plan update_existing_plan - Data keys: {list(request.data.keys())}")
@@ -234,6 +262,9 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
             )
     
     def update(self, request, *args, **kwargs):
+        """
+        Update a UnitPlan instance ensuring the requesting teacher owns the class.
+        """
         instance = self.get_object()
         # Ensure the teacher owns the class
         if instance.class_instance.teacher != request.user.teacher:
@@ -244,6 +275,11 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
         return super().update(request, *args, **kwargs)
     
     def destroy(self, request, *args, **kwargs):
+        """
+        Delete a UnitPlan instance ensuring the requesting teacher owns the class.
+
+        Also deletes the associated document file from storage.
+        """
         instance = self.get_object()
         # Ensure the teacher owns the class
         if instance.class_instance.teacher != request.user.teacher:
@@ -274,6 +310,11 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def download(self, request, pk=None):
+        """
+        Custom action to download the document file of a specific UnitPlan.
+
+        Checks permission and existence of the document before returning the file.
+        """
         unit_plan = self.get_object()
         
         # Check if the teacher has access to this unit plan
@@ -297,6 +338,11 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=['get'])
     def for_class(self, request):
+        """
+        Custom action to retrieve the UnitPlan for a given class_id query parameter.
+
+        Validates teacher ownership of the class and existence of the unit plan.
+        """
         class_id = request.query_params.get('class_id')
         if not class_id:
             return Response(
@@ -326,7 +372,12 @@ class UnitPlanViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def replace_document(self, request):
-        """Replace just the document of an existing unit plan"""
+        """
+        Custom action to replace only the document of an existing UnitPlan for a given class.
+
+        Requires class_instance and document in POST data.
+        Validates ownership and existence before updating the document.
+        """
         class_id = request.data.get('class_instance')
         document = request.data.get('document')
         
