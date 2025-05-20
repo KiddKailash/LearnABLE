@@ -151,27 +151,16 @@ const Layout = ({ mode }) => {
         sx={{
           bgcolor: "background.paper",
           borderRadius: { xs: 0, sm: 5 },
-          display: "flex",
-          flexGrow: 1, // let this box expand to fill leftover space
+          flexGrow: 1,
           width: "100%",
+          height: "100%",
+          overflowY: "auto",
         }}
       >
-        {/* MAIN CONTENT AREA */}
-        <Container
-          sx={{
-            flexGrow: 1, // again, fill remaining horizontal space
-            overflowY: "auto", // scroll if content is too tall
-            display: "flex", // we use a flex container to position the <Container>
-            width: "100%",
-            height: "100%",
-            p: { xs: 2, sm: 3 },
-          }}
-        >
-          <PageWrapper>
-            {/* Renders whatever route/page is active */}
-            <Outlet />
-          </PageWrapper>
-        </Container>
+        <PageWrapper>
+          {/* Renders whatever route/page is active */}
+          <Outlet />
+        </PageWrapper>
       </Box>
     </Box>
   );

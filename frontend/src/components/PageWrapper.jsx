@@ -24,14 +24,11 @@ import Container from "@mui/material/Container";
  *   <h1>Page Content</h1>
  * </PageWrapper>
  */
-const PageWrapper = ({ children, maxWidth = "lg", sx = {} }) => {
+const PageWrapper = ({ children }) => {
   return (
     <Container
-      maxWidth={maxWidth}
       sx={{
-        p: 4,
-        mb: 4,
-        ...sx,
+        p: 3,
       }}
     >
       {children}
