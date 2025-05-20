@@ -24,20 +24,19 @@ import Delete from "@mui/icons-material/Delete";
 import UploadFile from "@mui/icons-material/UploadFile";
 import Add from "@mui/icons-material/Add";
 import Save from "@mui/icons-material/Save";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 // Local Imports
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
-import StudentFormDialog from "../Classes/StudentFormDialog";
-import studentsApi from "../../../services/studentsApi";
-import classesApi from "../../../services/classesApi";
-import httpClient from "../../../services/httpClient";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
+import StudentFormDialog from "../../Classes/StudentFormDialog";
+import studentsApi from "../../../../services/studentsApi";
+import classesApi from "../../../../services/classesApi";
+import httpClient from "../../../../services/httpClient";
 
 const StudentListPage = () => {
   const { classId } = useParams();
   const { showSnackbar } = useContext(SnackbarContext);
 
-  const [className, setClassName] = useState("");
+  const [setClassName] = useState("");
   const [students, setStudents] = useState([]);
   const [editingStudent, setEditingStudent] = useState(null);
   const [form, setForm] = useState({});

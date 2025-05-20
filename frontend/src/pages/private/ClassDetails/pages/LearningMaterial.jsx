@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useContext } from "react";
-import UserContext from "../../../store/UserObject";
+import UserContext from "../../../../store/UserObject";
 import { useLocation, useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -37,7 +36,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
 
 // Services
-import api from "../../../services/api";
+import api from "../../../../services/api";
 
 // Styled components
 const UploadZone = styled(Paper)(({ theme }) => ({
@@ -83,7 +82,7 @@ const AIAssistantUpload = () => {
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [setPreviewUrl] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [showTutorial, setShowTutorial] = useState(false);
 

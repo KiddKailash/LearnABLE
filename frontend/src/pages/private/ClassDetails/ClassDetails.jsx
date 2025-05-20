@@ -15,11 +15,11 @@ import Button from "@mui/material/Button";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 // Local Components
-import StudentList from "./StudentList";
-import ClassContent from "./ClassContent";
+import StudentList from "./pages/StudentList";
+import ClassContent from "./pages/LearningMaterial";
 import httpClient from "../../../services/httpClient";
 
-const ClassDetailsContainer = () => {
+const ClassDetails = () => {
   const { classId } = useParams();
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") || "students";
@@ -140,4 +140,4 @@ const ClassDetailsContainer = () => {
   );
 };
 
-export default ClassDetailsContainer;
+export default ClassDetails;

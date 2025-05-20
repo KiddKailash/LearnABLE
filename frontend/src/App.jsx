@@ -25,7 +25,7 @@ import PageNotFound from "./pages/public/PageNotFound";
 import Account from "./pages/private/Account/Account.jsx";
 import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
-import ClassDetailsContainer from "./pages/private/ClassDetails/ClassDetailsContainer";
+import ClassDetails from "./pages/private/ClassDetails/ClassDetails.jsx";
 import Classes from "./pages/private/Classes/Classes";
 
 const App = ({ mode }) => {
@@ -37,7 +37,7 @@ const App = ({ mode }) => {
     { path: "/account", component: <Account /> },
     { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },
-    { path: "/classes/:classId", component: <ClassDetailsContainer /> },
+    { path: "/classes/:classId", component: <ClassDetails /> },
     { path: "*", component: <PageNotFound /> },
   ];
 
