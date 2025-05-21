@@ -43,40 +43,40 @@ const NCCDReportSelection = () => {
 
   // Fetch students on component mount
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchEligibleStudents = async () => {
       try {
         setLoading(true);
-        const data = await api.students.getAll();
+        const data = await api.nccdReports.getEligibleStudents();
+        console.log("Fetched eligible students:", data);
         setStudents(data);
-        
-        // Auto-select if only one student exists
+  
         if (data.length === 1) {
           setSelectedStudent(data[0].id);
         }
       } catch (err) {
-        setError('Failed to load students. Please try again.');
-        console.error('Error fetching students:', err);
+        setError('Failed to load eligible students. Please try again.');
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchStudents();
-  }, []);
+  
+    fetchEligibleStudents();
+  }, []);    
 
   /**
    * Handles form submission and initiates report creation
    * @param {Event} e - The form submission event
    */
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedStudent) {
       setError('Please select a student');
       return;
     }
-    
+    setError('');
     setShowForm(true);
-  };
+  };   
 
   /**
    * Handles successful report creation
@@ -106,9 +106,10 @@ const NCCDReportSelection = () => {
   if (showForm) {
     return <NCCDReportForm
       open={showForm}
-      studentId={selectedStudent} 
+      //studentId={selectedStudent} 
       onSuccess={handleFormSuccess}
       onCancel={handleCancel}
+      students={students} 
     />;
   }
 
@@ -132,7 +133,7 @@ const NCCDReportSelection = () => {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert severity="warning" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
@@ -152,10 +153,11 @@ const NCCDReportSelection = () => {
               onChange={(e) => setSelectedStudent(e.target.value)}
               required
             >
-              {students.map((student) => (
-                <MenuItem key={student.id} value={student.id}>
-                  {student.first_name} {student.last_name} {student.year_level ? `- Grade ${student.year_level}` : ''}
-                </MenuItem>
+              {students
+                .map((student) => (
+                  <MenuItem key={student.id} value={student.id}>
+                    {student.first_name} {student.last_name} {student.year_level ? `- Grade ${student.year_level}` : ''}
+                  </MenuItem>
               ))}
             </Select>
           </FormControl>

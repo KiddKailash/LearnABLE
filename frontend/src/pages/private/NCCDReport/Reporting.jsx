@@ -500,9 +500,9 @@ const NCCDReports = () => {
             <CloseIcon />
           </IconButton>
           <NCCDReportForm
-            studentId={
-              selectedStudentId || (students.length > 0 ? students[0].id : null)
-            }
+            // studentId={
+            //   selectedStudentId || (students.length > 0 ? students[0].id : null)
+            // }
             reportId={selectedReportId}
             onSuccess={handleFormSuccess}
             onCancel={() => setFormDialogOpen(false)}

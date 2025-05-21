@@ -6,7 +6,7 @@
  * 
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect , useMemo } from 'react';
 
 //MUI imports
 import Box from '@mui/material/Box';
@@ -25,18 +25,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import TextField from '@mui/material/TextField';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 // Services
 import api from '../../../services/api'; 
-
-// Define form steps
-const steps = [
-  'Do you have evidence?',
-  'What is the level of adjustment?',
-  'What is the category of disability?',
-  'Is it under the DDA 1992?',
-  'Additional Comments'
-];
 
 /**
  * Multi-step form component for NCCD report creation and editing
@@ -57,11 +51,38 @@ const NCCDReportForm = ({
   studentId, 
   reportId,
   onSuccess,
-  onCancel
+  onCancel,
+  students: passedStudents = null,
 }) => {
+
+  const hasStudentId = studentId != null && studentId !== '';
+  // Start off with passedStudents if provided, otherwise an empty array
+  const [students, setStudents] = useState(passedStudents || []);
+  const [studentLoading, setStudentLoading] = useState(!hasStudentId);
+
+  // Define form steps
+  const steps = useMemo(() => {
+    return [
+      ...(hasStudentId ? [] : ['Select Student']),
+      'Do you have evidence?',
+      'What is the level of adjustment?',
+      'What is the category of disability?',
+      'Is it under the DDA 1992?',
+      'Additional Comments'
+    ];
+  }, [hasStudentId]);  
+
+  // Define stepkeys array 
+  const stepKeys = useMemo(() => {
+    return hasStudentId
+      ? ['evidence', 'levelOfAdjustment', 'disabilityCategory', 'underDDA', 'additionalComments']
+      : ['studentSelection', 'evidence', 'levelOfAdjustment', 'disabilityCategory', 'underDDA', 'additionalComments'];
+  }, [hasStudentId]);  
+
   // Form state management
   const [activeStep, setActiveStep] = useState(0);
   const [formValues, setFormValues] = useState({
+    studentSelection: '', 
     evidence: '',
     levelOfAdjustment: '',
     disabilityCategory: '',
@@ -76,6 +97,28 @@ const NCCDReportForm = ({
   // Determine if we're in standalone dialog mode or integrated mode
   const isDialogMode = open !== undefined;
   
+  useEffect(() => {
+    if (hasStudentId || passedStudents) {
+      setStudents(passedStudents || []);
+      setStudentLoading(false);
+      return;
+    }
+  
+    const fetchStudents = async () => {
+      setStudentLoading(true);
+      try {
+        const data = await api.nccdReports.getEligibleStudents();
+        setStudents(data);
+      } catch (err) {
+        console.error("Failed to fetch students:", err);
+      } finally {
+        setStudentLoading(false);
+      }
+    };
+  
+    fetchStudents();
+  }, [hasStudentId, passedStudents]);  
+
   // Fetch existing report data if in edit mode
   useEffect(() => {
     const fetchReport = async () => {
@@ -116,9 +159,9 @@ const NCCDReportForm = ({
       return;
     }
     
-    const currentStepKey = Object.keys(formValues)[activeStep];
-    if (!formValues[currentStepKey]) {
-      setErrors(prev => ({ ...prev, [currentStepKey]: 'This field is required' }));
+    const currentKey = stepKeys[activeStep];
+    if (currentKey && !formValues[currentKey]) {
+      setErrors(prev => ({ ...prev, [currentKey]: 'This field is required' }));
       return;
     }
     setErrors({});
@@ -165,9 +208,16 @@ const NCCDReportForm = ({
     try {
       setLoading(true);
       
+      const studentToUse = hasStudentId ? studentId : formValues.studentSelection;
+
+      if (!studentToUse) {
+        setErrors({ studentSelection: 'Please select a student.' });
+        return;
+      }      
+
       // Prepare data for API submission
       const reportData = {
-        student: studentId,
+        student: studentToUse,
         has_evidence: formValues.evidence === 'Yes',
         level_of_adjustment: formValues.levelOfAdjustment,
         disability_category: formValues.disabilityCategory,
@@ -180,9 +230,13 @@ const NCCDReportForm = ({
       
       if (reportId) {
         // Update existing report
+        console.log("Submitting report:", reportData);
+        console.log("Sanitized data being sent:", JSON.stringify(reportData));
         result = await api.nccdReports.update(reportId, reportData);
       } else {
         // Create new report
+        console.log("Submitting report:", reportData);
+        console.log("Sanitized data being sent:", JSON.stringify(reportData));
         result = await api.nccdReports.create(reportData);
       }
       
@@ -219,10 +273,35 @@ const NCCDReportForm = ({
         </Box>
       );
     }
-    
-    switch (activeStep) {
-      // Evidence step
-      case 0:
+  
+    const currentKey = stepKeys[activeStep];
+  
+    switch (currentKey) {
+      case 'studentSelection':
+        return (
+          <FormControl fullWidth error={!!errors.studentSelection}>
+            <InputLabel id="student-select-label">Select Student</InputLabel>
+            <Select
+              labelId="student-select-label"
+              value={formValues.studentSelection}
+              label="Select Student"
+              onChange={handleChange('studentSelection')}
+            >
+              {(students || []).map((student) => (
+                <MenuItem key={student.id} value={student.id.toString()}>
+                  {`${student.first_name} ${student.last_name} (Grade ${student.year_level})`}
+                </MenuItem>
+              ))}
+            </Select>
+            {errors.studentSelection && (
+              <Typography color="error" variant="caption">
+                {errors.studentSelection}
+              </Typography>
+            )}
+          </FormControl>
+        );
+  
+      case 'evidence':
         return (
           <FormControl error={!!errors.evidence} fullWidth>
             <Typography>
@@ -240,8 +319,8 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // Level of adjustment step
-      case 1:
+  
+      case 'levelOfAdjustment':
         return (
           <FormControl error={!!errors.levelOfAdjustment} fullWidth>
             <Typography>Which level of reasonable adjustment is being provided?</Typography>
@@ -258,8 +337,8 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // Disability category step
-      case 2:
+  
+      case 'disabilityCategory':
         return (
           <FormControl error={!!errors.disabilityCategory} fullWidth>
             <Typography>Which category of disability has the greatest impact?</Typography>
@@ -276,8 +355,8 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // DDA compliance step
-      case 3:
+  
+      case 'underDDA':
         return (
           <FormControl error={!!errors.underDDA} fullWidth>
             <Typography>Is this adjustment to address a disability under the <strong>Disability Discrimination Act 1992</strong>?</Typography>
@@ -292,8 +371,8 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-      // Additional comments step
-      case 4:
+  
+      case 'additionalComments':
         return (
           <TextField
             fullWidth
@@ -305,10 +384,29 @@ const NCCDReportForm = ({
             placeholder="Enter any additional information about the adjustments..."
           />
         );
+  
       default:
         return null;
     }
-  };
+  };  
+
+  if (!hasStudentId && studentLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
+  if (!hasStudentId && !studentLoading && Array.isArray(students) && students.length === 0) {
+    return (
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h6" color="text.secondary">
+          No eligible students available for creating a new report.
+        </Typography>
+      </Box>
+    );
+  }
 
   // Render the form content
   const formContent = (

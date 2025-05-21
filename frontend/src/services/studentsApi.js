@@ -70,6 +70,18 @@ const studentsApi = {
   findByEmail: async (email) => {
     return httpClient.post("/api/students/by-email/", { student_email: email });
   },
+
+  /**
+   * Retrieves only students with disability info
+   *
+   * @returns {Promise<Array>} List of students with disabilities
+   */
+  getWithDisabilities: async () => {
+    return httpClient.get("/api/students/with-disabilities/");
+  },
+
 };
+
+
 
 export default studentsApi;

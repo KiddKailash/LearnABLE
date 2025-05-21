@@ -51,7 +51,8 @@ const nccdReportsApi = {
    * @returns {Promise<Array>} List of student's NCCD reports
    */
   getByStudent: async (studentId) => {
-    return httpClient.get(`/api/nccdreports/student/${studentId}/`);
+    const response = await httpClient.get(`/api/nccdreports/student/${studentId}/`);
+    return response.data;  
   },
 
   /**
@@ -110,7 +111,18 @@ const nccdReportsApi = {
       `/api/nccdreports/create-lesson-effectiveness/${reportId}/`, 
       data
     );
-  }
+  },
+
+  /**
+   * Retrieves students who have a disability but do not yet have an NCCD report
+   * 
+   * @returns {Promise<Array>} List of eligible students
+   */
+  getEligibleStudents: async () => {
+    const response = await httpClient.get('/api/nccdreports/students/no-nccd-report/');
+    return response.data;
+  },
+
 };
 
 export default nccdReportsApi;
