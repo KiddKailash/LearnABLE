@@ -34,10 +34,9 @@ import MenuIcon from "@mui/icons-material/Menu";
  *
  * @component
  * @param {Object} props
- * @param {string} [props.mode] - Optional mode for sidebar or layout
  * @returns {JSX.Element} The rendered Dashboard layout component.
  */
-const Layout = ({ mode }) => {
+const Layout = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -129,7 +128,7 @@ const Layout = ({ mode }) => {
                 },
               }}
             >
-              <Sidebar mode={mode} />
+              <Sidebar />
             </Drawer>
           ) : (
             // Desktop sidebar
@@ -140,7 +139,7 @@ const Layout = ({ mode }) => {
                 display: { xs: "none", md: "block" },
               }}
             >
-              <Sidebar mode={mode} />
+              <Sidebar />
             </Box>
           )}
         </>

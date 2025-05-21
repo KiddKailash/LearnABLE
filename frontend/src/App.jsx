@@ -28,7 +28,7 @@ import Dashboard from "./pages/private/Dashboard/Dashboard";
 import ClassDetails from "./pages/private/ClassDetails/ClassDetails.jsx";
 import Classes from "./pages/private/Classes/Classes";
 
-const App = ({ mode }) => {
+const App = () => {
   const pages = [
     { path: "/", component: <AuthPage /> },
     { path: "/login", component: <AuthPage /> },
@@ -53,7 +53,7 @@ const App = ({ mode }) => {
             <Routes>
               <Route
                 path="/"
-                element={<Layout mode={mode} />}
+                element={<Layout />}
               >
                 {pages.map((page, i) => {
                   // Determine if the route is public or protected

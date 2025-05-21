@@ -103,7 +103,7 @@ export const getTheme = () => {
     shape: {
       border: 3,
     },
-    // Enable CSS variables with class-based selectors
+    // Enable CSS variables with data attribute selector
     cssVarPrefix: 'mui',
   };
 
