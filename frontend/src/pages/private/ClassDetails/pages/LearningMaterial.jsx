@@ -36,7 +36,7 @@ import { styled } from "@mui/material/styles";
 import api from "../../../../services/api";
 
 // Custom Components
-import FileUploadZone from "../../../../components/common/FileUploadZone";
+import FileUploadZone from "../../../../components/FileUploadZone";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),

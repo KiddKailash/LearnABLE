@@ -36,7 +36,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DescriptionIcon from "@mui/icons-material/Description";
 
 // Custom Components
-import FileUploadZone from "../../../components/common/FileUploadZone";
+import FileUploadZone from "../../../components/FileUploadZone";
 
 // Constants
 const STEPS = [
