@@ -104,7 +104,6 @@ const Classes = () => {
   };
 
   const handleEditClass = (cls) => {
-    console.log("Editing class", cls);
     setEditModeId(cls.id);
     setSelectedClassId(cls.id);
     setEditClassData({
@@ -264,10 +263,6 @@ const Classes = () => {
 
   const handleClassCreationSuccess = async (classId) => {
     await fetchClasses();
-
-    if (classId) {
-      console.log("New class created with ID:", classId);
-    }
   };
 
   const handleViewStudents = (cls) => {

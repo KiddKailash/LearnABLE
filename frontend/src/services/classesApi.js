@@ -89,9 +89,7 @@ const classesApi = {
    */
   create: async (classData) => {
     try {
-      console.log("Creating class with data:", classData);
       const response = await httpClient.post('/api/classes/create/', classData);
-      console.log("Raw class creation response:", response);
       return _normalizeClassResponse(response);
     } catch (error) {
       console.error("Error creating class:", error);
