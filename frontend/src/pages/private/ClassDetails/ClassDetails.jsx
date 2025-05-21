@@ -255,6 +255,7 @@ const ClassDetails = () => {
     };
     
     initializeData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classId, mode]);
 
   return (
