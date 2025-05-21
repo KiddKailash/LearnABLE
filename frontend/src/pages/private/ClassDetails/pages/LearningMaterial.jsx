@@ -745,13 +745,11 @@ const AIAssistantUpload = () => {
 const tableHeaderStyle = {
   padding: "16px",
   textAlign: "left",
-  backgroundColor: "#f5f5f5",
-  borderBottom: "1px solid #e0e0e0",
+  backgroundColor: "background.paper",
 };
 
 const tableCellStyle = {
   padding: "16px",
-  borderBottom: "1px solid #e0e0e0",
 };
 
 export default AIAssistantUpload;
