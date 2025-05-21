@@ -16,7 +16,6 @@ import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import Alert from "@mui/material/Alert";
-import IconButton from "@mui/material/IconButton";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -30,27 +29,14 @@ import DialogActions from "@mui/material/DialogActions";
 
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DownloadIcon from "@mui/icons-material/Download";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { styled } from "@mui/material/styles";
 
 // Services
 import api from "../../../../services/api";
 
-// Styled components
-const UploadZone = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  textAlign: "center",
-  cursor: "pointer",
-  border: `0.5px solid ${theme.palette.primary.main}`,
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.default,
-  transition: "border 0.3s ease-in-out",
-  "&:hover": {
-    border: `0.5px solid ${theme.palette.primary.dark}`,
-  },
-}));
+// Custom Components
+import FileUploadZone from "../../../../components/common/FileUploadZone";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
@@ -82,7 +68,7 @@ const AIAssistantUpload = () => {
   const [uploadError, setUploadError] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [setPreviewUrl] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -467,64 +453,26 @@ const AIAssistantUpload = () => {
                   required
                 />
 
-                <UploadZone
+                <FileUploadZone
+                  file={file}
+                  onClick={handleFileClick}
+                  onDelete={clearFile}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  onClick={handleFileClick}
-                  sx={{
-                    borderColor: isDragging ? "primary.dark" : "primary.main",
-                    backgroundColor: isDragging
-                      ? "action.hover"
-                      : "background.default",
-                  }}
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: "none" }}
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.ppt,.pptx"
-                  />
-                  {file ? (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        p: 2,
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <CheckCircleIcon
-                          color="success"
-                          sx={{ mr: 1, fontSize: "1.5rem" }}
-                        />
-                        <Typography variant="body1">{file.name}</Typography>
-                      </Box>
-                      <IconButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearFile();
-                        }}
-                      >
-                        <DeleteIcon color="error" />
-                      </IconButton>
-                    </Box>
-                  ) : (
-                    <Box sx={{ p: 3 }}>
-                      <UploadFileIcon
-                        sx={{ fontSize: "3rem", color: "primary.main", mb: 1 }}
-                      />
-                      <Typography variant="h6" gutterBottom>
-                        Drag and drop your file here
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Or click to browse (PDF, Word, PowerPoint)
-                      </Typography>
-                    </Box>
-                  )}
-                </UploadZone>
+                  isDragging={isDragging}
+                  icon={<UploadFileIcon sx={{ fontSize: "3rem", color: "primary.main", mb: 1 }} />}
+                  title="Drag and drop your file here"
+                  subtitle="Or click to browse (PDF, Word, PowerPoint)"
+                />
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  style={{ display: "none" }}
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.ppt,.pptx"
+                />
 
                 {file && (
                   <Box
