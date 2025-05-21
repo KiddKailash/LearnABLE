@@ -21,6 +21,7 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from datetime import date
@@ -361,9 +362,24 @@ def get_effectiveness_trend(request, student_id):
 
     return Response(data)
 
-@api_view(['GET'])
+api_view(['GET'])
 def students_without_nccd_report(request):
-    reported_ids = NCCDreport.objects.values_list('student_id', flat=True)
-    students = Student.objects.filter(has_disability=True).exclude(id__in=reported_ids)
-    serializer = StudentSerializer(students, many=True)
-    return Response(serializer.data)
+    reported_ids = set(NCCDreport.objects.values_list('student_id', flat=True))
+    print(f"[DEBUG] Reported student IDs: {reported_ids}")
+
+    unreported_students = Student.objects.exclude(id__in=reported_ids)
+    print(f"[DEBUG] Found {unreported_students.count()} students without reports")
+
+    eligible_students = []
+    for s in unreported_students:
+        raw = s._disability_info
+        decrypted = s.disability_info.strip()
+        print(f"[DEBUG] Student {s.id} - Encrypted: {raw[:10]}..., Decrypted: '{decrypted}'")
+
+        if decrypted:
+            eligible_students.append(s)
+
+    print(f"[DEBUG] Final eligible count: {len(eligible_students)}")
+
+    serializer = StudentSerializer(eligible_students, many=True)
+    return JsonResponse(serializer.data, safe=False)
