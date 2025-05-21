@@ -30,6 +30,7 @@ from .models import NCCDreport, LessonEffectivenessRecord
 from students.models import Student
 from classes.models import Classes
 from .serializers import NCCDreportSerializer, LessonEffectivenessRecordSerializer
+from students.serializers import StudentSerializer
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -183,7 +184,7 @@ def create_report(request):
         report = NCCDreport(
             student=student,
             status=request.data.get('status', 'NotStart'),
-            has_diagonsed_disability=request.data.get('has_diagonsed_disability', '').lower() == 'true',
+            #has_diagonsed_disability=request.data.get('has_diagonsed_disability', '').lower() == 'true',
             disability_category=request.data.get('disability_category', ''),
             level_of_adjustment=request.data.get('level_of_adjustment', ''),
         )
@@ -199,7 +200,7 @@ def create_report(request):
             'id': report.id,
             'student': report.student.id,
             'status': report.status,
-            'has_diagonsed_disability': report.has_diagonsed_disability,
+            #'has_diagonsed_disability': report.has_diagonsed_disability,
             'disability_category': report.disability_category,
             'level_of_adjustment': report.level_of_adjustment,
             'evidence': request.build_absolute_uri(report.evidence.url) if report.evidence else None
@@ -359,3 +360,10 @@ def get_effectiveness_trend(request, student_id):
         })
 
     return Response(data)
+
+@api_view(['GET'])
+def students_without_nccd_report(request):
+    reported_ids = NCCDreport.objects.values_list('student_id', flat=True)
+    students = Student.objects.filter(has_disability=True).exclude(id__in=reported_ids)
+    serializer = StudentSerializer(students, many=True)
+    return Response(serializer.data)
