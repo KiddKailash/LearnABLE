@@ -32,6 +32,23 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
     alignment_prompt, alignment_parser, llm
 )
 
+    def by_class(self, request, class_id=None, *args, **kwargs):
+        """
+        Retrieve learning materials assigned to a specific class.
+        
+        Args:
+            class_id (int): ID of the class to filter materials by.
+            
+        Returns:
+            Response: A list of serialized learning materials assigned to the class.
+        """
+        if not class_id:
+            return Response({"error": "Class ID is required"}, status=400)
+            
+        materials = self.queryset.filter(class_assigned_id=class_id)
+        serializer = self.get_serializer(materials, many=True)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):
         """
         Create a new LearningMaterial instance.
