@@ -20,9 +20,6 @@ import UserContext from "../store/UserObject";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
@@ -34,7 +31,6 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import MenuIcon from "@mui/icons-material/Menu";
 
 // Navigation items for main section of the sidebar
 const navItems = [
@@ -69,7 +65,7 @@ const Sidebar = () => {
   const handleLogout = async () => {
     await logout();
     navigate("/login");
-  }
+  };
 
   /**
    * Determines if a given navigation path is active.
@@ -81,7 +77,7 @@ const Sidebar = () => {
     location.pathname === `/${path.toLowerCase().replace(" ", "-")}`;
 
   // Compute dynamic sidebar width based on collapsed state and device type
-  const SIDEBAR_WIDTH = isMobile ? 240 : (collapsed ? 72 : 240);
+  const SIDEBAR_WIDTH = isMobile ? 240 : collapsed ? 50 : 200;
 
   return (
     <Box
@@ -91,7 +87,7 @@ const Sidebar = () => {
         display: "flex",
         flexDirection: "column",
         borderRadius: { xs: 0, sm: 5 },
-        p: { xs: 2, sm: 1 },
+        p: 1,
         bgcolor: "background.paper",
       }}
     >
@@ -101,18 +97,21 @@ const Sidebar = () => {
           display: "flex",
           alignItems: "center",
           mb: 1,
-          pl: collapsed && !isMobile ? 0 : 1.5,
-          justifyContent: collapsed && !isMobile ? "center" : "flex-start",
+          justifyContent: "flex-start",
         }}
       >
         {!isMobile && (
           <IconButton
             onClick={() => setCollapsed(!collapsed)}
             size="small"
-            sx={{ mr: collapsed ? 0 : 1, borderRadius: 2 }}
+            sx={{ mr: 1, borderRadius: 2 }}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <MenuIcon /> : <MenuOpenIcon />}
+            {collapsed ? (
+              <MenuOpenIcon sx={{ rotate: "180deg" }} />
+            ) : (
+              <MenuOpenIcon />
+            )}
           </IconButton>
         )}
 
@@ -137,53 +136,61 @@ const Sidebar = () => {
               arrow
               disableHoverListener={!collapsed || isMobile}
             >
-              <ListItemButton
+              <IconButton
                 data-tutorial={tutorialId}
                 onClick={() => {
                   navigate(path);
                   if (isMobile) {
-                    // Close mobile drawer after navigation
-                    window.dispatchEvent(new CustomEvent('closeMobileDrawer'));
+                    window.dispatchEvent(new CustomEvent("closeMobileDrawer"));
                   }
                 }}
-                selected={selected}
+                size="small"
                 sx={{
+                  mr: 1,
                   mb: 1,
                   borderRadius: 2,
-                  justifyContent: collapsed && !isMobile ? "center" : "flex-start",
+                  color: selected ? "primary.main" : "text.primary",
+                  bgcolor: selected ? "action.selected" : "transparent",
+                  "&:hover": {
+                    bgcolor: "action.hover",
+                  },
+                  width: "100%",
+                  justifyContent: "flex-start",
                 }}
                 aria-label={text}
               >
-                <ListItemIcon
-                  sx={{
-                    color: "text.primary",
-                    minWidth: collapsed && !isMobile ? "auto" : "40px",
-                  }}
-                >
-                  {icon}
-                </ListItemIcon>
-
-                {/* Show text when sidebar is expanded or on mobile */}
-                {(!collapsed || isMobile) && <ListItemText primary={text} sx={{color: 'text.secondary'}}/>}
-              </ListItemButton>
+                {icon}
+                {(!collapsed || isMobile) && (
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      ml: 1,
+                      color: "text.primary",
+                    }}
+                  >
+                    {text}
+                  </Typography>
+                )}
+              </IconButton>
             </Tooltip>
           );
         })}
       </List>
 
+      {/* Show user name if sidebar is expanded or on mobile */}
+      {(!collapsed || isMobile) && (
+        <Typography
+          variant="caption"
+          sx={{ color: "text.secondary", mb: 0.5, ml: 0.5 }}
+        >
+          {user?.email}
+        </Typography>
+      )}
+
       <Divider sx={{ mb: 1 }} />
 
       {/* Settings section */}
       <Box>
-        {/* Show user name if sidebar is expanded or on mobile */}
-        {(!collapsed || isMobile) && (
-          <Typography
-            variant="caption"
-            sx={{ color: "gray", fontWeight: "bold", px: 2 }}
-          >
-            {user?.name}
-          </Typography>
-        )}
         <List>
           {settingsItems.map(({ text, icon, isLogout, tutorialId }) => (
             <Tooltip
@@ -193,7 +200,7 @@ const Sidebar = () => {
               arrow
               disableHoverListener={!collapsed || isMobile}
             >
-              <ListItemButton
+              <IconButton
                 data-tutorial={tutorialId}
                 onClick={() => {
                   if (isLogout) {
@@ -201,31 +208,39 @@ const Sidebar = () => {
                   } else {
                     navigate(`/${text.toLowerCase()}`);
                     if (isMobile) {
-                      // Close mobile drawer after navigation
-                      window.dispatchEvent(new CustomEvent('closeMobileDrawer'));
+                      window.dispatchEvent(
+                        new CustomEvent("closeMobileDrawer")
+                      );
                     }
                   }
                 }}
+                size="small"
                 sx={{
+                  mr: 1,
+                  mb: 1,
                   borderRadius: 2,
-                  color: isLogout ? "error.main" : "inherit",
-                  justifyContent: collapsed && !isMobile ? "center" : "flex-start",
+                  color: isLogout ? "error.main" : "text.primary",
                   "&:hover": {
                     bgcolor: "action.hover",
                   },
+                  width: "100%",
+                  justifyContent: "flex-start",
                 }}
                 aria-label={text}
               >
-                <ListItemIcon
-                  sx={{
-                    color: isLogout ? "error.main" : "inherit",
-                    minWidth: collapsed && !isMobile ? "auto" : "40px",
-                  }}
-                >
-                  {icon}
-                </ListItemIcon>
-                {(!collapsed || isMobile) && <ListItemText primary={text} />}
-              </ListItemButton>
+                {icon}
+                {(!collapsed || isMobile) && (
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      ml: 1,
+                      color: isLogout ? "error.main" : "text.primary",
+                    }}
+                  >
+                    {text}
+                  </Typography>
+                )}
+              </IconButton>
             </Tooltip>
           ))}
         </List>
