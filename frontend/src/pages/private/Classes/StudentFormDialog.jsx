@@ -7,7 +7,6 @@ import PropTypes from "prop-types";
 
 // MUI Components
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
@@ -16,6 +15,8 @@ import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Divider from "@mui/material/Divider";
 import Chip from "@mui/material/Chip";
+import Typography from "@mui/material/Typography";
+import Stack from "@mui/material/Stack";
 
 // MUI Icons
 import Add from "@mui/icons-material/Add";
@@ -54,11 +55,15 @@ const StudentFormDialog = ({
       PaperProps={{
         sx: {
           bgcolor: "background.paper",
+          borderRadius: 2,
         },
       }}
     >
-      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
+        <Typography variant="h6" fontWeight="bold" sx={{ mb: 2 }}>
+          {title}
+        </Typography>
+
         <Box my={2}>
           <Grid container spacing={2}>
             {/* Student Info */}
@@ -66,6 +71,7 @@ const StudentFormDialog = ({
               <TextField
                 fullWidth
                 label="First Name"
+                variant="outlined"
                 value={formData.first_name || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -75,10 +81,10 @@ const StudentFormDialog = ({
                 }
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+            <Grid size={{ xs: 12, sm: 6 }}>              <TextField
                 fullWidth
                 label="Last Name"
+                variant="outlined"
                 value={formData.last_name || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -88,10 +94,10 @@ const StudentFormDialog = ({
                 }
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+            <Grid size={{ xs: 12, sm: 6 }}>              <TextField
                 fullWidth
                 label="Grade"
+                variant="outlined"
                 value={formData.year_level || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -99,12 +105,13 @@ const StudentFormDialog = ({
                     year_level: e.target.value,
                   }))
                 }
+                placeholder="e.g. 10"
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
+            <Grid size={{ xs: 12, sm: 6 }}>              <TextField
                 fullWidth
                 label="Student Email"
+                variant="outlined"
                 value={formData.student_email || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -128,6 +135,7 @@ const StudentFormDialog = ({
                 multiline
                 rows={3}
                 label="Special Learning Needs"
+                variant="outlined"
                 value={formData.disability_info || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -141,12 +149,19 @@ const StudentFormDialog = ({
         </Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={onClose} variant="outlined" startIcon={<Cancel />}>
-          Cancel
-        </Button>
-        <Button onClick={onSubmit} variant="contained" startIcon={submitIcon}>
-          {submitLabel}
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button onClick={onClose} variant="outlined" startIcon={<Cancel />}>
+            Cancel
+          </Button>
+          <Button
+            onClick={onSubmit}
+            variant="contained"
+            startIcon={submitIcon}
+            disabled={!formData.first_name || !formData.last_name}
+          >
+            {submitLabel}
+          </Button>
+        </Stack>
       </DialogActions>
     </Dialog>
   );
@@ -169,4 +184,4 @@ StudentFormDialog.propTypes = {
   submitIcon: PropTypes.node,
 };
 
-export default StudentFormDialog; 
+export default StudentFormDialog;
