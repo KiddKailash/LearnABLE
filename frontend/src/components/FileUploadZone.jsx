@@ -57,7 +57,7 @@ const FileUploadZone = ({
         textAlign: "center",
         cursor: "pointer",
         borderStyle: "solid",
-        borderRadius: theme.shape.borderRadius,
+        borderRadius: 2,
         borderColor: isDragging 
           ? "primary.dark" 
           : file 
