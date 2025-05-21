@@ -4,7 +4,7 @@
  * @module config
  */
 
-// Use environment variable for backend URL or fallback to localhost for development
+// Use environment variable for backend URL
 export const API_BASE_URL = process.env.REACT_APP_SERVER_URL;
 
 /**

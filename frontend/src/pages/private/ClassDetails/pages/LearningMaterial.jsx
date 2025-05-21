@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
@@ -27,11 +27,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DownloadIcon from "@mui/icons-material/Download";
 
 // Services & Context
-import api from "../../../../services/api";
 import UserContext from "../../../../store/UserObject";
-
-// Custom Components
-import FileUploadZone from "../../../../components/FileUploadZone";
 
 /* -------------------------------------------------------------------------- */
 /*                                    Style                                   */
@@ -65,11 +61,18 @@ const EmptyState = ({ text }) => (
 /*                               Main Component                               */
 /* -------------------------------------------------------------------------- */
 
-const AIAssistantUpload = () => {
+const AIAssistantUpload = ({
+  learningMaterials,
+  isLoading,
+  fetchLearningMaterials,
+  createLearningMaterial,
+  adaptLearningMaterial,
+  downloadAdaptedMaterial,
+  classId,
+  students
+}) => {
   /* ------------------------------ URL & Context ----------------------------- */
   const location = useLocation();
-  const { classId } = useParams();
-  const BACKEND = process.env.REACT_APP_SERVER_URL;
   const { user } = useContext(UserContext);
 
   /* --------------------------------- State --------------------------------- */
@@ -105,7 +108,7 @@ const AIAssistantUpload = () => {
   const viewerRef = useRef(null);
 
   /* -------------------------------------------------------------------------- */
-  /*                               PDF / Office Preview                         */
+  /*                               PDF / Office Preview                         */
   /* -------------------------------------------------------------------------- */
   useEffect(() => {
     if (file && typeof window !== "undefined" && viewerRef.current) {
@@ -138,24 +141,6 @@ const AIAssistantUpload = () => {
   const handleNext = () => setActiveStep((prev) => prev + 1);
   const handleBack = () => setActiveStep((prev) => Math.max(0, prev - 1));
 
-  /* -------------------------------------------------------------------------- */
-  /*                             Initial Data Fetch                             */
-  /* -------------------------------------------------------------------------- */
-  useEffect(() => {
-    const fetchClasses = async () => {
-      try {
-        const response = await api.classes.getAll();
-        if (!Array.isArray(response)) {
-          throw new Error("Invalid API response format");
-        }
-      } catch (error) {
-        console.error("Error fetching classes:", error);
-        setUploadError("Failed to fetch classes. Please try again.");
-      }
-    };
-    fetchClasses();
-  }, []);
-
   /* ------------------------------ Tutorial Banner --------------------------- */
   useEffect(() => {
     const dismissed = localStorage.getItem(tutorialKey);
@@ -174,7 +159,7 @@ const AIAssistantUpload = () => {
   }, [location, classId]);
 
   /* -------------------------------------------------------------------------- */
-  /*                               Drag & Drop UX                               */
+  /*                               Drag & Drop UX                               */
   /* -------------------------------------------------------------------------- */
   const [isDragging, setIsDragging] = useState(false);
 
@@ -204,7 +189,7 @@ const AIAssistantUpload = () => {
   };
 
   /* -------------------------------------------------------------------------- */
-  /*                                API Actions                                 */
+  /*                                API Actions                                 */
   /* -------------------------------------------------------------------------- */
   const handleUploadMaterial = async () => {
     if (!title || !file || !learningObjective || !selectedClass) {
@@ -216,15 +201,20 @@ const AIAssistantUpload = () => {
     setUploadError("");
 
     try {
-      const response = await api.learningMaterials.create({
+      const response = await createLearningMaterial({
         title,
         file,
         objective: learningObjective,
         class_assigned: selectedClass,
       });
 
+      if (!response) {
+        throw new Error("Failed to upload material");
+      }
+
       if (response?.alignment_check?.alignment === "not_aligned") {
         setObjectiveMismatchDialogOpen(true);
+        setIsUploading(false);
         return;
       }
 
@@ -233,7 +223,6 @@ const AIAssistantUpload = () => {
       handleNext();
       
       // Immediately start adaptation after successful upload
-      // Use the material ID directly from the response
       adaptMaterial(response.id);
     } catch (error) {
       console.error("Upload error:", error);
@@ -250,364 +239,443 @@ const AIAssistantUpload = () => {
       return;
     }
 
-    // reset UX flags
-    setNoStudents(false);
-    setNoAdjustments(false);
-
     setIsAdapting(true);
     setUploadError("");
 
     try {
-      const response = await api.learningMaterials.adapt(id);
+      const result = await adaptLearningMaterial(id);
+      
+      if (!result || !result.adaptations) {
+        throw new Error("Adaptation failed or returned invalid data");
+      }
 
-      /* ------------------ Empty‑class & No‑adjustment detection ----------------- */
-      if (
-        Array.isArray(response) &&
-        response[0]?.students
-      ) {
-        const studentsArr = response[0].students;
-
-        if (studentsArr.length === 0) {
-          setNoStudents(true);
-          return;
-        }
-
-        const allClear = studentsArr.every(
-          (st) => !st.disability_info || st.disability_info.trim() === ""
-        );
-        if (allClear) {
-          setNoAdjustments(true);
-          return;
+      // Format adapted students data
+      const adaptations = [];
+      for (const [studentId, adaptation] of Object.entries(result.adaptations)) {
+        const student = students.find(s => s.id.toString() === studentId);
+        if (student) {
+          adaptations.push({
+            studentId,
+            studentName: `${student.first_name} ${student.last_name}`,
+            adaptationId: adaptation.id,
+            status: adaptation.status,
+            url: adaptation.url,
+          });
         }
       }
 
-      /* -------------------------- Normal adaptation flow ------------------------ */
-      if (!response) throw new Error("No response received from adaptation service");
-
-      if (Array.isArray(response)) {
-        setAdaptedStudents(
-          response.map((student) => ({
-            id: student.id,
-            first_name: student.first_name,
-            last_name: student.last_name,
-            file_url: student.file_url,
-            audio_url: student.audio_url || null,
-          }))
-        );
-      } else if (typeof response === "object" && response !== null) {
-        if (response.first_name) {
-          setAdaptedStudents([
-            {
-              id: response.id,
-              first_name: response.first_name,
-              last_name: response.last_name,
-              file_url: response.file_url,
-              audio_url: response.audio_url || null,
-            },
-          ]);
-        } else {
-          setAdaptedStudents(
-            Object.entries(response).map(([id, data]) => ({
-              id,
-              first_name: data.first_name,
-              last_name: data.last_name,
-              file_url: data.file_url,
-              audio_url: data.audio_url || null,
-            }))
-          );
-        }
-      } else {
-        throw new Error("Invalid response format from adaptation service");
-      }
+      setAdaptedStudents(adaptations);
+      setNoStudents(adaptations.length === 0);
+      setNoAdjustments(adaptations.every(a => a.status === "no_adaptation_needed"));
+      setSuccessMessage("Content adapted successfully!");
+      setSnackbarOpen(true);
     } catch (error) {
       console.error("Adaptation error:", error);
-      setUploadError(error.message || "Failed to adapt material. Please try again.");
+      setUploadError(error.message || "Failed to adapt content. Please try again.");
     } finally {
       setIsAdapting(false);
     }
   };
 
-  /* ------------------------------ Snackbar UX ------------------------------- */
-  useEffect(() => {
-    if (uploadError) setSnackbarOpen(true);
-  }, [uploadError]);
+  const handleDownloadAdapted = async (materialId, studentId) => {
+    try {
+      const result = await downloadAdaptedMaterial(materialId, studentId);
+      
+      // Create a download link
+      if (result && result.url) {
+        window.open(result.url, "_blank");
+      } else {
+        throw new Error("Download failed");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      setUploadError("Failed to download adapted content. Please try again.");
+    }
+  };
 
   const handleSnackbarClose = (event, reason) => {
     if (reason === "clickaway") return;
     setSnackbarOpen(false);
-    setUploadError("");
   };
 
   const handleCloseTutorial = () => {
-    setShowTutorial(false);
     localStorage.setItem(tutorialKey, "true");
+    setShowTutorial(false);
   };
 
-  /* -------------------------------------------------------------------------- */
-  /*                                  Render                                    */
-  /* -------------------------------------------------------------------------- */
   return (
-    <>
-      {/* ------------------------------ Tutorial ------------------------------ */}
-      <Dialog
-        open={showTutorial}
-        onClose={handleCloseTutorial}
-        PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
-      >
-        <DialogTitle>Welcome to Learning Material Upload</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" color="text.secondary">
-            Upload your learning materials and let the AI tailor them to each student's
-            needs. Start by selecting a class, then provide your file and learning
-            objective.
+    <Box>
+      {showTutorial && (
+        <Alert
+          severity="info"
+          sx={{ mb: 3 }}
+          onClose={handleCloseTutorial}
+          action={
+            <Button color="inherit" size="small" onClick={handleCloseTutorial}>
+              Dismiss
+            </Button>
+          }
+        >
+          <Typography variant="body2">
+            Welcome to the LearnABLE AI Assistant. Upload your learning
+            materials, and our AI will adapt them to meet the individual needs of
+            each student in your class.
           </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button variant="contained" onClick={handleCloseTutorial} autoFocus>
-            Got it
-          </Button>
-        </DialogActions>
-      </Dialog>
+        </Alert>
+      )}
 
-      {/* ---------------------- Objective Mismatch Dialog ---------------------- */}
-      <Dialog
-        open={objectiveMismatchDialogOpen}
-        onClose={() => setObjectiveMismatchDialogOpen(false)}
-        PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
-      >
-        <DialogTitle>Learning Objectives and Content Mismatch</DialogTitle>
-        <DialogContent>
-          <Typography>
-            The uploaded material does not align with the provided learning objectives.
-            Please adjust the objectives or choose content that better matches them.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            variant="contained"
-            onClick={() => setObjectiveMismatchDialogOpen(false)}
-            autoFocus
+      <StyledCard>
+        <CardContent>
+          <Stepper
+            activeStep={activeStep}
+            alternativeLabel
+            sx={{ mb: 4, mt: 2 }}
           >
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-      {/* -------------------------------- Steps ------------------------------- */}
-      <Stepper activeStep={activeStep} sx={{ mb: 2 }}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+          {/* Step 1: Select Class (Skipped if already in class context) */}
+          {activeStep === 0 && (
+            <Box sx={{ textAlign: "center", mt: 4 }}>
+              <Box>
+                {isLoading ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  <>
+                    <Alert severity="info" sx={{ mb: 3, maxWidth: 600, mx: "auto" }}>
+                      This page is usually accessed from within a class. Please select or create a class first.
+                    </Alert>
+                    
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      href="/classes"
+                      sx={{ mt: 2 }}
+                    >
+                      Go to Classes
+                    </Button>
+                  </>
+                )}
+              </Box>
+            </Box>
+          )}
 
-      <Fade in>
-        <div>
-          {/* --------------------------- STEP 1 – Upload -------------------------- */}
+          {/* Step 2: Upload Material */}
           {activeStep === 1 && (
-            <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Material Details
-                </Typography>
-
+            <Box sx={{ maxWidth: 800, mx: "auto" }}>
+              <Box sx={{ mb: 3 }}>
                 <TextField
-                  label="Title"
+                  fullWidth
+                  label="Learning Material Title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  fullWidth
+                  variant="outlined"
+                  margin="normal"
                   required
                 />
 
                 <TextField
+                  fullWidth
                   label="Learning Objective"
                   value={learningObjective}
                   onChange={(e) => setLearningObjective(e.target.value)}
-                  fullWidth
+                  variant="outlined"
+                  margin="normal"
                   multiline
                   rows={3}
                   required
+                  helperText="Describe what students should learn from this material"
                 />
 
-                <FileUploadZone
-                  file={file}
-                  onClick={handleFileClick}
-                  onDelete={clearFile}
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    mt: 3,
+                    p: 3,
+                    borderStyle: "dashed",
+                    borderWidth: 2,
+                    borderColor: isDragging ? "primary.main" : "divider",
+                    borderRadius: 2,
+                    backgroundColor: isDragging ? "action.hover" : "background.paper",
+                    textAlign: "center",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease-in-out",
+                  }}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  isDragging={isDragging}
-                  icon={<UploadFileIcon sx={{ fontSize: "3rem", color: "primary.main", mb: 1 }} />}
-                  title="Drag and drop your file here"
-                  subtitle="Or click to browse (PDF, Word, PowerPoint)"
-                />
-
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: "none" }}
-                  onChange={handleFileChange}
-                  accept=".pdf,.doc,.docx,.ppt,.pptx"
-                />
-
-                {file && (
-                  <Box
-                    ref={viewerRef}
-                    sx={{ height: 500, width: "100%", border: "1px solid #e0e0e0", borderRadius: 1 }}
+                  onClick={handleFileClick}
+                >
+                  <input
+                    type="file"
+                    hidden
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept=".pdf,.doc,.docx,.ppt,.pptx"
                   />
-                )}
 
-                <Box sx={{ display: "flex", justifyContent: "space-between", pt: 2 }}>
-                  <Button onClick={handleBack}>Back</Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleUploadMaterial}
-                    disabled={isUploading || !title || !file || !learningObjective}
-                  >
-                    {isUploading ? (
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <CircularProgress size={20} color="inherit" /> Uploading…
-                      </Box>
-                    ) : (
-                      "Upload & Continue"
-                    )}
-                  </Button>
-                </Box>
-              </CardContent>
-            </StyledCard>
-          )}
-
-          {/* --------------------------- STEP 2 – Adapt --------------------------- */}
-          {activeStep === 2 && (
-            <StyledCard>
-              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Typography variant="h6">Adapt Material</Typography>
-
-                {/* ------------------ Empty‑state(s) PRIORITY ORDER ----------------- */}
-                {(noStudents || noAdjustments) && !adaptedStudents.length ? (
-                  <EmptyState
-                    text={noStudents ? "This class has no enrolled students." : "No students in this class need learning adjustments."}
-                  />
-                ) : !adaptedStudents.length ? (
-                  <Box sx={{ textAlign: "center", py: 3 }}>
-                    <CircularProgress size={40} sx={{ mt: 2 }} />
-                  </Box>
-                ) : (
-                  /* ------------------------- Adapted Students ------------------------ */
-                  <Box>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Adapted Materials Ready for Download
-                    </Typography>
-
-                    <Paper sx={{ overflowX: "auto", mt: 2, p: 2 }}>
-                      <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
-                        <Box component="thead">
-                          <Box component="tr">
-                            <Box component="th" sx={tableHeaderStyle}>Student Name</Box>
-                            <Box component="th" sx={tableHeaderStyle}>Adapted File</Box>
-                            <Box component="th" sx={tableHeaderStyle}>Audio</Box>
-                          </Box>
-                        </Box>
-                        <Box component="tbody">
-                          {adaptedStudents.map((st) => (
-                            <Box component="tr" key={st.id}>
-                              <Box component="td" sx={tableCellStyle}>
-                                {st.first_name} {st.last_name}
-                              </Box>
-                              <Box component="td" sx={tableCellStyle}>
-                                {st.file_url ? (
-                                  <Button
-                                    variant="contained"
-                                    size="small"
-                                    href={`${BACKEND}${st.file_url}`}
-                                    download
-                                    startIcon={<DownloadIcon />}
-                                  >
-                                    Download
-                                  </Button>
-                                ) : (
-                                  "—"
-                                )}
-                              </Box>
-                              <Box component="td" sx={{ ...tableCellStyle, textAlign: "center" }}>
-                                {st.audio_url ? (
-                                  <>
-                                    <audio controls style={{ width: "100%", outline: "none" }}>
-                                      <source src={`${BACKEND}${st.audio_url}`} type="audio/mpeg" />
-                                      Your browser doesn't support audio.
-                                    </audio>
-                                    <Button
-                                      variant="contained"
-                                      size="small"
-                                      sx={{ mt: 1 }}
-                                      href={`${BACKEND}${st.audio_url}`}
-                                      download
-                                      startIcon={<DownloadIcon />}
-                                    >
-                                      Download
-                                    </Button>
-                                  </>
-                                ) : (
-                                  "—"
-                                )}
-                              </Box>
-                            </Box>
-                          ))}
-                        </Box>
-                      </Box>
-                    </Paper>
-
-                    <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between" }}>
-                      <Button onClick={handleBack}>Back</Button>
+                  {file ? (
+                    <Box>
+                      <Typography variant="h6" gutterBottom>
+                        {file.name}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        gutterBottom
+                      >
+                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                      </Typography>
                       <Button
-                        variant="contained"
-                        onClick={() => {
-                          setActiveStep(0);
-                          setTitle("");
-                          setFile(null);
-                          setLearningObjective("");
-                          setSelectedClass("");
-                          setMaterialId(null);
-                          setAdaptedStudents([]);
-                          setNoStudents(false);
-                          setNoAdjustments(false);
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          clearFile();
                         }}
                       >
-                        Upload New Material
+                        Remove
                       </Button>
                     </Box>
-                  </Box>
-                )}
-              </CardContent>
-            </StyledCard>
-          )}
-        </div>
-      </Fade>
+                  ) : (
+                    <Box>
+                      <UploadFileIcon
+                        sx={{ fontSize: 48, color: "action.active", mb: 1 }}
+                      />
+                      <Typography variant="h6" gutterBottom>
+                        Drop your file here or click to browse
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Supports PDF, Word, and PowerPoint files
+                      </Typography>
+                    </Box>
+                  )}
+                </Paper>
+              </Box>
 
-      {/* ------------------------------ Snackbars ------------------------------ */}
+              {uploadError && (
+                <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                  {uploadError}
+                </Alert>
+              )}
+
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleUploadMaterial}
+                  disabled={
+                    isUploading ||
+                    !title ||
+                    !file ||
+                    !learningObjective ||
+                    !selectedClass
+                  }
+                >
+                  {isUploading ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Upload & Continue"
+                  )}
+                </Button>
+              </Box>
+
+              {file && (
+                <Box
+                  sx={{
+                    mt: 4,
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    height: 500,
+                    overflow: "hidden",
+                  }}
+                  ref={viewerRef}
+                />
+              )}
+            </Box>
+          )}
+
+          {/* Step 3: Review & Adapt */}
+          {activeStep === 2 && (
+            <Box sx={{ maxWidth: 800, mx: "auto" }}>
+              <Typography variant="h5" gutterBottom>
+                Adaptation Results
+              </Typography>
+
+              {isAdapting ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    py: 5,
+                  }}
+                >
+                  <CircularProgress sx={{ mb: 3 }} />
+                  <Typography variant="h6">
+                    Adapting content for students...
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    This may take a minute or two depending on the content size
+                  </Typography>
+                </Box>
+              ) : uploadError ? (
+                <Alert severity="error" sx={{ my: 2 }}>
+                  {uploadError}
+                </Alert>
+              ) : noStudents ? (
+                <EmptyState text="No students in this class yet. Add students to enable content adaptation." />
+              ) : noAdjustments ? (
+                <Alert severity="info" sx={{ my: 2 }}>
+                  Our AI analysis found that no adjustments were needed for the
+                  students in this class based on their profiles.
+                </Alert>
+              ) : (
+                <Box>
+                  <Alert severity="success" sx={{ mb: 3 }}>
+                    The material has been adapted for students in this class!
+                  </Alert>
+
+                  <Paper>
+                    <Box sx={{ ...tableHeaderStyle }}>
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        Student
+                      </Typography>
+                    </Box>
+
+                    {adaptedStudents.map((student) => (
+                      <Box
+                        key={student.studentId}
+                        sx={{
+                          ...tableCellStyle,
+                          borderTop: 1,
+                          borderColor: "divider",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Box>
+                          <Typography variant="body1">
+                            {student.studentName}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            component="div"
+                          >
+                            Status:{" "}
+                            {student.status === "adapted"
+                              ? "Content adapted"
+                              : student.status === "processing"
+                              ? "Processing..."
+                              : student.status === "no_adaptation_needed"
+                              ? "No adaptation needed"
+                              : student.status}
+                          </Typography>
+                        </Box>
+
+                        {student.status === "adapted" && (
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<DownloadIcon />}
+                            onClick={() => handleDownloadAdapted(materialId, student.studentId)}
+                          >
+                            Download
+                          </Button>
+                        )}
+                      </Box>
+                    ))}
+                  </Paper>
+
+                  <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => window.location.reload()}
+                    >
+                      Upload Another
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+            </Box>
+          )}
+        </CardContent>
+      </StyledCard>
+
+      {/* Mismatch Dialog */}
+      <Dialog
+        open={objectiveMismatchDialogOpen}
+        onClose={() => setObjectiveMismatchDialogOpen(false)}
+      >
+        <DialogTitle>Content Mismatch Warning</DialogTitle>
+        <DialogContent>
+          <Typography paragraph>
+            Our AI detected that the uploaded content may not align well with the
+            learning objective you provided.
+          </Typography>
+          <Typography paragraph>
+            For best results, please ensure that:
+          </Typography>
+          <Typography component="ul" sx={{ pl: 2 }}>
+            <li>
+              The learning objective clearly states what students should learn
+            </li>
+            <li>The material directly supports the learning objective</li>
+            <li>The material contains relevant content for the objective</li>
+          </Typography>
+          <Typography paragraph>
+            You can either continue with the current material or upload a
+            different file.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setObjectiveMismatchDialogOpen(false);
+              clearFile();
+            }}
+          >
+            Upload Different File
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setObjectiveMismatchDialogOpen(false);
+              // Continue with adaptation despite mismatch
+              setMaterialId(materialId);
+              handleNext();
+              adaptMaterial(materialId);
+            }}
+          >
+            Continue Anyway
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Snackbar */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        TransitionComponent={Fade}
       >
-        <Alert onClose={handleSnackbarClose} severity="error">
-          {uploadError}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={6000}
-        onClose={() => setSuccessMessage("")}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert onClose={() => setSuccessMessage("")} severity="success">
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
           {successMessage}
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 };
 
