@@ -1,13 +1,13 @@
 """
-Views for handling NCCD reports and lesson effectiveness records.
+Views for managing student data and related operations.
 
 Includes endpoints to:
-- Retrieve all reports or reports by student
-- Retrieve, update, or delete individual reports
-- Create reports (with duplicate prevention)
-- Ensure reports exist for students in a class based on disability info
-- Record lesson effectiveness linked to reports
-- Provide effectiveness trends over time for a student
+- Retrieve all students associated with the authenticated teacher
+- Retrieve, create, update, partially update, or delete individual students
+- Retrieve students by class
+- Search for students by email
+- Bulk upload students via CSV to assign to classes
+- Handle validation and secure storage of sensitive student information
 
 All endpoints require user authentication.
 """
