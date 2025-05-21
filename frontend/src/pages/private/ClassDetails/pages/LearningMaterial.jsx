@@ -1,16 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useContext } from "react";
-import UserContext from "../../../../store/UserObject";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 // MUI Components
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
 import Paper from "@mui/material/Paper";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -26,17 +20,22 @@ import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import { styled } from "@mui/material/styles";
 
 // MUI Icons
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DownloadIcon from "@mui/icons-material/Download";
-import { styled } from "@mui/material/styles";
 
-// Services
+// Services & Context
 import api from "../../../../services/api";
+import UserContext from "../../../../store/UserObject";
 
 // Custom Components
 import FileUploadZone from "../../../../components/FileUploadZone";
+
+/* -------------------------------------------------------------------------- */
+/*                                    Style                                   */
+/* -------------------------------------------------------------------------- */
 
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
@@ -44,42 +43,73 @@ const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius * 2,
 }));
 
+const tableHeaderStyle = {
+  padding: "16px",
+  textAlign: "left",
+  backgroundColor: "background.paper",
+};
+
+const tableCellStyle = {
+  padding: "16px",
+};
+
+const EmptyState = ({ text }) => (
+  <Box sx={{ textAlign: "center", py: 5 }}>
+    <Typography variant="h6" color="text.secondary">
+      {text}
+    </Typography>
+  </Box>
+);
+
+/* -------------------------------------------------------------------------- */
+/*                               Main Component                               */
+/* -------------------------------------------------------------------------- */
+
 const AIAssistantUpload = () => {
+  /* ------------------------------ URL & Context ----------------------------- */
   const location = useLocation();
-  const { classId } = useParams(); // Get classId from params
+  const { classId } = useParams();
   const BACKEND = process.env.REACT_APP_SERVER_URL;
   const { user } = useContext(UserContext);
+
+  /* --------------------------------- State --------------------------------- */
   const userId = user?.id || user?.email || "guest";
   const tutorialKey = `aiUploadTutorialDismissed_${userId}`;
+
   const [objectiveMismatchDialogOpen, setObjectiveMismatchDialogOpen] =
     useState(false);
 
-  // State management
   const [activeStep, setActiveStep] = useState(0);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState(null);
   const [learningObjective, setLearningObjective] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
-  const [classList, setClassList] = useState([]);
+
   const [isUploading, setIsUploading] = useState(false);
   const [isAdapting, setIsAdapting] = useState(false);
+
   const [materialId, setMaterialId] = useState(null);
   const [adaptedStudents, setAdaptedStudents] = useState([]);
+
   const [uploadError, setUploadError] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [showTutorial, setShowTutorial] = useState(false);
 
+  /* ------------- UX Flags: class with no students / no adjustments ---------- */
+  const [noStudents, setNoStudents] = useState(false);
+  const [noAdjustments, setNoAdjustments] = useState(false);
+
+  /* ------------------------------- Refs & Etc ------------------------------ */
   const fileInputRef = useRef(null);
   const viewerRef = useRef(null);
 
+  /* -------------------------------------------------------------------------- */
+  /*                               PDF / Office Preview                         */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
     if (file && typeof window !== "undefined" && viewerRef.current) {
       const fileExtension = file.name.split(".").pop().toLowerCase();
-
-      // Determine if the file is supported for Office preview
       const isOffice = ["docx", "pptx"].includes(fileExtension);
 
       viewerRef.current.innerHTML = "";
@@ -102,69 +132,60 @@ const AIAssistantUpload = () => {
     }
   }, [file]);
 
-  const steps = ["Upload Material", "Review & Adapt"];
+  /* ---------------------------------- Steps --------------------------------- */
+  const steps = ["Select Class", "Upload Material", "Review & Adapt"];
 
-  const handleNext = () => {
-    setActiveStep((prevStep) => prevStep + 1);
-  };
+  const handleNext = () => setActiveStep((prev) => prev + 1);
+  const handleBack = () => setActiveStep((prev) => Math.max(0, prev - 1));
 
-  const handleBack = () => {
-    setActiveStep((prevStep) => Math.max(0, prevStep - 1));
-  };
-
+  /* -------------------------------------------------------------------------- */
+  /*                             Initial Data Fetch                             */
+  /* -------------------------------------------------------------------------- */
   useEffect(() => {
     const fetchClasses = async () => {
       try {
         const response = await api.classes.getAll();
-        console.log("API Response:", response);
         if (!Array.isArray(response)) {
-          console.error("Invalid API response format:", response);
-          setUploadError("Failed to fetch classes. Invalid response format.");
-          setClassList([]);
-          return;
+          throw new Error("Invalid API response format");
         }
-        setClassList(response);
       } catch (error) {
         console.error("Error fetching classes:", error);
         setUploadError("Failed to fetch classes. Please try again.");
-        setClassList([]);
       }
     };
     fetchClasses();
   }, []);
 
+  /* ------------------------------ Tutorial Banner --------------------------- */
   useEffect(() => {
     const dismissed = localStorage.getItem(tutorialKey);
-    if (!dismissed) {
-      setShowTutorial(true);
-    }
+    if (!dismissed) setShowTutorial(true);
   }, [tutorialKey]);
 
+  /* ------------------------- Pre‑select Class Logic ------------------------- */
   useEffect(() => {
-    // Use classId from URL params if available
     if (classId) {
       setSelectedClass(classId);
-      setActiveStep(1); // Skip directly to upload material
-    } else {
-      // Otherwise check for preselected class from location state
-      const preselected = location?.state?.preselectedClassId;
-      if (preselected) {
-        setSelectedClass(preselected);
-        setActiveStep(1); // Skip directly to upload material
-      }
+      setActiveStep(1);
+    } else if (location?.state?.preselectedClassId) {
+      setSelectedClass(location.state.preselectedClassId);
+      setActiveStep(1);
     }
   }, [location, classId]);
+
+  /* -------------------------------------------------------------------------- */
+  /*                               Drag & Drop UX                               */
+  /* -------------------------------------------------------------------------- */
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
-
   const handleDragLeave = (e) => {
     e.preventDefault();
     setIsDragging(false);
   };
-
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -172,20 +193,19 @@ const AIAssistantUpload = () => {
     if (droppedFile) setFile(droppedFile);
   };
 
-  const handleFileClick = () => fileInputRef.current.click();
-
+  const handleFileClick = () => fileInputRef.current?.click();
   const handleFileChange = (e) => {
     const selected = e.target.files[0];
     if (selected) setFile(selected);
   };
-
   const clearFile = () => {
     setFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  /* -------------------------------------------------------------------------- */
+  /*                                API Actions                                 */
+  /* -------------------------------------------------------------------------- */
   const handleUploadMaterial = async () => {
     if (!title || !file || !learningObjective || !selectedClass) {
       setUploadError("Please complete all fields.");
@@ -203,62 +223,67 @@ const AIAssistantUpload = () => {
         class_assigned: selectedClass,
       });
 
-      // Check alignment in response
       if (response?.alignment_check?.alignment === "not_aligned") {
-        console.warn("Alignment mismatch detected during upload.");
         setObjectiveMismatchDialogOpen(true);
         return;
       }
 
       setMaterialId(response.id);
-      setPreviewUrl(URL.createObjectURL(file));
       setSuccessMessage("Material uploaded successfully!");
       handleNext();
+      
+      // Immediately start adaptation after successful upload
+      // Use the material ID directly from the response
+      adaptMaterial(response.id);
     } catch (error) {
       console.error("Upload error:", error);
-      setUploadError(
-        error.message || "Failed to upload material. Please try again."
-      );
+      setUploadError(error.message || "Failed to upload material. Please try again.");
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleAdaptMaterial = async () => {
-    if (!materialId) {
-      setUploadError("Please upload a material first.");
+  // New function that takes materialId as parameter
+  const adaptMaterial = async (id) => {
+    if (!id) {
+      setUploadError("Missing material ID for adaptation.");
       return;
     }
+
+    // reset UX flags
+    setNoStudents(false);
+    setNoAdjustments(false);
 
     setIsAdapting(true);
     setUploadError("");
 
     try {
-      const response = await api.learningMaterials.adapt(materialId);
-      console.log("Adapt response:", response);
+      const response = await api.learningMaterials.adapt(id);
 
-      // Check for alignment failure from backend
-      if (response?.error === "learning_objectives_mismatch") {
-        console.warn("Detected objective mismatch. Redirecting to /classes");
-        setUploadError(
-          "The learning objectives do not align with the uploaded material. Please revise them."
+      /* ------------------ Empty‑class & No‑adjustment detection ----------------- */
+      if (
+        Array.isArray(response) &&
+        response[0]?.students
+      ) {
+        const studentsArr = response[0].students;
+
+        if (studentsArr.length === 0) {
+          setNoStudents(true);
+          return;
+        }
+
+        const allClear = studentsArr.every(
+          (st) => !st.disability_info || st.disability_info.trim() === ""
         );
-        setAdaptedStudents([]);
-        setMaterialId(null);
-        setActiveStep(1);
-        setSnackbarOpen(true);
-        setObjectiveMismatchDialogOpen(true);
-        console.warn("Navigate called");
-        return;
-      }
-      // Continue normal flow with response
-      if (!response) {
-        throw new Error("No response received from adaptation service");
+        if (allClear) {
+          setNoAdjustments(true);
+          return;
+        }
       }
 
-      // Handle the response based on its structure...
+      /* -------------------------- Normal adaptation flow ------------------------ */
+      if (!response) throw new Error("No response received from adaptation service");
 
-      // If response is an array, use it directly
       if (Array.isArray(response)) {
         setAdaptedStudents(
           response.map((student) => ({
@@ -266,12 +291,10 @@ const AIAssistantUpload = () => {
             first_name: student.first_name,
             last_name: student.last_name,
             file_url: student.file_url,
+            audio_url: student.audio_url || null,
           }))
         );
-      }
-      // If response is an object with student data
-      else if (typeof response === "object" && response !== null) {
-        // If it's a direct object of student data
+      } else if (typeof response === "object" && response !== null) {
         if (response.first_name) {
           setAdaptedStudents([
             {
@@ -279,18 +302,17 @@ const AIAssistantUpload = () => {
               first_name: response.first_name,
               last_name: response.last_name,
               file_url: response.file_url,
+              audio_url: response.audio_url || null,
             },
           ]);
-        }
-        // If it's an object with student entries
-        else {
+        } else {
           setAdaptedStudents(
             Object.entries(response).map(([id, data]) => ({
               id,
               first_name: data.first_name,
               last_name: data.last_name,
               file_url: data.file_url,
-              audio_url: data.audio_url || null, // NEW: support audio
+              audio_url: data.audio_url || null,
             }))
           );
         }
@@ -299,57 +321,45 @@ const AIAssistantUpload = () => {
       }
     } catch (error) {
       console.error("Adaptation error:", error);
-      setUploadError(
-        error.message || "Failed to adapt material. Please try again."
-      );
+      setUploadError(error.message || "Failed to adapt material. Please try again.");
     } finally {
       setIsAdapting(false);
     }
   };
 
+  /* ------------------------------ Snackbar UX ------------------------------- */
+  useEffect(() => {
+    if (uploadError) setSnackbarOpen(true);
+  }, [uploadError]);
+
   const handleSnackbarClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
+    if (reason === "clickaway") return;
     setSnackbarOpen(false);
     setUploadError("");
   };
-
-  useEffect(() => {
-    if (uploadError) {
-      setSnackbarOpen(true);
-    }
-  }, [uploadError]);
 
   const handleCloseTutorial = () => {
     setShowTutorial(false);
     localStorage.setItem(tutorialKey, "true");
   };
 
+  /* -------------------------------------------------------------------------- */
+  /*                                  Render                                    */
+  /* -------------------------------------------------------------------------- */
   return (
     <>
-      {/* Standalone Tutorial Notification Box */}
+      {/* ------------------------------ Tutorial ------------------------------ */}
       <Dialog
         open={showTutorial}
         onClose={handleCloseTutorial}
         PaperProps={{ sx: { borderRadius: 2, maxWidth: 400 } }}
       >
-        <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            pb: 1,
-          }}
-        >
-          Welcome to Learning Material Upload
-        </DialogTitle>
+        <DialogTitle>Welcome to Learning Material Upload</DialogTitle>
         <DialogContent>
           <Typography variant="body1" color="text.secondary">
-            Here you can upload your learning materials and let the AI help
-            adapt them for your students. Select a class, upload your file, and
-            review the AI-generated adaptations tailored for each student's
-            needs.
+            Upload your learning materials and let the AI tailor them to each student's
+            needs. Start by selecting a class, then provide your file and learning
+            objective.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -359,6 +369,7 @@ const AIAssistantUpload = () => {
         </DialogActions>
       </Dialog>
 
+      {/* ---------------------- Objective Mismatch Dialog ---------------------- */}
       <Dialog
         open={objectiveMismatchDialogOpen}
         onClose={() => setObjectiveMismatchDialogOpen(false)}
@@ -367,9 +378,8 @@ const AIAssistantUpload = () => {
         <DialogTitle>Learning Objectives and Content Mismatch</DialogTitle>
         <DialogContent>
           <Typography>
-            The uploaded material does not adequately align with the provided
-            learning objectives. Please adjust the objectives or select content
-            that better matches them.
+            The uploaded material does not align with the provided learning objectives.
+            Please adjust the objectives or choose content that better matches them.
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -383,6 +393,7 @@ const AIAssistantUpload = () => {
         </DialogActions>
       </Dialog>
 
+      {/* -------------------------------- Steps ------------------------------- */}
       <Stepper activeStep={activeStep} sx={{ mb: 2 }}>
         {steps.map((label) => (
           <Step key={label}>
@@ -391,47 +402,13 @@ const AIAssistantUpload = () => {
         ))}
       </Stepper>
 
-      <Fade in={true}>
+      <Fade in>
         <div>
-          {activeStep === 0 && (
-            <StyledCard>
-              <CardContent
-                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Select Class
-                </Typography>
-                <FormControl fullWidth>
-                  <InputLabel>Class</InputLabel>
-                  <Select
-                    value={selectedClass}
-                    onChange={(e) => {
-                      setSelectedClass(e.target.value);
-                      handleNext();
-                    }}
-                    label="Class"
-                  >
-                    {classList && classList.length > 0 ? (
-                      classList.map((cls) => (
-                        <MenuItem key={cls.id} value={cls.id}>
-                          {cls.class_name} – Grade {cls.year_level}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>No classes available</MenuItem>
-                    )}
-                  </Select>
-                </FormControl>
-              </CardContent>
-            </StyledCard>
-          )}
-
+          {/* --------------------------- STEP 1 – Upload -------------------------- */}
           {activeStep === 1 && (
             <StyledCard>
-              <CardContent
-                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-              >
-                <Typography variant="h6" gutterBottom>
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                   Material Details
                 </Typography>
 
@@ -477,39 +454,20 @@ const AIAssistantUpload = () => {
                 {file && (
                   <Box
                     ref={viewerRef}
-                    sx={{
-                      height: "500px",
-                      width: "100%",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: 1,
-                    }}
+                    sx={{ height: 500, width: "100%", border: "1px solid #e0e0e0", borderRadius: 1 }}
                   />
                 )}
 
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    pt: 2,
-                  }}
-                >
+                <Box sx={{ display: "flex", justifyContent: "space-between", pt: 2 }}>
                   <Button onClick={handleBack}>Back</Button>
                   <Button
                     variant="contained"
-                    onClick={async () => {
-                      await handleUploadMaterial();
-                      if (materialId) handleNext();
-                    }}
-                    disabled={
-                      isUploading || !title || !file || !learningObjective
-                    }
+                    onClick={handleUploadMaterial}
+                    disabled={isUploading || !title || !file || !learningObjective}
                   >
                     {isUploading ? (
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <CircularProgress size={20} color="inherit" />
-                        Uploading...
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <CircularProgress size={20} color="inherit" /> Uploading…
                       </Box>
                     ) : (
                       "Upload & Continue"
@@ -520,61 +478,35 @@ const AIAssistantUpload = () => {
             </StyledCard>
           )}
 
+          {/* --------------------------- STEP 2 – Adapt --------------------------- */}
           {activeStep === 2 && (
             <StyledCard>
-              <CardContent
-                sx={{ display: "flex", flexDirection: "column", gap: 3 }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Adapt Material
-                </Typography>
+              <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <Typography variant="h6">Adapt Material</Typography>
 
-                {!adaptedStudents.length ? (
+                {/* ------------------ Empty‑state(s) PRIORITY ORDER ----------------- */}
+                {(noStudents || noAdjustments) && !adaptedStudents.length ? (
+                  <EmptyState
+                    text={noStudents ? "This class has no enrolled students." : "No students in this class need learning adjustments."}
+                  />
+                ) : !adaptedStudents.length ? (
                   <Box sx={{ textAlign: "center", py: 3 }}>
-                    <Button
-                      variant="contained"
-                      onClick={handleAdaptMaterial}
-                      disabled={isAdapting}
-                      size="large"
-                    >
-                      {isAdapting ? (
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                        >
-                          <CircularProgress size={20} color="inherit" />
-                          Adapting Material...
-                        </Box>
-                      ) : (
-                        "Start Adaptation"
-                      )}
-                    </Button>
+                    <CircularProgress size={40} sx={{ mt: 2 }} />
                   </Box>
                 ) : (
+                  /* ------------------------- Adapted Students ------------------------ */
                   <Box>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
+                    <Typography variant="subtitle1" gutterBottom>
                       Adapted Materials Ready for Download
                     </Typography>
 
                     <Paper sx={{ overflowX: "auto", mt: 2, p: 2 }}>
-                      <Box
-                        component="table"
-                        sx={{
-                          width: "100%",
-                          borderCollapse: "collapse",
-                          tableLayout: "fixed",
-                        }}
-                      >
+                      <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                         <Box component="thead">
                           <Box component="tr">
-                            <Box component="th" sx={tableHeaderStyle}>
-                              Student Name
-                            </Box>
-                            <Box component="th" sx={tableHeaderStyle}>
-                              Adapted File
-                            </Box>
-                            <Box component="th" sx={tableHeaderStyle}>
-                              Audio
-                            </Box>
+                            <Box component="th" sx={tableHeaderStyle}>Student Name</Box>
+                            <Box component="th" sx={tableHeaderStyle}>Adapted File</Box>
+                            <Box component="th" sx={tableHeaderStyle}>Audio</Box>
                           </Box>
                         </Box>
                         <Box component="tbody">
@@ -598,20 +530,11 @@ const AIAssistantUpload = () => {
                                   "—"
                                 )}
                               </Box>
-                              <Box
-                                component="td"
-                                sx={{ ...tableCellStyle, textAlign: "center" }}
-                              >
+                              <Box component="td" sx={{ ...tableCellStyle, textAlign: "center" }}>
                                 {st.audio_url ? (
                                   <>
-                                    <audio
-                                      controls
-                                      style={{ width: "100%", outline: "none" }}
-                                    >
-                                      <source
-                                        src={`${BACKEND}${st.audio_url}`}
-                                        type="audio/mpeg"
-                                      />
+                                    <audio controls style={{ width: "100%", outline: "none" }}>
+                                      <source src={`${BACKEND}${st.audio_url}`} type="audio/mpeg" />
                                       Your browser doesn't support audio.
                                     </audio>
                                     <Button
@@ -635,13 +558,7 @@ const AIAssistantUpload = () => {
                       </Box>
                     </Paper>
 
-                    <Box
-                      sx={{
-                        mt: 3,
-                        display: "flex",
-                        justifyContent: "space-between",
-                      }}
-                    >
+                    <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between" }}>
                       <Button onClick={handleBack}>Back</Button>
                       <Button
                         variant="contained"
@@ -653,6 +570,8 @@ const AIAssistantUpload = () => {
                           setSelectedClass("");
                           setMaterialId(null);
                           setAdaptedStudents([]);
+                          setNoStudents(false);
+                          setNoAdjustments(false);
                         }}
                       >
                         Upload New Material
@@ -666,6 +585,7 @@ const AIAssistantUpload = () => {
         </div>
       </Fade>
 
+      {/* ------------------------------ Snackbars ------------------------------ */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -676,6 +596,7 @@ const AIAssistantUpload = () => {
           {uploadError}
         </Alert>
       </Snackbar>
+
       <Snackbar
         open={!!successMessage}
         autoHideDuration={6000}
@@ -688,16 +609,6 @@ const AIAssistantUpload = () => {
       </Snackbar>
     </>
   );
-};
-
-const tableHeaderStyle = {
-  padding: "16px",
-  textAlign: "left",
-  backgroundColor: "background.paper",
-};
-
-const tableCellStyle = {
-  padding: "16px",
 };
 
 export default AIAssistantUpload;
