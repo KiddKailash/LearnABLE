@@ -71,10 +71,7 @@ const FileUploadZone = ({
             ? "action.hover"
             : "background.paper",
         "&:hover": {
-          bgcolor:
-            theme.palette.mode === "dark"
-              ? "rgba(255, 255, 255, 0.05)"
-              : "rgba(0, 0, 0, 0.02)",
+          bgcolor: "background.default",
           borderColor: isDragging ? "primary.dark" : "primary.main",
         },
         ...sx
