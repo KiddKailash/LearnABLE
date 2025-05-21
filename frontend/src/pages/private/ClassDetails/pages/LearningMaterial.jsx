@@ -36,6 +36,9 @@ import FileUploadZone from "../../../../components/FileUploadZone";
 /*                                    Style                                   */
 /* -------------------------------------------------------------------------- */
 
+// Get BACKEND URL from environment variables
+const BACKEND = process.env.REACT_APP_SERVER_URL || "";
+
 const StyledCard = styled(Card)(({ theme }) => ({
   marginBottom: theme.spacing(3),
   boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
@@ -70,7 +73,6 @@ const AIAssistantUpload = ({
   fetchLearningMaterials,
   createLearningMaterial,
   adaptLearningMaterial,
-  downloadAdaptedMaterial,
   classId,
   students
 }) => {
@@ -242,34 +244,84 @@ const AIAssistantUpload = ({
       return;
     }
 
+    // Reset UX flags
+    setNoStudents(false);
+    setNoAdjustments(false);
+
     setIsAdapting(true);
     setUploadError("");
 
     try {
-      const result = await adaptLearningMaterial(id);
-      
-      if (!result || !result.adaptations) {
-        throw new Error("Adaptation failed or returned invalid data");
-      }
+      const response = await adaptLearningMaterial(id);
 
-      // Format adapted students data
-      const adaptations = [];
-      for (const [studentId, adaptation] of Object.entries(result.adaptations)) {
-        const student = students.find(s => s.id.toString() === studentId);
-        if (student) {
-          adaptations.push({
-            studentId,
-            studentName: `${student.first_name} ${student.last_name}`,
-            adaptationId: adaptation.id,
-            status: adaptation.status,
-            url: adaptation.url,
-          });
+      // Handle empty class or no-adjustment cases first
+      if (Array.isArray(response) && response[0]?.students) {
+        const studentsArr = response[0].students;
+
+        if (studentsArr.length === 0) {
+          setNoStudents(true);
+          setIsAdapting(false);
+          return;
+        }
+
+        const allClear = studentsArr.every(
+          (st) => !st.disability_info || st.disability_info.trim() === ""
+        );
+        if (allClear) {
+          setNoAdjustments(true);
+          setIsAdapting(false);
+          return;
         }
       }
 
-      setAdaptedStudents(adaptations);
-      setNoStudents(adaptations.length === 0);
-      setNoAdjustments(adaptations.every(a => a.status === "no_adaptation_needed"));
+      // Process adaptations based on response format
+      if (!response) throw new Error("No response received from adaptation service");
+
+      let processedAdaptations = [];
+
+      // Handle array format (from the working example)
+      if (Array.isArray(response)) {
+        processedAdaptations = response.map((student) => ({
+          id: student.id,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          file_url: student.file_url,
+          audio_url: student.audio_url || null,
+        }));
+      } 
+      // Handle object format with adaptations wrapper (from current implementation)
+      else if (response.adaptations) {
+        Object.entries(response.adaptations).forEach(([studentId, adaptation]) => {
+          const student = students.find(s => s.id.toString() === studentId);
+          if (student) {
+            processedAdaptations.push({
+              id: studentId,
+              first_name: student.first_name,
+              last_name: student.last_name,
+              file_url: adaptation.url,
+              audio_url: adaptation.audio_url,
+            });
+          }
+        });
+      }
+      // Handle direct student ID mapping (from the server logs)
+      else if (typeof response === "object" && response !== null) {
+        Object.entries(response).forEach(([studentId, data]) => {
+          processedAdaptations.push({
+            id: studentId,
+            first_name: data.first_name || "",
+            last_name: data.last_name || "",
+            file_url: data.file_url,
+            audio_url: data.audio_url || null,
+          });
+        });
+      } else {
+        throw new Error("Invalid response format from adaptation service");
+      }
+
+      setAdaptedStudents(processedAdaptations);
+      setNoStudents(processedAdaptations.length === 0);
+      setNoAdjustments(processedAdaptations.length > 0 && processedAdaptations.every(a => !a.file_url && !a.audio_url));
       setSuccessMessage("Content adapted successfully!");
       setSnackbarOpen(true);
     } catch (error) {
@@ -277,22 +329,6 @@ const AIAssistantUpload = ({
       setUploadError(error.message || "Failed to adapt content. Please try again.");
     } finally {
       setIsAdapting(false);
-    }
-  };
-
-  const handleDownloadAdapted = async (materialId, studentId) => {
-    try {
-      const result = await downloadAdaptedMaterial(materialId, studentId);
-      
-      // Create a download link
-      if (result && result.url) {
-        window.open(result.url, "_blank");
-      } else {
-        throw new Error("Download failed");
-      }
-    } catch (error) {
-      console.error("Download error:", error);
-      setUploadError("Failed to download adapted content. Please try again.");
     }
   };
 
@@ -489,76 +525,84 @@ const AIAssistantUpload = ({
                 <Alert severity="error" sx={{ my: 2 }}>
                   {uploadError}
                 </Alert>
-              ) : noStudents ? (
-                <EmptyState text="No students in this class yet. Add students to enable content adaptation." />
-              ) : noAdjustments ? (
-                <Alert severity="info" sx={{ my: 2 }}>
-                  Our AI analysis found that no adjustments were needed for the
-                  students in this class based on their profiles.
-                </Alert>
+              ) : (noStudents || noAdjustments) && adaptedStudents.length === 0 ? (
+                <EmptyState
+                  text={noStudents 
+                    ? "This class has no enrolled students." 
+                    : "No students in this class need learning adjustments."}
+                />
+              ) : adaptedStudents.length === 0 ? (
+                <Box sx={{ textAlign: "center", py: 3 }}>
+                  <CircularProgress size={40} sx={{ mt: 2 }} />
+                </Box>
               ) : (
                 <Box>
-                  <Alert severity="success" sx={{ mb: 3 }}>
-                    The material has been adapted for students in this class!
-                  </Alert>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Adapted Materials Ready for Download
+                  </Typography>
 
-                  <Paper>
-                    <Box sx={{ ...tableHeaderStyle }}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        Student
-                      </Typography>
-                    </Box>
-
-                    {adaptedStudents.map((student) => (
-                      <Box
-                        key={student.studentId}
-                        sx={{
-                          ...tableCellStyle,
-                          borderTop: 1,
-                          borderColor: "divider",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="body1">
-                            {student.studentName}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            component="div"
-                          >
-                            Status:{" "}
-                            {student.status === "adapted"
-                              ? "Content adapted"
-                              : student.status === "processing"
-                              ? "Processing..."
-                              : student.status === "no_adaptation_needed"
-                              ? "No adaptation needed"
-                              : student.status}
-                          </Typography>
+                  <Paper sx={{ overflowX: "auto", mt: 2, p: 2 }}>
+                    <Box component="table" sx={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+                      <Box component="thead">
+                        <Box component="tr">
+                          <Box component="th" sx={tableHeaderStyle}>Student Name</Box>
+                          <Box component="th" sx={tableHeaderStyle}>Adapted File</Box>
+                          <Box component="th" sx={tableHeaderStyle}>Audio</Box>
                         </Box>
-
-                        {student.status === "adapted" && (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<DownloadIcon />}
-                            onClick={() => handleDownloadAdapted(materialId, student.studentId)}
-                          >
-                            Download
-                          </Button>
-                        )}
                       </Box>
-                    ))}
+                      <Box component="tbody">
+                        {adaptedStudents.map((student) => (
+                          <Box component="tr" key={student.id}>
+                            <Box component="td" sx={tableCellStyle}>
+                              {student.first_name} {student.last_name}
+                            </Box>
+                            <Box component="td" sx={tableCellStyle}>
+                              {student.file_url ? (
+                                <Button
+                                  variant="contained"
+                                  size="small"
+                                  href={`${BACKEND}${student.file_url}`}
+                                  download
+                                  startIcon={<DownloadIcon />}
+                                >
+                                  Download
+                                </Button>
+                              ) : (
+                                "—"
+                              )}
+                            </Box>
+                            <Box component="td" sx={{ ...tableCellStyle, textAlign: "center" }}>
+                              {student.audio_url ? (
+                                <>
+                                  <audio controls style={{ width: "100%", outline: "none" }}>
+                                    <source src={`${BACKEND}${student.audio_url}`} type="audio/mpeg" />
+                                    Your browser doesn't support audio.
+                                  </audio>
+                                  <Button
+                                    variant="contained"
+                                    size="small"
+                                    sx={{ mt: 1 }}
+                                    href={`${BACKEND}${student.audio_url}`}
+                                    download
+                                    startIcon={<DownloadIcon />}
+                                  >
+                                    Download
+                                  </Button>
+                                </>
+                              ) : (
+                                "—"
+                              )}
+                            </Box>
+                          </Box>
+                        ))}
+                      </Box>
+                    </Box>
                   </Paper>
 
-                  <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                  <Box sx={{ mt: 3, display: "flex", justifyContent: "space-between" }}>
+                    <Button onClick={handleBack}>Back</Button>
                     <Button
-                      variant="outlined"
-                      color="primary"
+                      variant="contained"
                       onClick={() => window.location.reload()}
                     >
                       Upload Another
