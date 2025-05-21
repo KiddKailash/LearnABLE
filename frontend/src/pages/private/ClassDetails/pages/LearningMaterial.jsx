@@ -29,6 +29,9 @@ import DownloadIcon from "@mui/icons-material/Download";
 // Services & Context
 import UserContext from "../../../../store/UserObject";
 
+// Components
+import FileUploadZone from "../../../../components/FileUploadZone";
+
 /* -------------------------------------------------------------------------- */
 /*                                    Style                                   */
 /* -------------------------------------------------------------------------- */
@@ -391,69 +394,28 @@ const AIAssistantUpload = ({
                   helperText="Describe what students should learn from this material"
                 />
 
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    mt: 3,
-                    p: 3,
-                    borderStyle: "dashed",
-                    borderWidth: 2,
-                    borderColor: isDragging ? "primary.main" : "divider",
-                    borderRadius: 2,
-                    backgroundColor: isDragging ? "action.hover" : "background.paper",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease-in-out",
-                  }}
+                <FileUploadZone
+                  file={file}
+                  onClick={handleFileClick}
+                  onDelete={clearFile}
+                  icon={<UploadFileIcon sx={{ fontSize: 40, color: "action.active", mb: 1 }} />}
+                  title="Drop your file here or click to browse"
+                  subtitle="PDF, Word, or PowerPoint"
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  onClick={handleFileClick}
-                >
-                  <input
-                    type="file"
-                    hidden
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.ppt,.pptx"
-                  />
+                  isDragging={isDragging}
+                  sx={{ mt: 1 }}
+                />
 
-                  {file ? (
-                    <Box>
-                      <Typography variant="h6" gutterBottom>
-                        {file.name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        gutterBottom
-                      >
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </Typography>
-                      <Button
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearFile();
-                        }}
-                      >
-                        Remove
-                      </Button>
-                    </Box>
-                  ) : (
-                    <Box>
-                      <UploadFileIcon
-                        sx={{ fontSize: 48, color: "action.active", mb: 1 }}
-                      />
-                      <Typography variant="h6" gutterBottom>
-                        Drop your file here or click to browse
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Supports PDF, Word, and PowerPoint files
-                      </Typography>
-                    </Box>
-                  )}
-                </Paper>
+                <input
+                  type="file"
+                  hidden
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.ppt,.pptx"
+                />
+
               </Box>
 
               {uploadError && (
