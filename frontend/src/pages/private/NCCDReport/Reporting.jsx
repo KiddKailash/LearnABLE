@@ -3,7 +3,7 @@
  * @description Main component for managing NCCD reports, providing a comprehensive interface
  * for viewing, creating, editing, and deleting reports. Includes filtering, search, and
  * detailed report management capabilities.
- * 
+ *
  */
 
 import React, { useState, useEffect } from "react";
@@ -48,7 +48,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 /**
  * Main component for managing NCCD reports
- * 
+ *
  * @component
  * @returns {JSX.Element} The NCCD reports management interface
  */
@@ -103,14 +103,14 @@ const NCCDReports = () => {
   // Handle URL parameters for new report creation
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const shouldOpenForm = queryParams.get('newReport') === 'true';
-    
+    const shouldOpenForm = queryParams.get("newReport") === "true";
+
     if (shouldOpenForm && students.length > 0) {
       setFormDialogOpen(true);
-      
+
       // Clean up the URL without causing a page reload
-      const newUrl = window.location.pathname; 
-      window.history.replaceState({}, '', newUrl);
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
     }
   }, [location, students]);
 
@@ -135,7 +135,8 @@ const NCCDReports = () => {
 
     // Apply name search
     if (nameSearch) {
-      const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
+      const fullName =
+        `${student.first_name} ${student.last_name}`.toLowerCase();
       if (!fullName.includes(nameSearch.toLowerCase())) {
         return false;
       }
@@ -289,7 +290,14 @@ const NCCDReports = () => {
 
   return (
     <>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Box>
           <Typography variant="h4" gutterBottom>
             NCCD Reports
@@ -366,14 +374,17 @@ const NCCDReports = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 12, md: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Grid
+            size={{ xs: 12, sm: 12, md: 3 }}
+            sx={{ display: "flex", justifyContent: "flex-end" }}
+          >
             <Button
               variant="outlined"
               color="error"
               onClick={() => {
-                setNameSearch('');
-                setStatusFilter('');
-                setStudentFilter('');
+                setNameSearch("");
+                setStatusFilter("");
+                setStudentFilter("");
               }}
             >
               Clear Filters
@@ -492,22 +503,15 @@ const NCCDReports = () => {
         maxWidth="md"
         fullWidth
       >
-        <Box sx={{ position: "relative" }}>
-          <IconButton
-            sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
-            onClick={() => setFormDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-          <NCCDReportForm
-            // studentId={
-            //   selectedStudentId || (students.length > 0 ? students[0].id : null)
-            // }
-            reportId={selectedReportId}
-            onSuccess={handleFormSuccess}
-            onCancel={() => setFormDialogOpen(false)}
-          />
-        </Box>
+        <NCCDReportForm
+          open={formDialogOpen}
+          onClose={() => setFormDialogOpen(false)}
+          studentId={selectedStudentId}
+          reportId={selectedReportId}
+          onSuccess={handleFormSuccess}
+          onCancel={() => setFormDialogOpen(false)}
+          students={students}
+        />
       </Dialog>
 
       {/* View Report Dialog */}

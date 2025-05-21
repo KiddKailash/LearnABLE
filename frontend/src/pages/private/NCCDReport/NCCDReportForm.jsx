@@ -3,38 +3,62 @@
  * @description A multi-step form component for creating and editing NCCD reports.
  * Implements a stepper interface for collecting information about student adjustments
  * and disability categories.
- * 
+ *
  */
 
-import React, { useState, useEffect , useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useContext } from "react";
+import styled from "@emotion/styled";
+import { Card, CardContent } from "@mui/material";
 
 //MUI imports
-import Box from '@mui/material/Box';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import Box from "@mui/material/Box";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import Stepper from "@mui/material/Stepper";
+import Step from "@mui/material/Step";
+import StepLabel from "@mui/material/StepLabel";
+import StepContent from "@mui/material/StepContent";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import CircularProgress from "@mui/material/CircularProgress";
+import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import TextField from "@mui/material/TextField";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import Stack from "@mui/material/Stack";
+import LinearProgress from "@mui/material/LinearProgress";
+import Alert from "@mui/material/Alert";
+
+// MUI Icons
+import SchoolIcon from "@mui/icons-material/School";
+import DescriptionIcon from "@mui/icons-material/Description";
+import ErrorIcon from "@mui/icons-material/Error";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import CategoryIcon from "@mui/icons-material/Category";
+import GavelIcon from "@mui/icons-material/Gavel";
+import CommentIcon from "@mui/icons-material/Comment";
+
+// Context
+import { SnackbarContext } from "../../../contexts/SnackbarContext";
 
 // Services
-import api from '../../../services/api'; 
+import api from "../../../services/api";
+
+// Add styled components
+const StyledCard = styled(Card)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+  borderRadius: theme.shape.borderRadius * 2,
+}));
 
 /**
  * Multi-step form component for NCCD report creation and editing
- * 
+ *
  * @component
  * @param {Object} props - Component props
  * @param {boolean} props.open - Whether the form dialog is open
@@ -45,65 +69,105 @@ import api from '../../../services/api';
  * @param {Function} props.onCancel - Handler for form cancellation
  * @returns {JSX.Element} The NCCD report form
  */
-const NCCDReportForm = ({ 
+const NCCDReportForm = ({
   open,
   onClose,
-  studentId, 
+  studentId,
   reportId,
   onSuccess,
   onCancel,
   students: passedStudents = null,
 }) => {
-
-  const hasStudentId = studentId != null && studentId !== '';
+  const { showSnackbar } = useContext(SnackbarContext);
+  const hasStudentId = studentId != null && studentId !== "";
   // Start off with passedStudents if provided, otherwise an empty array
   const [students, setStudents] = useState(passedStudents || []);
   const [studentLoading, setStudentLoading] = useState(!hasStudentId);
 
-  // Define form steps
+  // Define steps with icons and descriptions
   const steps = useMemo(() => {
-    return [
-      ...(hasStudentId ? [] : ['Select Student']),
-      'Do you have evidence?',
-      'What is the level of adjustment?',
-      'What is the category of disability?',
-      'Is it under the DDA 1992?',
-      'Additional Comments'
+    const baseSteps = [
+      {
+        label: "Select Student",
+        description: "Choose the student for this report",
+        icon: <SchoolIcon />,
+      },
+      {
+        label: "Evidence",
+        description:
+          "Confirm evidence under Disability Standards for Education 2005",
+        icon: <DescriptionIcon />,
+      },
+      {
+        label: "Level of Adjustment",
+        description: "Specify the level of reasonable adjustment",
+        icon: <AssignmentIcon />,
+      },
+      {
+        label: "Disability Category",
+        description: "Select the primary disability category",
+        icon: <CategoryIcon />,
+      },
+      {
+        label: "DDA Compliance",
+        description:
+          "Verify compliance with Disability Discrimination Act 1992",
+        icon: <GavelIcon />,
+      },
+      {
+        label: "Additional Comments",
+        description: "Add any supplementary information",
+        icon: <CommentIcon />,
+        optional: true,
+      },
     ];
-  }, [hasStudentId]);  
 
-  // Define stepkeys array 
+    return hasStudentId ? baseSteps.slice(1) : baseSteps;
+  }, [hasStudentId]);
+
+  // Define stepkeys array
   const stepKeys = useMemo(() => {
     return hasStudentId
-      ? ['evidence', 'levelOfAdjustment', 'disabilityCategory', 'underDDA', 'additionalComments']
-      : ['studentSelection', 'evidence', 'levelOfAdjustment', 'disabilityCategory', 'underDDA', 'additionalComments'];
-  }, [hasStudentId]);  
+      ? [
+          "evidence",
+          "levelOfAdjustment",
+          "disabilityCategory",
+          "underDDA",
+          "additionalComments",
+        ]
+      : [
+          "studentSelection",
+          "evidence",
+          "levelOfAdjustment",
+          "disabilityCategory",
+          "underDDA",
+          "additionalComments",
+        ];
+  }, [hasStudentId]);
 
   // Form state management
   const [activeStep, setActiveStep] = useState(0);
   const [formValues, setFormValues] = useState({
-    studentSelection: '', 
-    evidence: '',
-    levelOfAdjustment: '',
-    disabilityCategory: '',
-    underDDA: '',
-    additionalComments: '',
+    studentSelection: "",
+    evidence: "",
+    levelOfAdjustment: "",
+    disabilityCategory: "",
+    underDDA: "",
+    additionalComments: "",
   });
   const [errors, setErrors] = useState({});
-  const [showSnackbar, setShowSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('Form submitted successfully!');
   const [loading, setLoading] = useState(reportId ? true : false);
-  
+
   // Determine if we're in standalone dialog mode or integrated mode
   const isDialogMode = open !== undefined;
-  
+
   useEffect(() => {
     if (hasStudentId || passedStudents) {
       setStudents(passedStudents || []);
       setStudentLoading(false);
       return;
     }
-  
+
     const fetchStudents = async () => {
       setStudentLoading(true);
       try {
@@ -111,42 +175,43 @@ const NCCDReportForm = ({
         setStudents(data);
       } catch (err) {
         console.error("Failed to fetch students:", err);
+        showSnackbar("Failed to fetch students", "error");
       } finally {
         setStudentLoading(false);
       }
     };
-  
+
     fetchStudents();
-  }, [hasStudentId, passedStudents]);  
+  }, [hasStudentId, passedStudents, showSnackbar]);
 
   // Fetch existing report data if in edit mode
   useEffect(() => {
     const fetchReport = async () => {
       if (!reportId) return;
-      
+
       try {
         setLoading(true);
         const reportData = await api.nccdReports.get(reportId);
-        
+
         setFormValues({
-          evidence: reportData.has_evidence ? 'Yes' : 'No',
-          levelOfAdjustment: reportData.level_of_adjustment || '',
-          disabilityCategory: reportData.disability_category || '',
-          underDDA: reportData.under_dda ? 'Yes' : 'No',
-          additionalComments: reportData.additional_comments || '',
+          evidence: reportData.has_evidence ? "Yes" : "No",
+          levelOfAdjustment: reportData.level_of_adjustment || "",
+          disabilityCategory: reportData.disability_category || "",
+          underDDA: reportData.under_dda ? "Yes" : "No",
+          additionalComments: reportData.additional_comments || "",
         });
       } catch (err) {
-        console.error('Error fetching report:', err);
-        // Show error notification
+        console.error("Error fetching report:", err);
+        showSnackbar("Error fetching report", "error");
       } finally {
         setLoading(false);
       }
     };
-    
+
     if (reportId) {
       fetchReport();
     }
-  }, [reportId]);
+  }, [reportId, showSnackbar]);
 
   /**
    * Handles moving to the next step in the form
@@ -158,21 +223,33 @@ const NCCDReportForm = ({
       handleSubmit();
       return;
     }
-    
+
     const currentKey = stepKeys[activeStep];
     if (currentKey && !formValues[currentKey]) {
-      setErrors(prev => ({ ...prev, [currentKey]: 'This field is required' }));
+      setErrors((prev) => ({
+        ...prev,
+        [currentKey]: "This field is required",
+      }));
       return;
     }
+    // Clear errors when moving to next step
     setErrors({});
-    setActiveStep(prev => prev + 1);
+    setActiveStep((prev) => prev + 1);
   };
 
   /**
    * Handles moving to the previous step in the form
    */
   const handleBack = () => {
-    setActiveStep(prev => prev - 1);
+    // Clear errors when moving back
+    setErrors({});
+    setActiveStep((prev) => prev - 1);
+  };
+
+  const handleSkip = () => {
+    // Clear errors when skipping
+    setErrors({});
+    setActiveStep((prev) => prev + 1);
   };
 
   /**
@@ -181,8 +258,8 @@ const NCCDReportForm = ({
    * @returns {Function} Event handler for the field change
    */
   const handleChange = (field) => (e) => {
-    setFormValues(prev => ({ ...prev, [field]: e.target.value }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+    setFormValues((prev) => ({ ...prev, [field]: e.target.value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   /**
@@ -191,59 +268,60 @@ const NCCDReportForm = ({
    */
   const handleSubmit = async () => {
     // Validate all required fields
-    const requiredFields = ['evidence', 'levelOfAdjustment', 'disabilityCategory', 'underDDA'];
+    const requiredFields = [
+      "evidence",
+      "levelOfAdjustment",
+      "disabilityCategory",
+      "underDDA",
+    ];
     const newErrors = {};
-    
-    requiredFields.forEach(field => {
+
+    requiredFields.forEach((field) => {
       if (!formValues[field]) {
-        newErrors[field] = 'This field is required';
+        newErrors[field] = "This field is required";
       }
     });
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    
+
     try {
       setLoading(true);
-      
-      const studentToUse = hasStudentId ? studentId : formValues.studentSelection;
+
+      const studentToUse = hasStudentId
+        ? studentId
+        : formValues.studentSelection;
 
       if (!studentToUse) {
-        setErrors({ studentSelection: 'Please select a student.' });
+        setErrors({ studentSelection: "Please select a student." });
         return;
-      }      
+      }
 
       // Prepare data for API submission
       const reportData = {
         student: studentToUse,
-        has_evidence: formValues.evidence === 'Yes',
+        has_evidence: formValues.evidence === "Yes",
         level_of_adjustment: formValues.levelOfAdjustment,
         disability_category: formValues.disabilityCategory,
-        under_dda: formValues.underDDA === 'Yes',
+        under_dda: formValues.underDDA === "Yes",
         additional_comments: formValues.additionalComments,
-        status: 'Approved' // Default status for updated/new reports
+        status: "Approved", // Default status for updated/new reports
       };
-      
+
       let result;
-      
+
       if (reportId) {
         // Update existing report
-        console.log("Submitting report:", reportData);
-        console.log("Sanitized data being sent:", JSON.stringify(reportData));
         result = await api.nccdReports.update(reportId, reportData);
+        showSnackbar("Report updated successfully", "success");
       } else {
         // Create new report
-        console.log("Submitting report:", reportData);
-        console.log("Sanitized data being sent:", JSON.stringify(reportData));
         result = await api.nccdReports.create(reportData);
+        showSnackbar("Report created successfully", "success");
       }
-      
-      // Show success message
-      setSnackbarMessage('Form submitted successfully!');
-      setShowSnackbar(true);
-      
+
       // Delay closing the dialog or calling success handler
       setTimeout(() => {
         if (isDialogMode) {
@@ -253,9 +331,8 @@ const NCCDReportForm = ({
         }
       }, 2000);
     } catch (err) {
-      console.error('Error saving report:', err);
-      setSnackbarMessage('Error saving form. Please try again.');
-      setShowSnackbar(true);
+      console.error("Error saving report:", err);
+      showSnackbar("Error saving report. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -268,16 +345,16 @@ const NCCDReportForm = ({
   const renderStepContent = () => {
     if (loading) {
       return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+        <Box sx={{ display: "flex", justifyContent: "center" }}>
           <CircularProgress />
         </Box>
       );
     }
-  
+
     const currentKey = stepKeys[activeStep];
-  
+
     switch (currentKey) {
-      case 'studentSelection':
+      case "studentSelection":
         return (
           <FormControl fullWidth error={!!errors.studentSelection}>
             <InputLabel id="student-select-label">Select Student</InputLabel>
@@ -285,7 +362,7 @@ const NCCDReportForm = ({
               labelId="student-select-label"
               value={formValues.studentSelection}
               label="Select Student"
-              onChange={handleChange('studentSelection')}
+              onChange={handleChange("studentSelection")}
             >
               {(students || []).map((student) => (
                 <MenuItem key={student.id} value={student.id.toString()}>
@@ -300,17 +377,25 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-  
-      case 'evidence':
+
+      case "evidence":
         return (
           <FormControl error={!!errors.evidence} fullWidth>
-            <Typography>
-              Does the school team have evidence under the <strong>Disability Standards for Education 2005</strong>?
+            <Typography variant="subtitle1" gutterBottom>
+              Does the school team have evidence under the{" "}
+              <strong>Disability Standards for Education 2005</strong>?
             </Typography>
-            <RadioGroup value={formValues.evidence} onChange={handleChange('evidence')}>
+            <RadioGroup
+              value={formValues.evidence}
+              onChange={handleChange("evidence")}
+            >
               <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
               <FormControlLabel value="No" control={<Radio />} label="No" />
-              <FormControlLabel value="Not sure" control={<Radio />} label="I'm not sure" />
+              <FormControlLabel
+                value="Not sure"
+                control={<Radio />}
+                label="I'm not sure"
+              />
             </RadioGroup>
             {errors.evidence && (
               <Typography color="error" variant="caption">
@@ -319,16 +404,37 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-  
-      case 'levelOfAdjustment':
+
+      case "levelOfAdjustment":
         return (
           <FormControl error={!!errors.levelOfAdjustment} fullWidth>
-            <Typography>Which level of reasonable adjustment is being provided?</Typography>
-            <RadioGroup value={formValues.levelOfAdjustment} onChange={handleChange('levelOfAdjustment')}>
-              <FormControlLabel value="QDTP" control={<Radio />} label="Quality Differentiated Teaching Practice" />
-              <FormControlLabel value="Supplementary" control={<Radio />} label="Supplementary adjustments" />
-              <FormControlLabel value="Substantial" control={<Radio />} label="Substantial adjustments" />
-              <FormControlLabel value="Extensive" control={<Radio />} label="Extensive adjustments" />
+            <Typography variant="subtitle1" gutterBottom>
+              Which level of reasonable adjustment is being provided?
+            </Typography>
+            <RadioGroup
+              value={formValues.levelOfAdjustment}
+              onChange={handleChange("levelOfAdjustment")}
+            >
+              <FormControlLabel
+                value="QDTP"
+                control={<Radio />}
+                label="Quality Differentiated Teaching Practice"
+              />
+              <FormControlLabel
+                value="Supplementary"
+                control={<Radio />}
+                label="Supplementary adjustments"
+              />
+              <FormControlLabel
+                value="Substantial"
+                control={<Radio />}
+                label="Substantial adjustments"
+              />
+              <FormControlLabel
+                value="Extensive"
+                control={<Radio />}
+                label="Extensive adjustments"
+              />
             </RadioGroup>
             {errors.levelOfAdjustment && (
               <Typography color="error" variant="caption">
@@ -337,16 +443,37 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-  
-      case 'disabilityCategory':
+
+      case "disabilityCategory":
         return (
           <FormControl error={!!errors.disabilityCategory} fullWidth>
-            <Typography>Which category of disability has the greatest impact?</Typography>
-            <RadioGroup value={formValues.disabilityCategory} onChange={handleChange('disabilityCategory')}>
-              <FormControlLabel value="Physical" control={<Radio />} label="Physical" />
-              <FormControlLabel value="Cognitive" control={<Radio />} label="Cognitive" />
-              <FormControlLabel value="Sensory" control={<Radio />} label="Sensory" />
-              <FormControlLabel value="Social/emotional" control={<Radio />} label="Social/emotional" />
+            <Typography variant="subtitle1" gutterBottom>
+              Which category of disability has the greatest impact?
+            </Typography>
+            <RadioGroup
+              value={formValues.disabilityCategory}
+              onChange={handleChange("disabilityCategory")}
+            >
+              <FormControlLabel
+                value="Physical"
+                control={<Radio />}
+                label="Physical"
+              />
+              <FormControlLabel
+                value="Cognitive"
+                control={<Radio />}
+                label="Cognitive"
+              />
+              <FormControlLabel
+                value="Sensory"
+                control={<Radio />}
+                label="Sensory"
+              />
+              <FormControlLabel
+                value="Social/emotional"
+                control={<Radio />}
+                label="Social/emotional"
+              />
             </RadioGroup>
             {errors.disabilityCategory && (
               <Typography color="error" variant="caption">
@@ -355,12 +482,18 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-  
-      case 'underDDA':
+
+      case "underDDA":
         return (
           <FormControl error={!!errors.underDDA} fullWidth>
-            <Typography>Is this adjustment to address a disability under the <strong>Disability Discrimination Act 1992</strong>?</Typography>
-            <RadioGroup value={formValues.underDDA} onChange={handleChange('underDDA')}>
+            <Typography variant="subtitle1" gutterBottom>
+              Is this adjustment to address a disability under the{" "}
+              <strong>Disability Discrimination Act 1992</strong>?
+            </Typography>
+            <RadioGroup
+              value={formValues.underDDA}
+              onChange={handleChange("underDDA")}
+            >
               <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
               <FormControlLabel value="No" control={<Radio />} label="No" />
             </RadioGroup>
@@ -371,8 +504,8 @@ const NCCDReportForm = ({
             )}
           </FormControl>
         );
-  
-      case 'additionalComments':
+
+      case "additionalComments":
         return (
           <TextField
             fullWidth
@@ -380,25 +513,30 @@ const NCCDReportForm = ({
             rows={4}
             label="Additional Comments"
             value={formValues.additionalComments}
-            onChange={handleChange('additionalComments')}
+            onChange={handleChange("additionalComments")}
             placeholder="Enter any additional information about the adjustments..."
           />
         );
-  
+
       default:
         return null;
     }
-  };  
+  };
 
   if (!hasStudentId && studentLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
         <CircularProgress />
       </Box>
     );
   }
-  
-  if (!hasStudentId && !studentLoading && Array.isArray(students) && students.length === 0) {
+
+  if (
+    !hasStudentId &&
+    !studentLoading &&
+    Array.isArray(students) &&
+    students.length === 0
+  ) {
     return (
       <Box sx={{ p: 4 }}>
         <Typography variant="h6" color="text.secondary">
@@ -410,33 +548,103 @@ const NCCDReportForm = ({
 
   // Render the form content
   const formContent = (
-    <>
-      <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
+    <Box sx={{ p: 3 }}>
+      <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold" }}>
+        {reportId ? "Edit NCCD Report" : "Create NCCD Report"}
+      </Typography>
+      <Stepper activeStep={activeStep} orientation="vertical" sx={{ mt: 1 }}>
+        {steps.map((step, index) => (
+          <Step key={step.label}>
+            <StepLabel
+              icon={
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    color:
+                      index === activeStep ? "primary.main" : "text.disabled",
+                  }}
+                >
+                  {step.icon}
+                </Box>
+              }
+            >
+              <Typography
+                variant="subtitle1"
+                fontWeight={index === activeStep ? "bold" : "normal"}
+              >
+                {step.label}
+                {step.optional && (
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="text.secondary"
+                  >
+                    {" "}
+                    (Optional)
+                  </Typography>
+                )}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {step.description}
+              </Typography>
+            </StepLabel>
+            <StepContent>
+              <Box sx={{ mt: 2, mb: 3 }}>
+                {renderStepContent()}
+
+                {errors[stepKeys[activeStep]] && (
+                  <Alert severity="error" sx={{ mt: 2 }} icon={<ErrorIcon />}>
+                    {errors[stepKeys[activeStep]]}
+                  </Alert>
+                )}
+
+                {loading && (
+                  <Box sx={{ width: "100%", mt: 2 }}>
+                    <LinearProgress />
+                  </Box>
+                )}
+
+                <Box sx={{ mt: 3 }}>
+                  <Stack direction="row" spacing={1}>
+                    <Button
+                      disabled={index === 0 || loading}
+                      onClick={handleBack}
+                      variant="outlined"
+                      size="medium"
+                    >
+                      Back
+                    </Button>
+
+                    {step.optional && (
+                      <Button
+                        onClick={handleSkip}
+                        disabled={loading}
+                        variant="text"
+                        size="medium"
+                      >
+                        Skip
+                      </Button>
+                    )}
+
+                    <Button
+                      variant="contained"
+                      onClick={
+                        index === steps.length - 1 ? handleSubmit : handleNext
+                      }
+                      disabled={loading}
+                      size="medium"
+                    >
+                      {index === steps.length - 1 ? "Submit" : "Continue"}
+                    </Button>
+                  </Stack>
+                </Box>
+              </Box>
+            </StepContent>
           </Step>
         ))}
       </Stepper>
-
-      {renderStepContent()}
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
-        <Button
-          disabled={activeStep === 0}
-          onClick={handleBack}
-        >
-          Back
-        </Button>
-        <Button
-          variant="contained"
-          onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-          disabled={loading}
-        >
-          {activeStep === steps.length - 1 ? 'Submit' : 'Next'}
-        </Button>
-      </Box>
-    </>
+    </Box>
   );
 
   // Render in dialog mode if open prop is provided
@@ -447,22 +655,24 @@ const NCCDReportForm = ({
         onClose={onClose}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: "background.paper",
+            borderRadius: 2,
+          },
+        }}
       >
-        <DialogTitle>
-          {reportId ? 'Edit NCCD Report' : 'Create NCCD Report'}
-        </DialogTitle>
-        <DialogContent>
-          {formContent}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={onClose}>Cancel</Button>
-        </DialogActions>
+        <DialogContent>{formContent}</DialogContent>
       </Dialog>
     );
   }
 
   // Render in standalone mode
-  return formContent;
+  return (
+    <StyledCard>
+      <CardContent sx={{ p: 0 }}>{formContent}</CardContent>
+    </StyledCard>
+  );
 };
 
 export default NCCDReportForm;
