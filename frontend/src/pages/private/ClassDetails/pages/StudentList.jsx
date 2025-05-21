@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 
 // MUI Components
@@ -28,7 +28,6 @@ import Add from "@mui/icons-material/Add";
 import Save from "@mui/icons-material/Save";
 
 // Local Imports
-import { SnackbarContext } from "../../../../contexts/SnackbarContext";
 import StudentFormDialog from "../../Classes/StudentFormDialog";
 
 const StudentListPage = ({
@@ -41,8 +40,8 @@ const StudentListPage = ({
   uploadStudentCSV
 }) => {
   const { classId } = useParams();
-  const { showSnackbar } = useContext(SnackbarContext);
 
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
   const [form, setForm] = useState({});
   const [newStudentDialog, setNewStudentDialog] = useState(false);
@@ -75,12 +74,14 @@ const StudentListPage = ({
 
   const handleEdit = (student) => {
     setEditingStudent(student.id);
-    setForm(student);
+    setForm({...student});
+    setEditDialogOpen(true);
   };
 
   const handleSave = async () => {
     const success = await updateStudent(editingStudent, form);
     if (success) {
+      setEditDialogOpen(false);
       setEditingStudent(null);
     }
   };
@@ -174,108 +175,36 @@ const StudentListPage = ({
                 students.map((s) => (
                   <TableRow key={s.id}>
                     <TableCell>
-                      {editingStudent === s.id ? (
-                        <>
-                          <input
-                            type="text"
-                            value={form.first_name || ""}
-                            onChange={(e) =>
-                              setForm({ ...form, first_name: e.target.value })
-                            }
-                            placeholder="First name"
-                            style={{ marginBottom: 8 }}
-                          />
-                          <br />
-                          <input
-                            type="text"
-                            value={form.last_name || ""}
-                            onChange={(e) =>
-                              setForm({ ...form, last_name: e.target.value })
-                            }
-                            placeholder="Last name"
-                          />
-                        </>
-                      ) : (
-                        <>
-                          {s.first_name} {s.last_name}
-                        </>
-                      )}
+                      {s.first_name} {s.last_name}
                     </TableCell>
                     <TableCell>
-                      {editingStudent === s.id ? (
-                        <input
-                          type="text"
-                          value={form.student_email || ""}
-                          onChange={(e) =>
-                            setForm({ ...form, student_email: e.target.value })
-                          }
-                        />
-                      ) : (
-                        s.student_email
-                      )}
+                      {s.student_email}
                     </TableCell>
                     <TableCell>
-                      {editingStudent === s.id ? (
-                        <input
-                          type="text"
-                          value={form.year_level || ""}
-                          onChange={(e) =>
-                            setForm({ ...form, year_level: e.target.value })
-                          }
-                        />
-                      ) : (
-                        s.year_level
-                      )}
+                      {s.year_level}
                     </TableCell>
                     <TableCell style={{ maxWidth: 300 }}>
-                      {editingStudent === s.id ? (
-                        <textarea
-                          value={form.disability_info || ""}
-                          onChange={(e) =>
-                            setForm({
-                              ...form,
-                              disability_info: e.target.value,
-                            })
-                          }
-                          style={{ width: "100%", minHeight: 80 }}
-                        />
-                      ) : (
-                        s.disability_info || "None specified"
-                      )}
+                      {s.disability_info || "None specified"}
                     </TableCell>
                     <TableCell>
-                      {editingStudent === s.id ? (
-                        <Tooltip title="Save changes">
-                          <IconButton
-                            color="primary"
-                            aria-label="save"
-                            onClick={handleSave}
-                          >
-                            <Save />
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
-                        <>
-                          <Tooltip title="Edit student">
-                            <IconButton
-                              color="primary"
-                              aria-label="edit"
-                              onClick={() => handleEdit(s)}
-                            >
-                              <Edit />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Remove from class">
-                            <IconButton
-                              color="error"
-                              aria-label="delete"
-                              onClick={() => promptDelete(s)}
-                            >
-                              <Delete />
-                            </IconButton>
-                          </Tooltip>
-                        </>
-                      )}
+                      <Tooltip title="Edit student">
+                        <IconButton
+                          color="primary"
+                          aria-label="edit"
+                          onClick={() => handleEdit(s)}
+                        >
+                          <Edit />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Remove from class">
+                        <IconButton
+                          color="error"
+                          aria-label="delete"
+                          onClick={() => promptDelete(s)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))
@@ -301,6 +230,18 @@ const StudentListPage = ({
         setFormData={setNewStudent}
         onSubmit={handleAddStudent}
         title="Add New Student"
+      />
+      
+      {/* Edit student dialog */}
+      <StudentFormDialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        formData={form}
+        setFormData={setForm}
+        onSubmit={handleSave}
+        title="Edit Student"
+        submitLabel="Save Changes"
+        submitIcon={<Save />}
       />
 
       {/* Confirm delete dialog */}
