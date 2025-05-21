@@ -35,6 +35,7 @@ const AppearanceTab = ({
     if (savedTheme && savedTheme !== themeMode) {
       setThemeMode(savedTheme);
     }
+    //eslint-disable-next-line
   }, []);
 
   return (

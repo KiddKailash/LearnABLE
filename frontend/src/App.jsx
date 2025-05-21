@@ -8,12 +8,12 @@
 
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { TutorialProvider } from './contexts/TutorialContext';
-import { UserProvider } from './store/UserObject';
+import { TutorialProvider } from "./contexts/TutorialContext";
+import { UserProvider } from "./store/UserObject";
 
 // Components
-import Tutorial from './components/Tutorial.jsx';
-import ErrorBoundary from './components/ErrorBoundary';
+import Tutorial from "./components/Tutorial.jsx";
+import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./layout/Layout.jsx";
 
@@ -51,13 +51,11 @@ const App = () => {
           <Tutorial />
           <div className="app">
             <Routes>
-              <Route
-                path="/"
-                element={<Layout />}
-              >
+              <Route path="/" element={<Layout />}>
                 {pages.map((page, i) => {
                   // Determine if the route is public or protected
-                  const isPublic = publicPaths.includes(page.path) || page.path === "*";
+                  const isPublic =
+                    publicPaths.includes(page.path) || page.path === "*";
 
                   return (
                     <Route

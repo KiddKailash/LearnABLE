@@ -52,6 +52,14 @@ const DeleteAccountTab = ({
     <>
       {/* Main Content */}
       <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{ fontWeight: "bold" }}
+        >
+          Delete Account
+        </Typography>
+
         {/* Warning Alert */}
         <Alert severity="warning" sx={{ mb: 3 }}>
           <AlertTitle>Warning: This action is permanent</AlertTitle>
@@ -60,21 +68,13 @@ const DeleteAccountTab = ({
         </Alert>
 
         {/* Pre-deletion Suggestions */}
-        <Typography variant="body1" sx={{ mb: 3 }}>
+        <Typography variant="body1">
           Before you delete your account, you may want to:
         </Typography>
 
-        <Box component="ul" sx={{ mb: 3 }}>
-          <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-            Export your data using the{" "}
-            <Button size="small" onClick={() => onNavigateToTab(5)}>
-              Data Export
-            </Button>{" "}
-            tab
-          </Typography>
-
-          <Typography component="li" variant="body2" sx={{ mb: 1 }}>
-            Consider temporarily deactivating your account instead
+        <Box component="ul" sx={{ mb: 2 }}>
+          <Typography component="li" variant="body2">
+            Export your data using the Data Export tab
           </Typography>
 
           <Typography component="li" variant="body2">
@@ -85,7 +85,11 @@ const DeleteAccountTab = ({
         <Divider sx={{ my: 3 }} />
 
         {/* Delete Account Section */}
-        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold" }}>
+        <Typography
+          variant="subtitle1"
+          gutterBottom
+          sx={{ fontWeight: "bold" }}
+        >
           I understand the consequences and want to delete my account
         </Typography>
 

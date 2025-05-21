@@ -20,7 +20,6 @@ import PageWrapper from "../components/PageWrapper";
 
 // MUI Components
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import IconButton from "@mui/material/IconButton";

@@ -29,7 +29,7 @@ import { getTheme } from "./styles/global-styling";
 const Root = () => {
   const { user } = useContext(UserContext);
   const { mode, setMode } = useColorScheme();
-  const theme = React.useMemo(() => getTheme(), [mode]);
+  const theme = React.useMemo(() => getTheme(), []);
 
   // Update color scheme when user preferences change
   useEffect(() => {
