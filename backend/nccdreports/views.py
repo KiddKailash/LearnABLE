@@ -93,6 +93,9 @@ def get_report_detail(request, report_id):
         if 'level_of_adjustment' in request.data:
             report.level_of_adjustment = request.data['level_of_adjustment']
         
+        if 'has_evidence' in request.data:
+            report.has_evidence = request.data['has_evidence'] == 'true'
+            
         if 'under_dda' in request.data:
             report.under_dda = request.data['under_dda'] == 'true'
             
@@ -102,6 +105,7 @@ def get_report_detail(request, report_id):
         # Handle file upload
         if 'evidence' in request.FILES:
             report.evidence = request.FILES['evidence']
+            report.has_evidence = True
         
         report.save()
         
@@ -124,6 +128,7 @@ def create_report(request):
     Expects:
         - student: ID of the student (required).
         - status, disability_category, level_of_adjustment, under_dda, additional_comments (optional).
+        - has_evidence: boolean indicating if evidence exists (optional).
         - evidence: file upload (optional).
 
     Returns:
@@ -154,6 +159,7 @@ def create_report(request):
             status=request.data.get('status', 'NotStart'),
             disability_category=request.data.get('disability_category', ''),
             level_of_adjustment=request.data.get('level_of_adjustment', ''),
+            has_evidence=request.data.get('has_evidence', 'false').lower() == 'true',
             under_dda=request.data.get('under_dda', 'false').lower() == 'true',
             additional_comments=request.data.get('additional_comments', ''),
         )
@@ -161,6 +167,7 @@ def create_report(request):
         # Handle file upload
         if 'evidence' in request.FILES:
             report.evidence = request.FILES['evidence']
+            report.has_evidence = True
 
         report.save()
 

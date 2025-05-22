@@ -8,7 +8,7 @@ class NCCDreportSerializer(serializers.ModelSerializer):
     """
     evidence_url = serializers.SerializerMethodField(read_only=True)
     has_diagonsed_disability = serializers.SerializerMethodField(read_only=True)
-    has_evidence = serializers.BooleanField(write_only=True, required=False)
+    has_evidence = serializers.BooleanField(required=False)
 
     class Meta:
         model = NCCDreport

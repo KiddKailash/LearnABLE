@@ -76,6 +76,7 @@ const NCCDReportForm = ({
   onSuccess,
   onCancel,
   students: passedStudents = null,
+  isSubmitting = false,
 }) => {
   const { showSnackbar } = useContext(SnackbarContext);
   const hasStudentId = studentId != null && studentId !== "";
@@ -149,6 +150,7 @@ const NCCDReportForm = ({
   const [formValues, setFormValues] = useState({
     studentSelection: "",
     evidence: "",
+    evidenceFile: null,
     levelOfAdjustment: "",
     disabilityCategory: "",
     underDDA: "",
@@ -194,7 +196,8 @@ const NCCDReportForm = ({
         const reportData = response.data || response; // Handle response format
 
         setFormValues({
-          evidence: reportData.evidence_url ? "Yes" : "No", // Use evidence_url instead of evidence
+          evidence: reportData.has_evidence ? "Yes" : "No", // Use has_evidence instead of evidence_url
+          evidenceFile: null, // Clear any previous file state
           levelOfAdjustment: reportData.level_of_adjustment || "",
           disabilityCategory: reportData.disability_category || "",
           underDDA: reportData.under_dda ? "Yes" : "No",
@@ -288,8 +291,6 @@ const NCCDReportForm = ({
     }
 
     try {
-      setLoading(true);
-
       const studentToUse = hasStudentId
         ? studentId
         : formValues.studentSelection;
@@ -310,6 +311,11 @@ const NCCDReportForm = ({
         status: "Approved", // Default status for updated/new reports
       };
 
+      // Add evidence file if available
+      if (formValues.evidenceFile) {
+        reportData.evidence = formValues.evidenceFile;
+      }
+
       let result;
 
       if (reportId) {
@@ -322,19 +328,12 @@ const NCCDReportForm = ({
         showSnackbar("Report created successfully", "success");
       }
 
-      // Delay closing the dialog or calling success handler
-      setTimeout(() => {
-        if (isDialogMode) {
-          if (onClose) onClose();
-        } else {
-          if (onSuccess) onSuccess(result);
-        }
-      }, 2000);
+      if (onSuccess) {
+        onSuccess(result);
+      }
     } catch (err) {
       console.error("Error saving report:", err);
       showSnackbar("Error saving report. Please try again.", "error");
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -397,6 +396,38 @@ const NCCDReportForm = ({
                 label="I'm not sure"
               />
             </RadioGroup>
+            {formValues.evidence === "Yes" && (
+              <Box sx={{ mt: 2 }}>
+                <input
+                  accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  style={{ display: 'none' }}
+                  id="evidence-file-upload"
+                  type="file"
+                  onChange={(e) => {
+                    if (e.target.files.length > 0) {
+                      setFormValues((prev) => ({
+                        ...prev,
+                        evidenceFile: e.target.files[0],
+                      }));
+                    }
+                  }}
+                />
+                <label htmlFor="evidence-file-upload">
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    startIcon={<DescriptionIcon />}
+                  >
+                    Upload Evidence Document
+                  </Button>
+                </label>
+                {formValues.evidenceFile && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Selected file: {formValues.evidenceFile.name}
+                  </Typography>
+                )}
+              </Box>
+            )}
             {errors.evidence && (
               <Typography color="error" variant="caption">
                 {errors.evidence}
@@ -599,7 +630,7 @@ const NCCDReportForm = ({
                   </Alert>
                 )}
 
-                {loading && (
+                {(loading || isSubmitting) && (
                   <Box sx={{ width: "100%", mt: 2 }}>
                     <LinearProgress />
                   </Box>
@@ -608,7 +639,7 @@ const NCCDReportForm = ({
                 <Box sx={{ mt: 3 }}>
                   <Stack direction="row" spacing={1}>
                     <Button
-                      disabled={index === 0 || loading}
+                      disabled={index === 0 || loading || isSubmitting}
                       onClick={handleBack}
                       variant="outlined"
                       size="medium"
@@ -619,7 +650,7 @@ const NCCDReportForm = ({
                     {step.optional && (
                       <Button
                         onClick={handleSkip}
-                        disabled={loading}
+                        disabled={loading || isSubmitting}
                         variant="text"
                         size="medium"
                       >
@@ -632,7 +663,7 @@ const NCCDReportForm = ({
                       onClick={
                         index === steps.length - 1 ? handleSubmit : handleNext
                       }
-                      disabled={loading}
+                      disabled={loading || isSubmitting}
                       size="medium"
                     >
                       {index === steps.length - 1 ? "Submit" : "Continue"}

@@ -58,6 +58,11 @@ const NCCDReports = () => {
   const [reports, setReports] = useState([]);
   const [students, setStudents] = useState([]);
   const [error, setError] = useState("");
+  const [reportStatus, setReportStatus] = useState({
+    isSubmitting: false,
+    isUpdating: false,
+    isDeleting: false
+  });
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState("");
@@ -81,6 +86,7 @@ const NCCDReports = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError("");
 
         // Fetch reports and students in parallel
         const [reportsData, studentsData] = await Promise.all([
@@ -104,8 +110,12 @@ const NCCDReports = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const shouldOpenForm = queryParams.get("newReport") === "true";
+    const studentId = queryParams.get("studentId");
 
     if (shouldOpenForm && students.length > 0) {
+      if (studentId) {
+        setSelectedStudentId(studentId);
+      }
       setFormDialogOpen(true);
 
       // Clean up the URL without causing a page reload
@@ -144,6 +154,35 @@ const NCCDReports = () => {
 
     return true;
   });
+
+  /**
+   * Handles successful form submission
+   * @param {Object} result - The submitted report data
+   */
+  const handleFormSuccess = async (result) => {
+    try {
+      setReportStatus(prev => ({ ...prev, isSubmitting: true }));
+      
+      if (selectedReportId) {
+        // Update existing report in list
+        setReports(prevReports => 
+          prevReports.map(r => r.id === selectedReportId ? { ...r, ...result } : r)
+        );
+      } else {
+        // Add new report to list
+        setReports(prevReports => [...prevReports, result]);
+      }
+
+      // Reset form state
+      setSelectedReportId(null);
+      setSelectedStudentId(null);
+      setFormDialogOpen(false);
+    } catch (error) {
+      setError("Failed to save report: " + (error.message || ""));
+    } finally {
+      setReportStatus(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
 
   /**
    * Handles opening the create report form for a student
@@ -194,38 +233,17 @@ const NCCDReports = () => {
    */
   const handleConfirmDelete = async () => {
     try {
-      setLoading(true);
+      setReportStatus(prev => ({ ...prev, isDeleting: true }));
       await api.nccdReports.delete(selectedReportId);
 
       // Remove deleted report from state
-      setReports(reports.filter((r) => r.id !== selectedReportId));
-
+      setReports(prevReports => prevReports.filter((r) => r.id !== selectedReportId));
       setConfirmDeleteDialogOpen(false);
     } catch (error) {
       setError("Failed to delete report: " + (error.message || ""));
     } finally {
-      setLoading(false);
+      setReportStatus(prev => ({ ...prev, isDeleting: false }));
     }
-  };
-
-  /**
-   * Handles successful form submission
-   * @param {Object} result - The submitted report data
-   */
-  const handleFormSuccess = (result) => {
-    if (selectedReportId) {
-      // Update existing report in list
-      setReports(
-        reports.map((r) =>
-          r.id === selectedReportId ? { ...r, ...result } : r
-        )
-      );
-    } else {
-      // Add new report to list
-      setReports([...reports, result]);
-    }
-
-    setFormDialogOpen(false);
   };
 
   /**
@@ -306,10 +324,10 @@ const NCCDReports = () => {
         }}
       >
         <Box>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4">
             NCCD Reports
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="caption" color="text.secondary">
             Manage Nationally Consistent Collection of Data on School Students
             with Disability reports
           </Typography>
@@ -320,7 +338,7 @@ const NCCDReports = () => {
           onClick={() => setFormDialogOpen(true)}
           disabled={!students.length}
         >
-          New NCCD Report
+          New Report
         </Button>
       </Box>
 
@@ -506,18 +524,31 @@ const NCCDReports = () => {
       {/* Create/Edit Report Dialog */}
       <Dialog
         open={formDialogOpen}
-        onClose={() => setFormDialogOpen(false)}
+        onClose={() => {
+          setFormDialogOpen(false);
+          setSelectedReportId(null);
+          setSelectedStudentId(null);
+        }}
         maxWidth="md"
         fullWidth
       >
         <NCCDReportForm
           open={formDialogOpen}
-          onClose={() => setFormDialogOpen(false)}
+          onClose={() => {
+            setFormDialogOpen(false);
+            setSelectedReportId(null);
+            setSelectedStudentId(null);
+          }}
           studentId={selectedStudentId}
           reportId={selectedReportId}
           onSuccess={handleFormSuccess}
-          onCancel={() => setFormDialogOpen(false)}
+          onCancel={() => {
+            setFormDialogOpen(false);
+            setSelectedReportId(null);
+            setSelectedStudentId(null);
+          }}
           students={students}
+          isSubmitting={reportStatus.isSubmitting}
         />
       </Dialog>
 

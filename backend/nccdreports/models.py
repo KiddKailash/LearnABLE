@@ -24,7 +24,8 @@ class NCCDreport(models.Model):
         choices=[('QDTP', 'QDTP'), ('Supplementary', 'Supplementary'), ('Substantial', 'Substantial'), ('Extensive', 'Extensive')],
         default='None'
     )
-    evidence = models.FileField(upload_to='nccdreports/')
+    has_evidence = models.BooleanField(default=False)
+    evidence = models.FileField(upload_to='nccdreports/', null=True, blank=True)
     under_dda = models.BooleanField(default=False)
     additional_comments = models.TextField(blank=True)
 
