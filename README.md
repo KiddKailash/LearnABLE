@@ -1,5 +1,5 @@
 # LearnABLE - Inclusive Learning Support Platform
-Visit the (Production Website)[https://learn-able.vercel.app/].
+Visit the [Production Website](https://learn-able.vercel.app/).
 
 LearnABLE is a comprehensive educational platform designed to support inclusive learning environments by providing personalized educational content and automated NCCD (Nationally Consistent Collection of Data) reporting tools for teachers and students.
 
