@@ -17,7 +17,8 @@ from reportlab.lib.colors import Color
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from gtts import gTTS
 import os
-import re, textwrap
+import re
+import textwrap
 import requests
 from docx.oxml.ns import qn
 from docx import Document
@@ -112,7 +113,6 @@ def create_docx_from_text(text, path, title=None, images=None):
 
         doc.add_paragraph(stripped)
 
-
     if images:
         doc.add_page_break()
         doc.add_paragraph("Visual References", style='Heading 2')
@@ -159,7 +159,8 @@ def create_pdf_from_text(text, path, title=None, images=None):
 
     elements = []
     # Draw a top rule line
-    elements.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#2E74B5'), spaceBefore=0, spaceAfter=12))
+    elements.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor(
+        '#2E74B5'), spaceBefore=0, spaceAfter=12))
     # Title
     if title:
         elements.append(Paragraph(title, title_style))
@@ -192,7 +193,8 @@ def create_pdf_from_text(text, path, title=None, images=None):
                 item_text = lines[i].strip()[1:].strip()
                 items.append(ListItem(Paragraph(item_text, body_style)))
                 i += 1
-            elements.append(ListFlowable(items, bulletType='bullet', leftIndent=12, spaceBefore=4, spaceAfter=4))
+            elements.append(ListFlowable(items, bulletType='bullet',
+                            leftIndent=12, spaceBefore=4, spaceAfter=4))
             continue
 
         # Regular paragraph
@@ -212,7 +214,7 @@ def create_pdf_from_text(text, path, title=None, images=None):
                 elements.append(rl_img)
 
     doc.build(elements)
-    
+
 
 def create_pptx_from_text(slide_pairs, path):
     """
@@ -222,7 +224,7 @@ def create_pptx_from_text(slide_pairs, path):
     path:       output .pptx filepath.
     """
     prs = Presentation()
-    title_font_size   = Pt(36)
+    title_font_size = Pt(36)
     content_font_size = Pt(20)
 
     for idx, (title, content, images) in enumerate(slide_pairs):
@@ -238,8 +240,8 @@ def create_pptx_from_text(slide_pairs, path):
         tb = title_box.text_frame
         tb.text = title.strip()
         p = tb.paragraphs[0]
-        p.font.size  = title_font_size
-        p.font.bold  = True
+        p.font.size = title_font_size
+        p.font.bold = True
         p.font.color.rgb = RGBColor(255, 255, 255)
 
         # — Content box —
@@ -252,10 +254,10 @@ def create_pptx_from_text(slide_pairs, path):
             if not line.strip():
                 continue
             paragraph = tf.add_paragraph() if i else tf.paragraphs[0]
-            paragraph.text       = line.strip()
-            paragraph.level      = 0
-            paragraph.font.size  = content_font_size
-            paragraph.font.name  = "Calibri"
+            paragraph.text = line.strip()
+            paragraph.level = 0
+            paragraph.font.size = content_font_size
+            paragraph.font.name = "Calibri"
             paragraph.font.color.rgb = RGBColor(50, 50, 50)
 
         # — Images —
@@ -266,10 +268,10 @@ def create_pptx_from_text(slide_pairs, path):
                 if img_path and os.path.exists(img_path):
                     slide.shapes.add_picture(
                         img_path,
-                        left   = Emu(img["left"]),
-                        top    = Emu(img["top"]),
-                        width  = Emu(img["width"]),
-                        height = Emu(img["height"])
+                        left=Emu(img["left"]),
+                        top=Emu(img["top"]),
+                        width=Emu(img["width"]),
+                        height=Emu(img["height"])
                     )
             # plain string filepath?
             elif isinstance(img, str):
@@ -300,7 +302,7 @@ def create_pptx_from_text(slide_pairs, path):
 def create_audio_from_text(text, path, voice="nova", speed=0.95):
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        
+
         url = "https://api.openai.com/v1/audio/speech"
         headers = {
             "Authorization": f"Bearer {OPENAI_API_KEY}",

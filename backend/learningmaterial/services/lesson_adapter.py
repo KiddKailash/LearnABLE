@@ -27,29 +27,39 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0.3)
 
 # Define schemas
 classification_schema = [
-    ResponseSchema(name="category", description="Normalized disability category, e.g., visual_impairment, dyslexia, adhd."),
-    ResponseSchema(name="notes", description="Any relevant notes for adaptation.")
+    ResponseSchema(
+        name="category", description="Normalized disability category, e.g., visual_impairment, dyslexia, adhd."),
+    ResponseSchema(
+        name="notes", description="Any relevant notes for adaptation.")
 ]
 strategy_schema = [
-    ResponseSchema(name="steps", description="Ordered list of concrete adaptation steps to apply.")
+    ResponseSchema(
+        name="steps", description="Ordered list of concrete adaptation steps to apply.")
 ]
 adaptation_schema = [
-    ResponseSchema(name="adapted_title", description="The adapted lesson title."),
-    ResponseSchema(name="adapted_objectives", description="List of 2-4 adapted objectives."),
-    ResponseSchema(name="adapted_content", description="Full adapted lesson content (plain text or slide blocks).")
+    ResponseSchema(name="adapted_title",
+                   description="The adapted lesson title."),
+    ResponseSchema(name="adapted_objectives",
+                   description="List of 2-4 adapted objectives."),
+    ResponseSchema(name="adapted_content",
+                   description="Full adapted lesson content (plain text or slide blocks).")
 ]
 
 alignment_schema = [
-    ResponseSchema(name="alignment", description="One of: aligned, partially_aligned, not_aligned."),
-    ResponseSchema(name="justification", description="Brief explanation of why the objectives match or don't.")
+    ResponseSchema(
+        name="alignment", description="One of: aligned, partially_aligned, not_aligned."),
+    ResponseSchema(name="justification",
+                   description="Brief explanation of why the objectives match or don't.")
 ]
 
 
 # Build parsers
-class_parser = StructuredOutputParser.from_response_schemas(classification_schema)
+class_parser = StructuredOutputParser.from_response_schemas(
+    classification_schema)
 strat_parser = StructuredOutputParser.from_response_schemas(strategy_schema)
 adapt_parser = StructuredOutputParser.from_response_schemas(adaptation_schema)
-alignment_parser = StructuredOutputParser.from_response_schemas(alignment_schema)
+alignment_parser = StructuredOutputParser.from_response_schemas(
+    alignment_schema)
 
 
 # Prompts
@@ -74,9 +84,9 @@ Output JSON:
 {format_instructions}
 """,
     input_variables=["objectives", "text"],
-    partial_variables={"format_instructions": alignment_parser.get_format_instructions()}
+    partial_variables={
+        "format_instructions": alignment_parser.get_format_instructions()}
 )
-
 
 
 classify_prompt = PromptTemplate(
@@ -90,9 +100,9 @@ Output JSON:
 {format_instructions}
 """,
     input_variables=["disability_info"],
-    partial_variables={"format_instructions": class_parser.get_format_instructions()}
+    partial_variables={
+        "format_instructions": class_parser.get_format_instructions()}
 )
-
 
 
 strategy_prompt = PromptTemplate(
@@ -106,9 +116,9 @@ Output JSON:
 {format_instructions}
 """,
     input_variables=["category", "notes"],
-    partial_variables={"format_instructions": strat_parser.get_format_instructions()}
+    partial_variables={
+        "format_instructions": strat_parser.get_format_instructions()}
 )
-
 
 
 adapt_prompt = PromptTemplate(
@@ -140,10 +150,11 @@ JSON format:
 
 {slide_instructions}
 """,
-    input_variables=["disability_info", "category", "steps", "objectives", "text", "slide_instructions"],
-    partial_variables={"format_instructions": adapt_parser.get_format_instructions()}
+    input_variables=["disability_info", "category", "steps",
+                     "objectives", "text", "slide_instructions"],
+    partial_variables={
+        "format_instructions": adapt_parser.get_format_instructions()}
 )
-
 
 
 def get_base_text(path: str):
@@ -199,7 +210,8 @@ async def process_student(material, student, base_text, file_ext, original_slide
     if category == 'visual_impairment':
         out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
         os.makedirs(out_dir, exist_ok=True)
-        fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
+        fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(
+            ' ', '_')
         audio_path = os.path.join(out_dir, fname)
         success = await asyncio.to_thread(create_audio_from_text, base_text, audio_path)
         return {
@@ -246,7 +258,8 @@ async def process_student(material, student, base_text, file_ext, original_slide
     if any('audio narration' in s.lower() for s in strategy):
         out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
         os.makedirs(out_dir, exist_ok=True)
-        fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(' ', '_')
+        fname = f"{student.first_name}_{student.last_name}_{material.title}.mp3".replace(
+            ' ', '_')
         audio_path = os.path.join(out_dir, fname)
         await asyncio.to_thread(create_audio_from_text, base_text, audio_path)
         parsed['audio_url'] = f"{settings.MEDIA_URL}adapted_output/{fname}"
@@ -256,7 +269,8 @@ async def process_student(material, student, base_text, file_ext, original_slide
         out_dir = os.path.join(settings.MEDIA_ROOT, 'adapted_output')
         os.makedirs(out_dir, exist_ok=True)
         safe_title = material.title.replace(' ', '_').replace('/', '_')
-        user_prefix = f"{student.first_name}_{student.last_name}".replace(' ', '_').lower()
+        user_prefix = f"{student.first_name}_{student.last_name}".replace(
+            ' ', '_').lower()
         filename = f"{user_prefix}_{safe_title}.{file_ext}"
         output_path = os.path.join(out_dir, filename)
         content = parsed.get('adapted_content', '')
@@ -276,16 +290,18 @@ async def process_student(material, student, base_text, file_ext, original_slide
                 re.DOTALL
             )
             slide_pairs = [(t.strip(), c.strip()) for t, c in slides]
-            blacklist = {"Using Support Tools", "Accessing Audiobooks", "Extended Time Accommodations"}
-            slide_pairs = [(t, c) for t, c in slide_pairs if t not in blacklist]
+            blacklist = {"Using Support Tools",
+                         "Accessing Audiobooks", "Extended Time Accommodations"}
+            slide_pairs = [(t, c)
+                           for t, c in slide_pairs if t not in blacklist]
             adapted_slides = []
             for i, (title, slide_content) in enumerate(slide_pairs):
                 slide_content = slide_content.replace('### Slide', '').strip()
-                images = original_slides[i]['images'] if i < len(original_slides) else []
+                images = original_slides[i]['images'] if i < len(
+                    original_slides) else []
                 adapted_slides.append((title, slide_content, images))
 
             await asyncio.to_thread(create_pptx_from_text, adapted_slides, output_path)
-
 
         parsed['file'] = output_path
         parsed['file_url'] = f"{settings.MEDIA_URL}adapted_output/{filename}"
@@ -327,10 +343,10 @@ async def generate_adapted_lessons(material, students, return_file=False):
     else:
         base_text, original_slides = get_base_text(material.file.path)
 
-
     # Run all student adaptations concurrently
     student_tasks = [
-        process_student(material, student, base_text, file_ext, original_slides, return_file)
+        process_student(material, student, base_text,
+                        file_ext, original_slides, return_file)
         for student in students
         if student.disability_info.strip()
     ]

@@ -44,7 +44,8 @@ def get_all_reports(request):
         200 OK: A JSON list of NCCD report objects with their details.
     """
     reports = NCCDreport.objects.all()
-    serializer = NCCDreportSerializer(reports, many=True, context={'request': request})
+    serializer = NCCDreportSerializer(
+        reports, many=True, context={'request': request})
     return Response(serializer.data)
 
 
@@ -73,7 +74,7 @@ def get_report_detail(request, report_id):
         # Return the report details using serializer
         serializer = NCCDreportSerializer(report, context={'request': request})
         return Response(serializer.data)
-    
+
     elif request.method == 'PUT':
         # Update the report
         parser_classes = (MultiPartParser, FormParser)
@@ -87,33 +88,33 @@ def get_report_detail(request, report_id):
         # Update other fields
         if 'status' in request.data:
             report.status = request.data['status']
-        
+
         if 'disability_category' in request.data:
             report.disability_category = request.data['disability_category']
 
         if 'level_of_adjustment' in request.data:
             report.level_of_adjustment = request.data['level_of_adjustment']
-        
+
         if 'has_evidence' in request.data:
             report.has_evidence = request.data['has_evidence'] == 'true'
-            
+
         if 'under_dda' in request.data:
             report.under_dda = request.data['under_dda'] == 'true'
-            
+
         if 'additional_comments' in request.data:
             report.additional_comments = request.data['additional_comments']
-        
+
         # Handle file upload
         if 'evidence' in request.FILES:
             report.evidence = request.FILES['evidence']
             report.has_evidence = True
-        
+
         report.save()
-        
+
         # Return updated report using serializer
         serializer = NCCDreportSerializer(report, context={'request': request})
         return Response(serializer.data)
-    
+
     elif request.method == 'DELETE':
         # Delete the report
         report.delete()
@@ -151,7 +152,8 @@ def create_report(request):
         existing_report = NCCDreport.objects.filter(student=student).first()
         if existing_report:
             # Already exists so return existing report using serializer
-            serializer = NCCDreportSerializer(existing_report, context={'request': request})
+            serializer = NCCDreportSerializer(
+                existing_report, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         # Create new report
@@ -160,7 +162,8 @@ def create_report(request):
             status=request.data.get('status', 'NotStart'),
             disability_category=request.data.get('disability_category', ''),
             level_of_adjustment=request.data.get('level_of_adjustment', ''),
-            has_evidence=request.data.get('has_evidence', 'false').lower() == 'true',
+            has_evidence=request.data.get(
+                'has_evidence', 'false').lower() == 'true',
             under_dda=request.data.get('under_dda', 'false').lower() == 'true',
             additional_comments=request.data.get('additional_comments', ''),
         )
@@ -194,8 +197,9 @@ def get_reports_by_student(request, student_id):
     """
     student = get_object_or_404(Student, id=student_id)
     reports = NCCDreport.objects.filter(student=student)
-    
-    serializer = NCCDreportSerializer(reports, many=True, context={'request': request})
+
+    serializer = NCCDreportSerializer(
+        reports, many=True, context={'request': request})
     return Response(serializer.data)
 
 
@@ -322,24 +326,26 @@ def get_effectiveness_trend(request, student_id):
 
     return Response(data)
 
+
 @api_view(['GET'])
 def students_without_nccd_report(request):
     """
     Get students who have disability information but no NCCD report yet.
-    
+
     Returns:
         200 OK: List of eligible students.
     """
     try:
-        reported_ids = set(NCCDreport.objects.values_list('student_id', flat=True))
-        
+        reported_ids = set(
+            NCCDreport.objects.values_list('student_id', flat=True))
+
         unreported_students = Student.objects.exclude(id__in=reported_ids)
-        
+
         eligible_students = []
         for s in unreported_students:
             if s.disability_info.strip():
                 eligible_students.append(s)
-        
+
         serializer = StudentSerializer(eligible_students, many=True)
         return Response(serializer.data)
     except Exception as e:
