@@ -8,7 +8,8 @@ class NCCDreportSerializer(serializers.ModelSerializer):
     Includes computed fields for evidence URL and disability status.
     """
     evidence_url = serializers.SerializerMethodField(read_only=True)
-    has_diagonsed_disability = serializers.SerializerMethodField(read_only=True)
+    has_diagonsed_disability = serializers.SerializerMethodField(
+        read_only=True)
     has_evidence = serializers.BooleanField(required=False)
 
     class Meta:

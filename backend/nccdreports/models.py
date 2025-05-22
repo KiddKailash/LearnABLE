@@ -29,7 +29,8 @@ class NCCDreport(models.Model):
         default='None'
     )
     has_evidence = models.BooleanField(default=False)
-    evidence = models.FileField(upload_to='nccdreports/', null=True, blank=True)
+    evidence = models.FileField(
+        upload_to='nccdreports/', null=True, blank=True)
     under_dda = models.BooleanField(default=False)
     additional_comments = models.TextField(blank=True)
 
