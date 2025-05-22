@@ -3,35 +3,26 @@ Utility module for generating educational content in DOCX, PDF, PPTX, and audio 
 Provides functions to format plain text into styled documents and convert it to multimedia resources.
 """
 
-from docx import Document
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import inch
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import inch
-from reportlab.pdfbase.pdfmetrics import stringWidth
-from reportlab.lib.colors import Color
-from reportlab.pdfbase.pdfmetrics import stringWidth
-from gtts import gTTS
 import os
 import re
 import textwrap
 import requests
-from docx.oxml.ns import qn
 from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
-from pptx.util import Inches, Pt
+from docx.oxml.ns import qn
+from pptx import Presentation
+from pptx.util import Inches, Pt, Emu
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
-from pptx.util import Emu, Inches, Pt
-from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, ListFlowable, ListItem, HRFlowable
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import inch
+from reportlab.platypus import (
+    BaseDocTemplate, Frame, PageTemplate, Paragraph,
+    Spacer, ListFlowable, ListItem, HRFlowable, Image as RLImage
+)
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib import colors
-from reportlab.platypus import Image as RLImage
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -226,7 +217,9 @@ def create_pptx_from_text(slide_pairs, path):
     prs = Presentation()
     title_font_size = Pt(36)
     content_font_size = Pt(20)
+    all_images = []
 
+    # 1) Build content slides and collect all images
     for idx, (title, content, images) in enumerate(slide_pairs):
         slide = prs.slides.add_slide(prs.slide_layouts[6])
 
@@ -260,31 +253,62 @@ def create_pptx_from_text(slide_pairs, path):
             paragraph.font.name = "Calibri"
             paragraph.font.color.rgb = RGBColor(50, 50, 50)
 
-        # — Images —
-        for img_idx, img in enumerate(images or []):
-            # dict with position/size?
-            if isinstance(img, dict):
-                img_path = img.get("path")
-                if img_path and os.path.exists(img_path):
-                    slide.shapes.add_picture(
-                        img_path,
-                        left=Emu(img["left"]),
-                        top=Emu(img["top"]),
-                        width=Emu(img["width"]),
-                        height=Emu(img["height"])
-                    )
-            # plain string filepath?
-            elif isinstance(img, str):
-                if os.path.exists(img):
-                    slide.shapes.add_picture(
-                        img,
-                        Inches(6.5),
-                        Inches(4.8 + img_idx * 1.5),
-                        Inches(2),
-                        Inches(1.5)
-                    )
+        # Collect any images for the "Visual References" slides
+        if images:
+            all_images.extend(images)
 
-    # Save PPTX
+    # 2) After all content slides are done, generate the Visual References slides
+    if all_images:
+        def add_image_slide():
+            slide = prs.slides.add_slide(prs.slide_layouts[6])
+            title_box = slide.shapes.add_shape(
+                MSO_SHAPE.ROUNDED_RECTANGLE,
+                Inches(0.5), Inches(0.3), Inches(9), Inches(1)
+            )
+            title_box.fill.solid()
+            title_box.fill.fore_color.rgb = RGBColor(91, 155, 213)
+            tf = title_box.text_frame
+            tf.text = "Visual References"
+            p = tf.paragraphs[0]
+            p.font.size = Pt(36)
+            p.font.bold = True
+            p.font.color.rgb = RGBColor(255, 255, 255)
+            return slide
+
+        # layout parameters
+        slide_width = prs.slide_width
+        slide_height = prs.slide_height
+        image_width = Inches(6.5)
+        image_height = Inches(4.5)
+        top_margin = Inches(1.4)
+        spacing = Inches(0.6)
+
+        # start first image slide
+        img_slide = add_image_slide()
+        y_offset = top_margin
+
+        for img in all_images:
+            img_path = img.get("path") if isinstance(img, dict) else img
+            if not (img_path and os.path.exists(img_path)):
+                continue
+
+            # only create a new slide if the next image won't fit
+            if y_offset + image_height > slide_height - Inches(0.5):
+                img_slide = add_image_slide()
+                y_offset = top_margin
+
+            # center the image horizontally
+            left = (slide_width - image_width) // 2
+            img_slide.shapes.add_picture(
+                img_path,
+                left=left,
+                top=y_offset,
+                width=image_width,
+                height=image_height
+            )
+            y_offset += image_height + spacing
+
+    # 3) Save the presentation
     os.makedirs(os.path.dirname(path), exist_ok=True)
     prs.save(path)
 
