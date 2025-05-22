@@ -25,11 +25,11 @@ import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 
 // MUI Icons
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import PeopleIcon from "@mui/icons-material/People";
-import EventAvailableIcon from "@mui/icons-material/EventAvailable";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
+import DashboardIcon from "@mui/icons-material/SpaceDashboardRounded";
+import PeopleIcon from "@mui/icons-material/SchoolRounded";
+import EventAvailableIcon from "@mui/icons-material/DocumentScannerRounded";
+import AccountCircleIcon from "@mui/icons-material/SettingsSuggestRounded";
+import LogoutIcon from "@mui/icons-material/LogoutRounded";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 
 // Navigation items for main section of the sidebar
@@ -42,7 +42,7 @@ const navItems = [
 // Navigation items for settings section of the sidebar
 const settingsItems = [
   { text: "Account", icon: <AccountCircleIcon />, tutorialId: "account" },
-  { text: "Logout", icon: <LogoutIcon color="error"/>, isLogout: true },
+  { text: "Logout", icon: <LogoutIcon color="error" />, isLogout: true },
 ];
 
 /**
@@ -58,7 +58,7 @@ const Sidebar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   // Track whether the sidebar is collapsed
-  const [collapsed, setCollapsed] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(true);
 
   const { user, logout } = useContext(UserContext);
 
@@ -77,7 +77,7 @@ const Sidebar = () => {
     location.pathname.includes(`/${path.toLowerCase().replace(" ", "-")}`);
 
   // Compute dynamic sidebar width based on collapsed state and device type
-  const SIDEBAR_WIDTH = isMobile ? 240 : collapsed ? 58 : 200;
+  const SIDEBAR_WIDTH = isMobile ? 240 : collapsed ? 50 : 185;
 
   return (
     <Box
@@ -87,7 +87,6 @@ const Sidebar = () => {
         display: "flex",
         flexDirection: "column",
         borderRadius: { xs: 0, sm: 5 },
-        p: 1,
       }}
     >
       {/* Top section with toggle button and logo */}
@@ -102,7 +101,15 @@ const Sidebar = () => {
         {!isMobile && (
           <IconButton
             onClick={() => setCollapsed(!collapsed)}
-            sx={{ mr: 1, borderRadius: 2 }}
+            sx={{
+              p: 1.5,
+              borderRadius: 2,
+              position: "relative",
+              "&:hover": {
+                bgcolor: "action.hover",
+              },
+              justifyContent: "flex-start",
+            }}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
@@ -115,7 +122,12 @@ const Sidebar = () => {
 
         {/* Display logo text when expanded or on mobile */}
         {(!collapsed || isMobile) && (
-          <Typography variant="h6" fontWeight="bold" color="primary">
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            color="primary"
+            sx={{ ml: 1 }}
+          >
             LearnABLE
           </Typography>
         )}
@@ -131,7 +143,6 @@ const Sidebar = () => {
               key={text}
               title={collapsed && !isMobile ? text : ""}
               placement="right"
-              arrow
               disableHoverListener={!collapsed || isMobile}
             >
               <IconButton
@@ -143,17 +154,14 @@ const Sidebar = () => {
                   }
                 }}
                 sx={{
-                  py: 1.5,
-                  mr: 1,
-                  mb: 1,
+                  p: 1.5,
                   borderRadius: 2,
-                  color: "text.primary",
+                  color: selected ? "primary.main" : "text.primary",
                   position: "relative",
-                  backgroundColor: selected ? "action.selected" : "transparent",
                   "&:before": {
                     content: '""',
                     position: "absolute",
-                    right: 0,
+                    left: 0,
                     top: "8px", // Adjust to match py spacing
                     bottom: "8px",
                     width: selected ? "2px" : 0,
@@ -174,7 +182,7 @@ const Sidebar = () => {
                     variant="body1"
                     sx={{
                       ml: 1,
-                      color: "text.primary",
+                      color: selected ? "primary.main" : "text.primary",
                     }}
                   >
                     {text}
@@ -206,7 +214,6 @@ const Sidebar = () => {
               key={text}
               title={collapsed && !isMobile ? text : ""}
               placement="right"
-              arrow
               disableHoverListener={!collapsed || isMobile}
             >
               <IconButton
@@ -224,17 +231,14 @@ const Sidebar = () => {
                   }
                 }}
                 sx={{
-                  py: 1.5,
-                  mr: 1,
-                  mb: 1,
+                  p: 1.5,
                   borderRadius: 2,
-                  color: "text.primary",
+                  color: isActive(text) ? "primary.main" : "text.primary",
                   position: "relative",
-                  backgroundColor: isActive(text) ? "action.selected" : "transparent",
                   "&:before": {
                     content: '""',
                     position: "absolute",
-                    right: 0,
+                    left: 0,
                     top: "8px", // Adjust to match py spacing
                     bottom: "8px",
                     width: isActive(text) ? "2px" : 0,
@@ -255,7 +259,7 @@ const Sidebar = () => {
                     variant="body1"
                     sx={{
                       ml: 1,
-                      color: isLogout ? "error.main" : "text.primary",
+                      color: isLogout ? "error.main" : isActive(text) ? "primary.main" : "text.primary",
                     }}
                   >
                     {text}
