@@ -6,7 +6,7 @@
  * @module App
  */
 
-import React, { useContext } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { TutorialProvider } from "./contexts/TutorialContext";
 import { UserProvider } from "./store/UserObject";
@@ -28,12 +28,7 @@ import Dashboard from "./pages/private/Dashboard/Dashboard";
 import ClassDetails from "./pages/private/ClassDetails/ClassDetails.jsx";
 import Classes from "./pages/private/Classes/Classes";
 
-import UserContext from "./store/UserObject";
-
 const App = () => {
-  const { user } = useContext(UserContext);
-  console.log("User is ", user);
-
   const pages = [
     { path: "/", component: <AuthPage /> },
     { path: "/login", component: <AuthPage /> },
