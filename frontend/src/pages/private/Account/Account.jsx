@@ -19,7 +19,6 @@ import TabPanel from "./components/TabPanel";
 import ProfileTab from "./components/ProfileTab";
 import SecurityTab from "./components/SecurityTab";
 import AppearanceTab from "./components/AppearanceTab";
-// import SessionsTab from "./components/SessionsTab";
 import DataExportTab from "./components/DataExportTab";
 import DeleteAccountTab from "./components/DeleteAccountTab";
 
@@ -34,7 +33,6 @@ import Typography from "@mui/material/Typography";
 import PersonIcon from "@mui/icons-material/PersonRounded";
 import SecurityIcon from "@mui/icons-material/SecurityRounded";
 import PaletteIcon from "@mui/icons-material/PaletteRounded";
-// import DevicesIcon from "@mui/icons-material/Devices";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 
@@ -79,10 +77,6 @@ const Account = () => {
   // Appearance state
   const [themeMode, setThemeMode] = useState("system");
   const { setMode } = useColorScheme();
-
-  // Sessions state
-  const [sessions, setSessions] = useState([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
 
   // Data export state
   const [exportOptions, setExportOptions] = useState({
@@ -133,20 +127,7 @@ const Account = () => {
       }
     };
 
-    const fetchSessions = async () => {
-      try {
-        setSessionsLoading(true);
-        const data = await accountApi.getActiveSessions();
-        setSessions(data || []);
-      } catch (error) {
-        console.error("Failed to load sessions:", error);
-      } finally {
-        setSessionsLoading(false);
-      }
-    };
-
     fetchProfile();
-    fetchSessions();
   }, [showSnackbar]);
 
   /**
@@ -522,7 +503,6 @@ const Account = () => {
           <TabPanel value={tabValue} index={0}>
             <ProfileTab
               profile={profile}
-              user={user}
               firstName={firstName}
               setFirstName={setFirstName}
               lastName={lastName}
