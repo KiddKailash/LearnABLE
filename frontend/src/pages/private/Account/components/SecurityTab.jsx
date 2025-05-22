@@ -94,8 +94,8 @@ const SecurityTab = () => {
    * Synchronizes 2FA enabled status with user context
    */
   useEffect(() => {
-    if (user && typeof user.two_factor_enabled === "boolean") {
-      setTwoFactorEnabled(user.two_factor_enabled);
+    if (user && typeof user?.two_factor_enabled === "boolean") {
+      setTwoFactorEnabled(user?.two_factor_enabled);
     }
   }, [user]);
 

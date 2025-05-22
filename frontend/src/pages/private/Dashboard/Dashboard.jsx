@@ -139,7 +139,7 @@ const Dashboard = () => {
       {/* Header with greeting and teacher info */}
       <Box sx={{ mb: 2 }}>
         <Typography variant="h4" sx={{ fontWeight: "bold"}}>
-          Welcome back {user?.user.first_name}
+          Welcome {user?.user?.first_name}
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Here's an overview of your teaching information and recent activity

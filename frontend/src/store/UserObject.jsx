@@ -294,10 +294,10 @@ export const UserProvider = ({ children }) => {
   const get2FAStatus = async () => {
     try {
       // If we already have 2FA status in the user object, return it
-      if (user && typeof user.two_factor_enabled === 'boolean') {
+      if (user && typeof user?.two_factor_enabled === 'boolean') {
         return { 
           success: true, 
-          two_factor_enabled: user.two_factor_enabled 
+          two_factor_enabled: user?.two_factor_enabled 
         };
       }
       
@@ -466,7 +466,7 @@ export const UserProvider = ({ children }) => {
     
     autoLogin();
     //eslint-disable-next-line
-  }, []);
+  }, [isLoggedIn]); // Reload whenever Logged In state changes
 
   return (
     <UserContext.Provider
