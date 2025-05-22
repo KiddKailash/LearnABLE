@@ -2,6 +2,23 @@
 
 This is the backend application for LearnABLE, built with Django and Django REST Framework to provide API services for personalized educational content generation and NCCD reporting tools.
 
+## Project Structure
+
+```
+backend/
+├── config/             # Contains build.sh & start.sh, for production deployment
+├── backend/            # Django project settings
+├── classes/            # Classes app
+├── learningmaterial/   # Learning materials app
+├── media/              # Media files
+├── nccdreports/        # NCCD reporting app
+├── students/           # Students app
+├── teachers/           # Teachers app
+├── unitplan/           # Unitplan app
+├── utils/              # Utility functions
+└── urls.py             # Application API endpoint mounting
+```
+
 ## Prerequisites
 
 - [Python 3.11+](https://www.python.org/downloads/)
@@ -87,13 +104,6 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-### Create Superuser
-
-```bash
-# Create an admin user
-python manage.py createsuperuser
-```
-
 ### Run Development Server
 
 ```bash
@@ -124,7 +134,7 @@ The backend uses numerous packages to deliver its functionality:
 - [python-pptx](https://python-pptx.readthedocs.io/) - Python library for PowerPoint presentations
 
 ### Authentication and Security
-- [django-allauth](https://django-allauth.readthedocs.io/) - Authentication, registration, and account management
+- [django-allauth](https://django-allauth.readthedocs.io/) - Auth, registration, and account management
 - [cryptography](https://cryptography.io/en/latest/) - Cryptographic recipes and primitives
 - [fernet](https://github.com/fernet/spec) - Symmetric encryption
 - [python-decouple](https://github.com/henriquebastos/python-decouple) - Separation of settings from code
@@ -144,29 +154,10 @@ The API is available under the following endpoints:
 - Admin: `/admin/`
 - Teachers API: `/api/teachers/`
 - Classes API: `/api/classes/`
-- Subjects API: `/api/subjects/`
 - Students API: `/api/students/`
-- Assessments API: `/api/assessments/`
-- Attendance Sessions API: `/api/attendancesessions/`
-- Class Students API: `/api/classstudents/`
-- Student Attendance API: `/api/studentattendance/`
-- Student Grades API: `/api/studentgrades/`
-- NCCD Reports API: `/api/nccdreports/`
+- NCCD Report API: `/api/nccdreports/`
 - Learning Materials API: `/api/learning-materials/`
-
-## Project Structure
-
-```
-backend/
-├── backend/           # Main Django project settings
-├── students/          # Students app
-├── teachers/          # Teachers app
-├── classes/           # Classes app
-├── nccdreports/       # NCCD reporting app
-├── learningmaterial/  # Learning materials app
-├── utils/             # Utility functions
-└── media/             # Media files
-```
+- Unit Plan API: `api/unit-plans/`
 
 ## Data Dependencies
 
@@ -195,54 +186,6 @@ The backend requires and manages the following data:
    - Reporting templates
 
 All data is stored in PostgreSQL and managed through Django's ORM with appropriate security measures.
-
-## Testing
-
-```bash
-# Run tests
-pytest
-
-# Run tests with coverage
-pytest --cov
-```
-
-## Production Deployment
-
-For production deployment:
-
-1. Set `DEBUG=False` in `.env`
-2. Configure proper `ALLOWED_HOSTS` in settings.py
-3. Use Gunicorn as the WSGI server:
-```bash
-gunicorn backend.wsgi:application --bind 0.0.0.0:8000
-```
-
-### Static and Media Files
-
-```bash
-# Collect static files
-python manage.py collectstatic
-```
-
-Configure a web server like Nginx to serve static and media files.
-
-## Security Considerations
-
-- Set `DEBUG=False` in production
-- Use a strong, unique `SECRET_KEY`
-- Configure proper `ALLOWED_HOSTS`
-- Use HTTPS
-- Review and configure Django's security settings
-
-## Backup and Restore
-
-```bash
-# Backup database
-python manage.py dbbackup
-
-# Restore database
-python manage.py dbrestore
-```
 
 ## Contributing
 

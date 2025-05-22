@@ -2,6 +2,60 @@
 
 This is the frontend application for LearnABLE, built with React and Material-UI to provide personalized educational content and NCCD reporting tools.
 
+## Project Structure
+
+```
+src/
+├── components/        # Reusable UI components
+├── contexts/          # React context providers
+├── hooks/             # Custom React hooks
+├── layout/            # Page layout components
+├── pages/             # Page components
+│   ├── private/       # Pages requiring user authentication
+│   └── public/        # Publicly accessible pages
+├── services/          # API and other services
+├── store/             # Global state storage
+├── styles/            # Global styling
+├── utils/             # Utility functions
+├── App.jsx            # Application routing
+└── index.js           # Application entry point
+```
+
+**Below is a detailed breakdown of the project structure:**
+
+- *components/*
+Contains reuseable UI components are used across multiple parts of the application to maintain consistency.
+
+- *contexts/*
+Contains context providers, which manage global state and provide context to components.
+
+- *hooks/* 
+Contains reuseable logic to be used accross components.
+
+- *layout/* 
+Contains `Sidebar.jsx` and `Layout.jsx`, which define the overall structure and layout of the application pages.
+
+- *pages/*
+Contains page components organized into `private/` and `public/` directories. Private pages require user authentication. public pages are accessible to all users.
+
+- *services/*
+Contains API service files, which handle HTTP requests and interactions with the backend.
+
+- *store/*
+Contains global state management files, which manage the application's state using React context and state.
+
+- *styles/*
+Contains the Global styling file `global-styling.js`, which intercepts and alters MUI's global theme. 
+
+- *utils/*
+Contains utility functions, which provide common functionality used throughout the application.
+
+- *App.jsx*
+The application component responsible for routing and rendering the appropriate pages based on the URL.
+
+- *index.js*
+The entry point of the application, which initializes the React application and renders it to the DOM.
+
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (14+)
@@ -27,35 +81,6 @@ To start the development server:
 
 ```bash
 npm start
-```
-
-The application will be available at http://localhost:3000
-
-### Building for Production
-
-To create a production build:
-
-```bash
-npm run build
-```
-
-The build artifacts will be stored in the `build/` directory.
-
-## Project Structure
-
-```
-src/
-├── components/     # Reusable UI components
-├── contexts/       # React context providers
-├── hooks/          # Custom React hooks
-├── layout/         # Page layout components
-├── pages/          # Page components
-├── services/       # API and other services
-├── store/          # Global state storage
-├── styles/         # Global styles and themes
-├── utils/          # Utility functions
-├── App.jsx         # Application Routing
-└── index.js        # Application Entry Point
 ```
 
 ## Dependencies
@@ -86,26 +111,10 @@ This project uses the following major dependencies:
 
 See [package.json](./package.json) for a complete list of dependencies.
 
-## Available Scripts
-
-- `npm start` - Runs the app in development mode
-- `npm test` - Launches the test runner
-- `npm run build` - Builds the app for production
-- `npm run eject` - Ejects from Create React App
-
-## Testing
-
-```bash
-# Run tests
-npm test
-
-# Run tests with coverage
-npm test -- --coverage
-```
 
 ## Code Style
 
-This project uses ESLint and Prettier for code formatting. The configuration is in `.eslintrc` and `.prettierrc`.
+This project uses ESLint and Prettier for code formatting. 
 
 ## Contributing
 
