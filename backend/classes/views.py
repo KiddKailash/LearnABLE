@@ -8,6 +8,7 @@ Provides endpoints to:
 - Upload students via CSV
 - Update and delete classes
 """
+
 import csv
 import io
 from rest_framework.decorators import api_view, parser_classes, authentication_classes

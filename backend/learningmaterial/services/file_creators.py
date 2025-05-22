@@ -324,6 +324,18 @@ def create_pptx_from_text(slide_pairs, path):
 # fable – male, slightly theatrical
 
 def create_audio_from_text(text, path, voice="nova", speed=0.95):
+    """
+    Generates speech from text using OpenAI's TTS API and saves it to a file.
+
+    Args:
+        text (str): Text to convert to speech.
+        path (str): Destination file path for the audio.
+        voice (str, optional): Voice model to use. Defaults to "nova".
+        speed (float, optional): Playback speed. Defaults to 0.95.
+
+    Returns:
+        bool: True if audio is successfully saved, False otherwise.
+    """
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
 

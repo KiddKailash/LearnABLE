@@ -1,6 +1,12 @@
+"""
+Defines the Classes model for managing school class information.
+
+This module includes the Classes model, which establishes relationships
+between teachers, students, and class details such as year level and class name.
+"""
+
 from django.db import models
 from students.models import Student
-
 
 class Classes(models.Model):
     """

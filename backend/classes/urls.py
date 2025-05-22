@@ -16,7 +16,7 @@ from .views import (
     get_all_classes,
     upload_students_csv,
     add_student_to_class,
-    class_detail,  # handles both PUT and DELETE
+    class_detail,  
 )
 
 urlpatterns = [

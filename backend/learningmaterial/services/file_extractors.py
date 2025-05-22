@@ -11,10 +11,8 @@ import tempfile
 from pptx.enum.shapes import PP_PLACEHOLDER
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
-
 tmp_dir = os.path.join(tempfile.gettempdir(), "pptx_images")
 os.makedirs(tmp_dir, exist_ok=True)
-
 
 def extract_text_from_pdf(path):
     """

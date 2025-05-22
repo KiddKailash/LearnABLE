@@ -1,3 +1,12 @@
+"""
+Unit tests for the custom ErrorHandlingMiddleware.
+
+This module tests that the middleware correctly captures and transforms different 
+types of exceptions (e.g., Http404, PermissionDenied, ValidationError, APIException, 
+and generic Exception) into standardized JSON error responses for a Django REST 
+Framework API. It also checks behavior differences between debug and production modes.
+"""
+
 from django.test import TestCase, RequestFactory
 from django.http import Http404
 from django.core.exceptions import PermissionDenied, ValidationError

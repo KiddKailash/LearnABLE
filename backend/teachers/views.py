@@ -1,3 +1,16 @@
+"""
+Models for the 'teachers' app, defining the core database structures related to teachers.
+
+Includes:
+- Teacher: Represents a teacher user profile linked to the Django User model.
+- Additional fields for storing teacher-specific data such as name, contact information, profile picture, and subjects taught.
+- Methods and properties to facilitate common teacher-related queries and functionality.
+
+These models form the foundation for managing teacher information, authentication linkage,
+and integration with other parts of the system such as classes, learning materials, and reports.
+"""
+
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json

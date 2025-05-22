@@ -1,3 +1,12 @@
+"""
+Serializers for NCCD-related models.
+
+Includes:
+- NCCDreportSerializer: Handles serialization of NCCDreport instances with
+  computed fields for evidence URL and diagnosed disability status.
+- LessonEffectivenessRecordSerializer: Serializes lesson effectiveness records linked to NCCD reports.
+"""
+
 from rest_framework import serializers
 from .models import NCCDreport, LessonEffectivenessRecord
 
