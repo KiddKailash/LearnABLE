@@ -12,4 +12,4 @@ router.register(r'unitplans', views.UnitPlanViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-] 
+]

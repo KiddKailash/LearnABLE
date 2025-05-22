@@ -15,6 +15,7 @@ from docx.opc.constants import RELATIONSHIP_TYPE as RT
 tmp_dir = os.path.join(tempfile.gettempdir(), "pptx_images")
 os.makedirs(tmp_dir, exist_ok=True)
 
+
 def extract_text_from_pdf(path):
     """
     Extract text and images from a PDF file.
@@ -30,7 +31,8 @@ def extract_text_from_pdf(path):
             for block in blocks:
                 if "lines" in block:
                     for line in block["lines"]:
-                        sentence = " ".join([span["text"] for span in line["spans"]])
+                        sentence = " ".join([span["text"]
+                                            for span in line["spans"]])
                         lines.append(sentence)
 
             # Get images
@@ -39,13 +41,13 @@ def extract_text_from_pdf(path):
                 base_image = doc.extract_image(xref)
                 image_bytes = base_image["image"]
                 image_ext = base_image["ext"]
-                image_path = os.path.join(tmp_dir, f"pdf_img_{page_index}_{img_index}.{image_ext}")
+                image_path = os.path.join(
+                    tmp_dir, f"pdf_img_{page_index}_{img_index}.{image_ext}")
                 with open(image_path, "wb") as f:
                     f.write(image_bytes)
                 images.append({'path': image_path})
 
     return "\n".join(lines), images
-
 
 
 def extract_text_from_docx(path):
@@ -74,8 +76,10 @@ def extract_text_from_docx(path):
         if rel.reltype == RT.IMAGE:
             image_part = rel.target_part
             image_data = image_part.blob
-            image_ext = image_part.content_type.split("/")[-1]  # e.g., image/png
-            img_path = os.path.join(tmp_dir, f"docx_img_{len(images)}.{image_ext}")
+            image_ext = image_part.content_type.split(
+                "/")[-1]  # e.g., image/png
+            img_path = os.path.join(
+                tmp_dir, f"docx_img_{len(images)}.{image_ext}")
             with open(img_path, "wb") as f:
                 f.write(image_data)
             images.append({'path': img_path})
@@ -100,7 +104,8 @@ def extract_text_from_pptx(path):
             # 1) Capture ALL text frames, not just placeholders
             if hasattr(shape, "text_frame") and shape.text_frame:
                 # Join all paragraphs in this shape
-                text = "\n".join(p.text.strip() for p in shape.text_frame.paragraphs if p.text.strip())
+                text = "\n".join(p.text.strip()
+                                 for p in shape.text_frame.paragraphs if p.text.strip())
                 if not text:
                     pass
                 elif shape.is_placeholder and shape.placeholder_format.type == PP_PLACEHOLDER.TITLE:
@@ -112,7 +117,7 @@ def extract_text_from_pptx(path):
             # 2) Capture images as before
             if hasattr(shape, "image"):
                 blob = shape.image.blob
-                ext  = shape.image.ext
+                ext = shape.image.ext
                 fname = f"slide_{idx}_img_{len(images)}.{ext}"
                 fpath = os.path.join(tmp_dir, fname)
                 with open(fpath, "wb") as f:

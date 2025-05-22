@@ -3,6 +3,7 @@ from .models import Classes
 from students.models import Student
 from students.serializers import StudentSerializer
 
+
 class ClassSerializer(serializers.ModelSerializer):
     """
     Serializer for the Classes model.
@@ -15,4 +16,4 @@ class ClassSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Classes
-        fields = '__all__' # Serialize all fields of the Classes model
+        fields = '__all__'  # Serialize all fields of the Classes model

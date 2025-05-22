@@ -46,10 +46,10 @@ def create_class(request):
                 "class_data": serializer.data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
     except Teacher.DoesNotExist:
         return Response(
-            {"error": "No teacher profile found for this user"}, 
+            {"error": "No teacher profile found for this user"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -63,15 +63,15 @@ def get_all_classes(request):
     try:
         # Get the teacher linked to the current user
         teacher = Teacher.objects.get(user=request.user)
-        
+
         # Filter only their classes
         classes = Classes.objects.filter(teacher=teacher)
         serializer = ClassSerializer(classes, many=True)
         return Response(serializer.data)
-        
+
     except Teacher.DoesNotExist:
         return Response(
-            {"error": "No teacher profile found for this user"}, 
+            {"error": "No teacher profile found for this user"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -97,7 +97,7 @@ def add_student_to_class(request, class_id):
         return Response({"error": "Student not found"}, status=404)
 
 
-@api_view(['POST', 'GET']) 
+@api_view(['POST', 'GET'])
 @parser_classes([MultiPartParser])
 @permission_classes([IsAuthenticated])
 def upload_students_csv(request):
@@ -160,7 +160,6 @@ def upload_students_csv(request):
 
     except Exception as e:
         return Response({"error": str(e)}, status=500)
-
 
 
 @api_view(["PUT", "DELETE"])

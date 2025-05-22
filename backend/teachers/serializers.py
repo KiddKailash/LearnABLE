@@ -11,6 +11,7 @@ from django.contrib.auth.hashers import make_password
 from .models import Teacher
 import re
 
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Serializer for User model with selected fields.
@@ -19,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['first_name', 'last_name', 'email']
 
+
 class TeacherSerializer(serializers.ModelSerializer):
     """
     Serializer for Teacher model including nested User data.
@@ -26,7 +28,7 @@ class TeacherSerializer(serializers.ModelSerializer):
     Handles validation of phone number format and updating nested User and Teacher fields.
     """
     user = UserSerializer()
-    
+
     class Meta:
         model = Teacher
         fields = [

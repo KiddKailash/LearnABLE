@@ -14,6 +14,7 @@ from utils.encryption import encrypt, decrypt
 # Allowed year levels (Prep = 0, then 1–12)
 YEAR_LEVEL_CHOICES = [(0, 'Prep')] + [(i, str(i)) for i in range(1, 13)]
 
+
 class Student(models.Model):
     """
     Model representing a student with encrypted personal details and disability information.
@@ -28,8 +29,10 @@ class Student(models.Model):
     _first_name = models.CharField(db_column='first_name', blank=True)
     _last_name = models.CharField(db_column='last_name', blank=True)
     year_level = models.IntegerField(choices=YEAR_LEVEL_CHOICES)
-    student_email = models.EmailField(max_length=100, default='missing', unique=True)
-    _disability_info = models.TextField(db_column='disability_info', blank=True)  
+    student_email = models.EmailField(
+        max_length=100, default='missing', unique=True)
+    _disability_info = models.TextField(
+        db_column='disability_info', blank=True)
 
     def __str__(self):
         """
@@ -45,7 +48,8 @@ class Student(models.Model):
         Raises ValidationError if a student with the same email exists.
         """
         if Student.objects.exclude(pk=self.pk).filter(student_email__iexact=self.student_email).exists():
-            raise ValidationError({"student_email": "A student with this email already exists (case-insensitive)."})
+            raise ValidationError(
+                {"student_email": "A student with this email already exists (case-insensitive)."})
 
     def save(self, *args, **kwargs):
         """
@@ -62,7 +66,6 @@ class Student(models.Model):
             self._last_name = encrypt(self._last_name)
         self.full_clean()
         super().save(*args, **kwargs)
-
 
     @property
     def disability_info(self):
@@ -81,7 +84,7 @@ class Student(models.Model):
             str: Decrypted first name or empty string if none.
         """
         return decrypt(self._first_name) if self._first_name else ''
-    
+
     @property
     def last_name(self):
         return decrypt(self._last_name) if self._last_name else ''
@@ -93,7 +96,7 @@ class Student(models.Model):
         Stores the raw (unencrypted) value which will be encrypted on save.
         """
         self._disability_info = value
-    
+
     @first_name.setter
     def first_name(self, value):
         """
@@ -103,7 +106,7 @@ class Student(models.Model):
             str: Decrypted last name or empty string if none.
         """
         self._first_name = value
-    
+
     @last_name.setter
     def last_name(self, value):
         """

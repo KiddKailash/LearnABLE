@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import LearningMaterials
 
+
 class LearningMaterialsSerializer(serializers.ModelSerializer):
     """
     Serializer for the LearningMaterials model.

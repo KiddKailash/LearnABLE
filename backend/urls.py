@@ -8,11 +8,12 @@ urlpatterns = [
     path("api/teachers/", include("teachers.urls")),
     path("api/classes/", include("classes.urls")),
     path("api/students/", include("students.urls")),
-    path("api/nccdreports/", include("nccdreports.urls")), 
+    path("api/nccdreports/", include("nccdreports.urls")),
     path("api/learning-materials/", include("learningmaterial.urls")),
     path("api/unit-plans/", include("unitplan.urls")),
 ]
 
 # ✅ Serve media files in dev mode
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

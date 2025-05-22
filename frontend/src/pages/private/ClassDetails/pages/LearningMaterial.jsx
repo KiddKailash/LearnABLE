@@ -637,8 +637,7 @@ const AIAssistantUpload = ({
             <li>The material contains relevant content for the objective</li>
           </Typography>
           <Typography paragraph>
-            You can either continue with the current material or upload a
-            different file.
+            You can either Change the learning objectives or upload a new file
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -649,18 +648,6 @@ const AIAssistantUpload = ({
             }}
           >
             Upload Different File
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              setObjectiveMismatchDialogOpen(false);
-              // Continue with adaptation despite mismatch
-              setMaterialId(materialId);
-              handleNext();
-              adaptMaterial(materialId);
-            }}
-          >
-            Continue Anyway
           </Button>
         </DialogActions>
       </Dialog>
