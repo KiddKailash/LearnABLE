@@ -34,13 +34,13 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
-import SchoolIcon from "@mui/icons-material/School";
-import DescriptionIcon from "@mui/icons-material/Description";
-import ErrorIcon from "@mui/icons-material/Error";
-import AssignmentIcon from "@mui/icons-material/Assignment";
-import CategoryIcon from "@mui/icons-material/Category";
-import GavelIcon from "@mui/icons-material/Gavel";
-import CommentIcon from "@mui/icons-material/Comment";
+import SchoolIcon from "@mui/icons-material/SchoolRounded";
+import DescriptionIcon from "@mui/icons-material/DescriptionRounded";
+import ErrorIcon from "@mui/icons-material/ErrorRounded";
+import AssignmentIcon from "@mui/icons-material/AssignmentRounded";
+import CategoryIcon from "@mui/icons-material/CategoryRounded";
+import GavelIcon from "@mui/icons-material/GavelRounded";
+import CommentIcon from "@mui/icons-material/CommentRounded";
 
 // Context
 import { SnackbarContext } from "../../../../contexts/SnackbarContext";

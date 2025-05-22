@@ -19,8 +19,8 @@ import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 
 // MUI Icons
-import Add from "@mui/icons-material/Add";
-import Cancel from "@mui/icons-material/Cancel";
+import Add from "@mui/icons-material/AddRounded";
+import Cancel from "@mui/icons-material/CancelRounded";
 
 /**
  * StudentFormDialog component for adding or editing a student.

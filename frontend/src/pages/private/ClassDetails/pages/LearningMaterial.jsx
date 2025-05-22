@@ -23,8 +23,8 @@ import DialogActions from "@mui/material/DialogActions";
 import { styled } from "@mui/material/styles";
 
 // MUI Icons
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import DownloadIcon from "@mui/icons-material/Download";
+import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
+import DownloadIcon from "@mui/icons-material/DownloadRounded";
 
 // Services & Context
 import UserContext from "../../../../store/UserObject";

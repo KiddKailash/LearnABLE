@@ -20,8 +20,8 @@ import Alert from "@mui/material/Alert";
 import Tooltip from "@mui/material/Tooltip";
 
 // MUI Icons
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import InfoIcon from "@mui/icons-material/Info";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
+import InfoIcon from "@mui/icons-material/InfoRounded";
 
 /**
  * DataExportTab component that manages data export functionality

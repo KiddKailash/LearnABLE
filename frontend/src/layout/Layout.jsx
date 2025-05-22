@@ -26,7 +26,7 @@ import IconButton from "@mui/material/IconButton";
 import Drawer from "@mui/material/Drawer";
 
 // MUI Icons
-import MenuIcon from "@mui/icons-material/Menu";
+import MenuIcon from "@mui/icons-material/MenuRounded";
 
 /**
  * Layout component that provides the main layout for the application.

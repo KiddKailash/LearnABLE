@@ -21,8 +21,8 @@ import Grid from "@mui/material/Grid";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
-import PeopleIcon from "@mui/icons-material/People";
-import SchoolIcon from "@mui/icons-material/School";
+import PeopleIcon from "@mui/icons-material/PeopleRounded";
+import SchoolIcon from "@mui/icons-material/SchoolRounded";
 
 // Context for snackbar notifications
 import { SnackbarContext } from "../../../contexts/SnackbarContext";

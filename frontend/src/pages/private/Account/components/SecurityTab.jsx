@@ -28,7 +28,7 @@ import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 
 // MUI Icons
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CheckCircleIcon from "@mui/icons-material/CheckCircleRounded";
 
 // Contexts and Services
 import UserContext from "../../../../store/UserObject";

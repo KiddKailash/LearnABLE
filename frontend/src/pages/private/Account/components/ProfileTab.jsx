@@ -17,7 +17,7 @@ import Paper from "@mui/material/Paper";
 
 // MUI Icons
 import ProfileAvatar from "./ProfileAvatar";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCameraRounded";
 
 /**
  * ProfileTab component that manages user profile information

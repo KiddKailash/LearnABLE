@@ -24,14 +24,14 @@ import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 
 // MUI Icons
-import Add from "@mui/icons-material/Add";
-import Edit from "@mui/icons-material/Edit";
-import Delete from "@mui/icons-material/Delete";
-import Save from "@mui/icons-material/Save";
-import Cancel from "@mui/icons-material/Cancel";
-import School from "@mui/icons-material/School";
-import PersonAdd from "@mui/icons-material/PersonAdd";
-import Menu from "@mui/icons-material/Menu";
+import Add from "@mui/icons-material/AddRounded";
+import Edit from "@mui/icons-material/EditRounded";
+import Delete from "@mui/icons-material/DeleteRounded";
+import Save from "@mui/icons-material/SaveRounded";
+import Cancel from "@mui/icons-material/CancelRounded";
+import School from "@mui/icons-material/SchoolRounded";
+import PersonAdd from "@mui/icons-material/PersonAddRounded";
+import Menu from "@mui/icons-material/MenuRounded";
 
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import api from "../../../services/api";

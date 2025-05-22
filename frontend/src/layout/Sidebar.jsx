@@ -30,7 +30,7 @@ import PeopleIcon from "@mui/icons-material/SchoolRounded";
 import EventAvailableIcon from "@mui/icons-material/DocumentScannerRounded";
 import AccountCircleIcon from "@mui/icons-material/SettingsSuggestRounded";
 import LogoutIcon from "@mui/icons-material/LogoutRounded";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import MenuOpenIcon from "@mui/icons-material/MenuOpenRounded";
 
 // Navigation items for main section of the sidebar
 const navItems = [

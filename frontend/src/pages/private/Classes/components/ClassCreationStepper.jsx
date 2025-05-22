@@ -28,12 +28,12 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SchoolIcon from "@mui/icons-material/School";
-import ErrorIcon from "@mui/icons-material/Error";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import DescriptionIcon from "@mui/icons-material/Description";
+import GroupAddIcon from "@mui/icons-material/GroupAddRounded";
+import CloudUploadIcon from "@mui/icons-material/CloudUploadRounded";
+import SchoolIcon from "@mui/icons-material/SchoolRounded";
+import ErrorIcon from "@mui/icons-material/ErrorRounded";
+import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
+import DescriptionIcon from "@mui/icons-material/DescriptionRounded";
 
 // Custom Components
 import FileUploadZone from "../../../../components/FileUploadZone";

@@ -21,11 +21,11 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
 
 // MUI Icons
-import Edit from "@mui/icons-material/Edit";
-import Delete from "@mui/icons-material/Delete";
-import UploadFile from "@mui/icons-material/UploadFile";
-import Add from "@mui/icons-material/Add";
-import Save from "@mui/icons-material/Save";
+import Edit from "@mui/icons-material/EditRounded";
+import Delete from "@mui/icons-material/DeleteRounded";
+import UploadFile from "@mui/icons-material/UploadFileRounded";
+import Add from "@mui/icons-material/AddRounded";
+import Save from "@mui/icons-material/SaveRounded";
 
 // Local Imports
 import StudentFormDialog from "../../Classes/components/StudentFormDialog";

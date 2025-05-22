@@ -38,13 +38,13 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 // MUI Icons
-import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DownloadIcon from "@mui/icons-material/Download";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/SearchRounded";
+import AddIcon from "@mui/icons-material/AddRounded";
+import EditIcon from "@mui/icons-material/EditRounded";
+import DownloadIcon from "@mui/icons-material/DownloadRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoRounded";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
+import CloseIcon from "@mui/icons-material/CloseRounded";
 
 /**
  * Main component for managing NCCD reports

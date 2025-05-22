@@ -31,12 +31,12 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 
 // Icons
-import PersonIcon from "@mui/icons-material/Person";
-import SecurityIcon from "@mui/icons-material/Security";
-import PaletteIcon from "@mui/icons-material/Palette";
+import PersonIcon from "@mui/icons-material/PersonRounded";
+import SecurityIcon from "@mui/icons-material/SecurityRounded";
+import PaletteIcon from "@mui/icons-material/PaletteRounded";
 // import DevicesIcon from "@mui/icons-material/Devices";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownloadRounded";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
 
 /**
  * Account component that manages user account settings and preferences
