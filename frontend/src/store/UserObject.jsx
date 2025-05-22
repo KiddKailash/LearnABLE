@@ -14,6 +14,7 @@
  */
 
 import React, { createContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import authApi from "../services/authApi";
@@ -48,7 +49,7 @@ export const UserProvider = ({ children }) => {
   
   const navigate = useNavigate();
   const tutorialContext = useTutorial();
-
+  const location = useLocation();
   /**
    * Updates user information in context
    * @param {Object} info - User information to update
@@ -466,7 +467,7 @@ export const UserProvider = ({ children }) => {
     
     autoLogin();
     //eslint-disable-next-line
-  }, [isLoggedIn]); // Reload whenever Logged In state changes
+  }, [isLoggedIn, location.pathname]); // Reload whenever Logged In state changes
 
   return (
     <UserContext.Provider
