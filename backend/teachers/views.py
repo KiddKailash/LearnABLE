@@ -288,7 +288,7 @@ def upload_profile_pic(request):
         teacher.save()
         return Response({
             "message": "Profile picture updated successfully!",
-            "profile_picture": teacher.profile_pic.url
+            "profile_picture": teacher.profile_picture.url
         })
     except (User.DoesNotExist, Teacher.DoesNotExist):
         return Response({"error": "Teacher not found."}, status=404)
