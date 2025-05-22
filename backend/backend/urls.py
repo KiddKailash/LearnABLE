@@ -31,36 +31,39 @@ from django.conf.urls.static import static
 def home(request):
     """
     Root route of the platform.
-    
+
     Returns:
         HttpResponse: A welcome message.
     """
     return HttpResponse("Welcome to the LearnABLE. The new innovative learning platform!")
 
+
 def api_view(request):
     """
     Test or confirmation route for API functionality.
-    
+
     Returns:
         HttpResponse: A basic message confirming the API is reachable.
     """
     return HttpResponse("This is the API endpoint!")
 
+
 urlpatterns = [
     path('api/info/', views.api_view, name='api_view'),
-    path('', home, name='home'),  
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('api/ask-openai/', ask_openai, name='ask_openai'),
-    
+
     # Include app-specific API routes with "api/" prefix
     path("api/teachers/", include("teachers.urls")),
     path("api/classes/", include("classes.urls")),
     path("api/students/", include("students.urls")),
-    path("api/nccdreports/", include("nccdreports.urls")), 
+    path("api/nccdreports/", include("nccdreports.urls")),
     path("api/learning-materials/", include("learningmaterial.urls")),
     path("api/unit-plans/", include("unitplan.urls")),
 ]
 
 # Serve media files in dev mode
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)

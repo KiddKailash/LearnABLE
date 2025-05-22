@@ -3,7 +3,6 @@ Registers the LearningMaterials model to the Django admin interface for easy man
 """
 
 from django.contrib import admin
-from .models import LearningMaterials # Import your model
+from .models import LearningMaterials  # Import your model
 
-admin.site.register(LearningMaterials) 
-
+admin.site.register(LearningMaterials)

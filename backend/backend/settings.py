@@ -32,7 +32,8 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 # Set ALLOWED_HOSTS from environment variable
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(
+    ',') if os.getenv('ALLOWED_HOSTS') else []
 
 # CORS settings to allow frontend access
 CORS_ALLOW_ALL_ORIGINS = os.getenv('CORS_ALLOW_ALL_ORIGINS', 'True') == 'True'
@@ -87,7 +88,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'backend.middleware.ErrorHandlingMiddleware', # Custom middleware for API error handling
+    # Custom middleware for API error handling
+    'backend.middleware.ErrorHandlingMiddleware',
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -99,8 +101,8 @@ ROOT_URLCONF = 'backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [], # Optional custom template dirs
-        'APP_DIRS': True, # Auto - discover templates in apps
+        'DIRS': [],  # Optional custom template dirs
+        'APP_DIRS': True,  # Auto - discover templates in apps
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -129,7 +131,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
-
 
 
 # Password validation

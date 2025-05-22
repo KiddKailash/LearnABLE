@@ -19,13 +19,14 @@ from django.db import transaction
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+
 @csrf_exempt
 def register_teacher(request):
     """
     Registers a new teacher along with a corresponding User account.
     Accepts POST requests with required fields: first_name, last_name, email, and password.
     Performs cleanup of orphaned teacher profiles before registration.
-    
+
     Returns:
         JsonResponse with success message and teacher_id on success.
         JsonResponse with error details and appropriate HTTP status on failure.
@@ -38,7 +39,7 @@ def register_teacher(request):
             else:
                 # For form data
                 data = request.POST.dict()
-            
+
             print("Received data:", data)  # Debug
 
             # Extract user fields
@@ -46,46 +47,55 @@ def register_teacher(request):
             last_name = data.get('last_name', '')
             email = data.get('email', '')
             password = data.get('password', '')
-            
+
             # Validate required fields
             if not all([first_name, last_name, email, password]):
                 missing_fields = []
-                if not first_name: missing_fields.append('first_name')
-                if not last_name: missing_fields.append('last_name')
-                if not email: missing_fields.append('email')
-                if not password: missing_fields.append('password')
+                if not first_name:
+                    missing_fields.append('first_name')
+                if not last_name:
+                    missing_fields.append('last_name')
+                if not email:
+                    missing_fields.append('email')
+                if not password:
+                    missing_fields.append('password')
                 return JsonResponse({
                     "error": f"Missing required fields: {', '.join(missing_fields)}"
                 }, status=400)
-            
+
             # Check if user with this email already exists
             if User.objects.filter(email=email).exists():
                 return JsonResponse({
                     "error": "A user with this email already exists"
                 }, status=400)
-            
+
             # Use a transaction to ensure atomicity
             with transaction.atomic():
                 # First, clean up any orphaned teacher profiles (where user is null or user doesn't exist)
                 try:
                     # Find teacher records with null users or users that don't exist
                     Teacher.objects.filter(user__isnull=True).delete()
-                    
+
                     # Get all teacher user_ids
-                    teacher_user_ids = Teacher.objects.values_list('user_id', flat=True)
-                    
+                    teacher_user_ids = Teacher.objects.values_list(
+                        'user_id', flat=True)
+
                     # Find user IDs that don't have corresponding users
-                    valid_user_ids = User.objects.filter(id__in=teacher_user_ids).values_list('id', flat=True)
-                    
+                    valid_user_ids = User.objects.filter(
+                        id__in=teacher_user_ids).values_list('id', flat=True)
+
                     # Delete teacher records with non-existent users
-                    invalid_teacher_user_ids = set(teacher_user_ids) - set(valid_user_ids)
+                    invalid_teacher_user_ids = set(
+                        teacher_user_ids) - set(valid_user_ids)
                     if invalid_teacher_user_ids:
-                        Teacher.objects.filter(user_id__in=invalid_teacher_user_ids).delete()
-                        print(f"Cleaned up {len(invalid_teacher_user_ids)} orphaned teacher records")
+                        Teacher.objects.filter(
+                            user_id__in=invalid_teacher_user_ids).delete()
+                        print(
+                            f"Cleaned up {len(invalid_teacher_user_ids)} orphaned teacher records")
                 except Exception as cleanup_error:
                     print(f"Error during cleanup: {str(cleanup_error)}")
                     # Continue with registration, the cleanup is just a precaution
-                
+
                 # Create the user
                 user = User.objects.create_user(
                     username=email,
@@ -94,17 +104,18 @@ def register_teacher(request):
                     first_name=first_name,
                     last_name=last_name
                 )
-                
+
                 # Check if a teacher profile already exists with this user_id
                 # This is a final safety check before creating the teacher profile
                 if Teacher.objects.filter(user_id=user.id).exists():
                     # If it exists, delete it before creating a new one
                     Teacher.objects.filter(user_id=user.id).delete()
-                    print(f"Deleted existing teacher profile for user_id={user.id}")
-                
+                    print(
+                        f"Deleted existing teacher profile for user_id={user.id}")
+
                 # Create the teacher profile
                 teacher = Teacher.objects.create(user=user)
-            
+
             return JsonResponse({
                 "message": "Teacher registered successfully!",
                 "teacher_id": teacher.id
@@ -123,11 +134,11 @@ def login_teacher(request):
     Authenticates a teacher by email and password.
     Supports 2FA by indicating if a second factor is required.
     Creates a DeviceSession on successful login and returns JWT tokens.
-    
+
     Request body must contain:
         - email (string)
         - password (string)
-    
+
     Returns:
         JsonResponse with JWT tokens and teacher info on success,
         or indication that 2FA verification is required,
@@ -140,10 +151,10 @@ def login_teacher(request):
                 data = json.loads(request.body)
             else:
                 data = request.POST.dict()
-                
+
             email = data.get("email")
             password = data.get("password")
-            
+
             # Validate required fields
             if not email or not password:
                 return JsonResponse({
@@ -157,7 +168,7 @@ def login_teacher(request):
                 return JsonResponse({
                     "message": "Invalid email or password"
                 }, status=401)
-            
+
             # Authenticate the user
             user = authenticate(username=email, password=password)
             if user is None:
@@ -172,7 +183,7 @@ def login_teacher(request):
                 return JsonResponse({
                     "message": "Teacher profile not found"
                 }, status=404)
-                
+
             # Check if 2FA is enabled
             if teacher.two_factor_enabled:
                 # Return partial response requiring 2FA verification
@@ -184,22 +195,22 @@ def login_teacher(request):
 
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
-            
+
             # Create a new device session
             user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
             ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
-            
+
             # Get device name from user agent
             device_name = 'Desktop'
             if 'Mobile' in user_agent:
                 device_name = 'Mobile Device'
             elif 'Tablet' in user_agent:
                 device_name = 'Tablet'
-            
+
             # Create new session
             from .models import DeviceSession
             import secrets
-            
+
             session = DeviceSession.objects.create(
                 teacher=teacher,
                 session_key=secrets.token_hex(20),
@@ -210,7 +221,7 @@ def login_teacher(request):
                 user_agent=user_agent,
                 is_active=True
             )
-            
+
             # Return successful response with tokens and user info
             return JsonResponse({
                 "access": str(refresh.access_token),
@@ -246,7 +257,7 @@ def upload_profile_pic(request):
     Accepts multipart/form-data with fields:
         - email (string)
         - profile_pic (file)
-    
+
     Returns:
         JSON response with success message and URL of uploaded picture,
         or error if teacher not found or missing inputs.
@@ -269,12 +280,13 @@ def upload_profile_pic(request):
     except (User.DoesNotExist, Teacher.DoesNotExist):
         return Response({"error": "Teacher not found."}, status=404)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_profile(request):
     """
     Returns the authenticated teacher's profile data serialized.
-    
+
     Returns:
         Serialized teacher data on success,
         or error if profile not found.
@@ -286,20 +298,22 @@ def get_profile(request):
     except ObjectDoesNotExist:
         return Response({"error": "Teacher profile not found"}, status=404)
 
+
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
     """
     Updates the authenticated teacher's profile with partial or full data.
     Accepts JSON data fields matching TeacherSerializer.
-    
+
     Returns:
         Updated serialized profile data on success,
         or validation errors if any.
     """
     try:
         teacher = request.user.teacher
-        serializer = TeacherSerializer(teacher, data=request.data, partial=True)
+        serializer = TeacherSerializer(
+            teacher, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -307,13 +321,14 @@ def update_profile(request):
     except ObjectDoesNotExist:
         return Response({"error": "Teacher profile not found"}, status=404)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """
     Changes the password for the authenticated user.
     Requires current_password and new_password in the request body.
-    
+
     Returns:
         Success message if password changed,
         or error if current password incorrect.
@@ -322,15 +337,16 @@ def change_password(request):
         user = request.user
         current_password = request.data.get('current_password')
         new_password = request.data.get('new_password')
-        
+
         if not user.check_password(current_password):
             return Response({"error": "Current password is incorrect"}, status=400)
-        
+
         user.set_password(new_password)
         user.save()
         return Response({"message": "Password changed successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -339,24 +355,25 @@ def setup_2fa(request):
         teacher = request.user.teacher
         if teacher.two_factor_enabled:
             return Response({"error": "2FA is already enabled"}, status=400)
-        
+
         secret = pyotp.random_base32()
         teacher.two_factor_secret = secret
         teacher.save()
-        
+
         # Generate QR code
         totp = pyotp.TOTP(secret)
-        provisioning_uri = totp.provisioning_uri(request.user.email, issuer_name="LearnABLE")
-        
+        provisioning_uri = totp.provisioning_uri(
+            request.user.email, issuer_name="LearnABLE")
+
         qr = qrcode.QRCode(version=1, box_size=10, border=5)
         qr.add_data(provisioning_uri)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
-        
+
         buffered = BytesIO()
         img.save(buffered, format="PNG")
         qr_code = base64.b64encode(buffered.getvalue()).decode()
-        
+
         return Response({
             "secret": secret,
             "qr_code": qr_code
@@ -364,16 +381,17 @@ def setup_2fa(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def verify_2fa(request):
     try:
         teacher = request.user.teacher
         token = request.data.get('token')
-        
+
         if not teacher.two_factor_secret:
             return Response({"error": "2FA not set up"}, status=400)
-        
+
         totp = pyotp.TOTP(teacher.two_factor_secret)
         if totp.verify(token):
             teacher.two_factor_enabled = True
@@ -383,16 +401,17 @@ def verify_2fa(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def disable_2fa(request):
     try:
         teacher = request.user.teacher
         token = request.data.get('token')
-        
+
         if not teacher.two_factor_enabled:
             return Response({"error": "2FA is not enabled"}, status=400)
-        
+
         totp = pyotp.TOTP(teacher.two_factor_secret)
         if totp.verify(token):
             teacher.two_factor_enabled = False
@@ -403,17 +422,20 @@ def disable_2fa(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def update_notification_preferences(request):
     try:
         teacher = request.user.teacher
-        notification_preferences = request.data.get('notification_preferences', {})
+        notification_preferences = request.data.get(
+            'notification_preferences', {})
         teacher.notification_preferences = notification_preferences
         teacher.save()
         return Response({"message": "Notification preferences updated successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -423,12 +445,13 @@ def update_theme(request):
         theme = request.data.get('theme')
         if theme not in ['light', 'dark', 'system']:
             return Response({"error": "Invalid theme preference"}, status=400)
-        
+
         teacher.theme_preference = theme
         teacher.save()
         return Response({"message": "Theme preference updated successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -436,27 +459,28 @@ def get_active_sessions(request):
     try:
         # Get the teacher from the authenticated user
         teacher = request.user.teacher
-        
+
         # Get current session info
         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
         ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
-        
+
         # Query all active sessions for this teacher
         from .models import DeviceSession
-        sessions = DeviceSession.objects.filter(teacher=teacher, is_active=True)
-        
+        sessions = DeviceSession.objects.filter(
+            teacher=teacher, is_active=True)
+
         result = []
         for session in sessions:
             # Determine if this is the current session based on IP and user agent
             is_current = (
-                session.ip_address == ip_address and 
+                session.ip_address == ip_address and
                 session.user_agent == user_agent
             )
-            
+
             # If this is the current session, update the last_active time
             if is_current:
                 session.save()  # This will update the last_active field (auto_now=True)
-            
+
             result.append({
                 'id': session.id,
                 'device_name': session.device_name,
@@ -466,10 +490,11 @@ def get_active_sessions(request):
                 'last_active': session.last_active.isoformat(),
                 'is_current': is_current
             })
-        
+
         return Response(result)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -477,30 +502,30 @@ def terminate_session(request):
     try:
         teacher = request.user.teacher
         session_id = request.data.get('session_id')
-        
+
         if not session_id:
             return Response({"error": "Session ID is required"}, status=400)
-        
+
         # Get the session from the database
         from .models import DeviceSession
         try:
             session = DeviceSession.objects.get(
-                id=session_id, 
+                id=session_id,
                 teacher=teacher,
                 is_active=True
             )
         except DeviceSession.DoesNotExist:
             return Response({"error": "Session not found"}, status=404)
-        
+
         # Check if this is the current session
         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
         ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
         if session.ip_address == ip_address and session.user_agent == user_agent:
             return Response({"error": "Cannot terminate your current session"}, status=400)
-        
+
         # Get channel layer for WebSocket
         channel_layer = get_channel_layer()
-        
+
         # Send notification to the session being terminated
         async_to_sync(channel_layer.group_send)(
             f'session_{session_id}',
@@ -509,28 +534,29 @@ def terminate_session(request):
                 'message': 'Your session has been terminated by the account owner'
             }
         )
-        
+
         # Deactivate the session
         session.is_active = False
         session.save()
-        
+
         return Response({"message": "Session terminated successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def terminate_all_sessions(request):
     try:
         teacher = request.user.teacher
-        
+
         # Get current session info
         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
         ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
-        
+
         # Get channel layer for WebSocket
         channel_layer = get_channel_layer()
-        
+
         # Get all active sessions except current one
         from .models import DeviceSession
         other_sessions = DeviceSession.objects.filter(
@@ -540,7 +566,7 @@ def terminate_all_sessions(request):
             ip_address=ip_address,
             user_agent=user_agent
         )
-        
+
         # Send notifications to all sessions
         for session in other_sessions:
             async_to_sync(channel_layer.group_send)(
@@ -550,13 +576,14 @@ def terminate_all_sessions(request):
                     'message': 'Your session has been terminated by the account owner'
                 }
             )
-        
+
         # Terminate all sessions except the current one
         other_sessions.update(is_active=False)
-        
+
         return Response({"message": "All other sessions terminated successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -564,11 +591,12 @@ def export_account_data(request):
     try:
         user = request.user
         teacher = user.teacher
-        
+
         # Get export options
         export_options = request.data or {}
-        export_all = not bool(export_options)  # If no options specified, export everything
-        
+        # If no options specified, export everything
+        export_all = not bool(export_options)
+
         # Basic account data
         data = {
             "account": {
@@ -588,27 +616,28 @@ def export_account_data(request):
                 }
             }
         }
-        
+
         # Add additional data based on export options
         if export_all or export_options.get('classes'):
             # In a real app, query the database for classes
             data["classes"] = []  # Add class data here
-        
+
         if export_all or export_options.get('students'):
             # In a real app, query the database for students
             data["students"] = []  # Add student data here
-        
+
         if export_all or export_options.get('assessments'):
             # In a real app, query the database for assessments
             data["assessments"] = []  # Add assessment data here
-        
+
         if export_all or export_options.get('reports'):
             # In a real app, query the database for NCCD reports
             data["reports"] = []  # Add report data here
-        
+
         return Response(data)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -619,12 +648,13 @@ def delete_account(request):
         password = request.data.get('password')
         if not user.check_password(password):
             return Response({"error": "Password is incorrect"}, status=400)
-        
+
         # Delete the user (will cascade to Teacher object via OneToOneField)
         user.delete()
         return Response({"message": "Account deleted successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -632,35 +662,37 @@ def connect_google_account(request):
     try:
         teacher = request.user.teacher
         google_token = request.data.get('google_token')
-        
+
         # Here you would implement actual Google OAuth verification
         # For now, just simulate success
-        
+
         # Store a flag or ID for connected Google account
         if not hasattr(teacher, 'notification_preferences') or not teacher.notification_preferences:
             teacher.notification_preferences = {}
-        
+
         teacher.notification_preferences['google_connected'] = True
         teacher.save()
-        
+
         return Response({"message": "Google account connected successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def disconnect_google_account(request):
     try:
         teacher = request.user.teacher
-        
+
         # Remove the Google connection
         if hasattr(teacher, 'notification_preferences') and teacher.notification_preferences and 'google_connected' in teacher.notification_preferences:
             teacher.notification_preferences.pop('google_connected')
             teacher.save()
-        
+
         return Response({"message": "Google account disconnected successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @csrf_exempt
 def verify_login_2fa(request):
@@ -671,10 +703,10 @@ def verify_login_2fa(request):
                 data = json.loads(request.body)
             else:
                 data = request.POST.dict()
-                
+
             email = data.get("email")
             code = data.get("code")
-            
+
             # Validate required fields
             if not email or not code:
                 return JsonResponse({
@@ -689,37 +721,37 @@ def verify_login_2fa(request):
                 return JsonResponse({
                     "message": "Invalid email or code"
                 }, status=401)
-            
+
             # Verify 2FA code
             if not teacher.two_factor_enabled or not teacher.two_factor_secret:
                 return JsonResponse({
                     "message": "Two-factor authentication is not enabled for this account"
                 }, status=400)
-                
+
             totp = pyotp.TOTP(teacher.two_factor_secret)
             if not totp.verify(code):
                 return JsonResponse({
                     "message": "Invalid authentication code"
                 }, status=401)
-                
+
             # Authentication successful, generate tokens
             refresh = RefreshToken.for_user(user)
-            
+
             # Create a new device session
             user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
             ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
-            
+
             # Get device name from user agent
             device_name = 'Desktop'
             if 'Mobile' in user_agent:
                 device_name = 'Mobile Device'
             elif 'Tablet' in user_agent:
                 device_name = 'Tablet'
-            
+
             # Create new session
             from .models import DeviceSession
             import secrets
-            
+
             session = DeviceSession.objects.create(
                 teacher=teacher,
                 session_key=secrets.token_hex(20),
@@ -730,7 +762,7 @@ def verify_login_2fa(request):
                 user_agent=user_agent,
                 is_active=True
             )
-            
+
             # Return full login response
             return JsonResponse({
                 "access": str(refresh.access_token),
@@ -758,17 +790,18 @@ def verify_login_2fa(request):
         "message": "Only POST method is allowed"
     }, status=405)
 
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
     try:
         # Get the teacher from the authenticated user
         teacher = request.user.teacher
-        
+
         # Get current session info
         user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Browser')
         ip_address = request.META.get('REMOTE_ADDR', '127.0.0.1')
-        
+
         # Find and deactivate the current session
         from .models import DeviceSession
         DeviceSession.objects.filter(
@@ -777,10 +810,11 @@ def logout(request):
             ip_address=ip_address,
             user_agent=user_agent
         ).update(is_active=False)
-        
+
         return Response({"message": "Logged out successfully"})
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

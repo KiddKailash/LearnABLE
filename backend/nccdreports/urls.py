@@ -38,19 +38,25 @@ urlpatterns = [
     # Create a new NCCD report
     path('create/', create_report, name='create_report'),
     # Get all reports associated with a specific student
-    path('student/<int:student_id>/', get_reports_by_student, name='get_reports_by_student'),
+    path('student/<int:student_id>/', get_reports_by_student,
+         name='get_reports_by_student'),
     # Ensure every student in a class has a report created
-    path('class/<int:class_id>/check-report/', ensure_reports_for_class, name='ensure_reports_for_class'),
+    path('class/<int:class_id>/check-report/',
+         ensure_reports_for_class, name='ensure_reports_for_class'),
     # Create a lesson effectiveness record for a given report
-    path('create-lesson-effectiveness/<int:report_id>/', create_lesson_effectiveness, name='create_lesson_effectiveness'),
+    path('create-lesson-effectiveness/<int:report_id>/',
+         create_lesson_effectiveness, name='create_lesson_effectiveness'),
     # Get the effectiveness trend data for a student
-    path('effectiveness-trend/<int:student_id>/', get_effectiveness_trend, name='effectiveness-trend'),
-    path('students/no-nccd-report/', students_without_nccd_report, name="no_nccd_report"),
+    path('effectiveness-trend/<int:student_id>/',
+         get_effectiveness_trend, name='effectiveness-trend'),
+    path('students/no-nccd-report/',
+         students_without_nccd_report, name="no_nccd_report"),
 ]
 
 # Serve media files (like uploaded evidence) during development
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL,
+                          document_root=settings.MEDIA_ROOT)
 
 # from django.urls import path, include
 # from rest_framework.routers import DefaultRouter
@@ -62,4 +68,3 @@ if settings.DEBUG:
 # urlpatterns = router.urls + [
 #     path('create/', NCCDreportViewSet.as_view({'post': 'create'}), name='create_report'),
 # ]
-

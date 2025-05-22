@@ -30,29 +30,31 @@ from .views import (
 urlpatterns = [
     # Retrieve a list of all students
     path('', get_all_students, name="get_all_students"),
-    
+
     # Create a new student record
     path('create/', create_student, name="create_student"),
-    
+
     # Retrieve a student by their email address (query param expected)
     path('by-email/', get_student_by_email, name="get_student_by_email"),
-    
+
     # Retrieve details of a student by their ID
     path('<int:student_id>/', get_student, name="get_student"),
-    
+
     # Partially update a student's details by their ID (PATCH request)
-    path('<int:student_id>/patch/', partial_update_student, name="partial_update_student"),
-    
+    path('<int:student_id>/patch/', partial_update_student,
+         name="partial_update_student"),
+
     # Delete a student record by their ID
     path('<int:student_id>/delete/', delete_student, name="delete_student"),
-    
+
     # Get a list of students belonging to a specific class by class ID
-    path('classes/<int:class_id>/', get_students_by_class, name="get_students_by_class"),
-    
+    path('classes/<int:class_id>/', get_students_by_class,
+         name="get_students_by_class"),
+
     # Upload a CSV file to bulk add students to a class
     path('classes/upload-csv/', upload_csv_to_class, name="upload_csv_to_class"),
 
     # Get list of students with disabilities
-    path('with-disabilities/', get_students_with_disabilities, name="get_students_with_disabilities"),
+    path('with-disabilities/', get_students_with_disabilities,
+         name="get_students_with_disabilities"),
 ]
-

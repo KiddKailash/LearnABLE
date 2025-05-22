@@ -17,6 +17,7 @@ import openai
 # Initialize OpenAI client using API key from Django settings
 client = openai.OpenAI(api_key=settings.OPENAI_API_KEY)
 
+
 @csrf_exempt
 def ask_openai(request):
     """

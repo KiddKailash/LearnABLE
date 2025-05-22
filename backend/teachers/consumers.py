@@ -15,6 +15,7 @@ from channels.db import database_sync_to_async
 from django.contrib.auth.models import User
 from .models import Teacher, DeviceSession
 
+
 class SessionNotificationConsumer(AsyncWebsocketConsumer):
     """
     WebSocket consumer for notifying a teacher's device session events in real-time.
@@ -22,6 +23,7 @@ class SessionNotificationConsumer(AsyncWebsocketConsumer):
     Manages connections scoped to a specific device session, ensuring only the authenticated
     teacher associated with the session can connect. Sends notifications such as session termination.
     """
+
     async def connect(self):
         """
         Handles WebSocket connection attempts.
@@ -35,38 +37,38 @@ class SessionNotificationConsumer(AsyncWebsocketConsumer):
         # Get the session ID from the URL
         self.session_id = self.scope['url_route']['kwargs']['session_id']
         self.user = self.scope['user']
-        
+
         # Check if the user is authenticated
         if not self.user.is_authenticated:
             await self.close()
             return
-        
+
         # Check if the session ID is valid
         if not await self.is_valid_session():
             await self.close()
             return
-        
+
         # Add the client to a session-specific group
         self.group_name = f'session_{self.session_id}'
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name
         )
-        
+
         await self.accept()
-    
+
     async def disconnect(self, close_code):
         """
         Handles WebSocket disconnections.
 
         Removes the client from the session group to stop receiving session notifications.
         """
-        
+
         await self.channel_layer.group_discard(
             self.group_name,
             self.channel_name
         )
-    
+
     @database_sync_to_async
     def is_valid_session(self):
         """
@@ -84,13 +86,13 @@ class SessionNotificationConsumer(AsyncWebsocketConsumer):
             return False
         except (DeviceSession.DoesNotExist, Teacher.DoesNotExist):
             return False
-    
+
     # Receive message from WebSocket
     async def receive(self, text_data):
-        
+
         # We don't need client-to-server messages for this feature
         pass
-    
+
     # Receive message from session group
     async def session_terminated(self, event):
         """
@@ -103,4 +105,4 @@ class SessionNotificationConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'type': 'session_terminated',
             'message': event['message']
-        })) 
+        }))

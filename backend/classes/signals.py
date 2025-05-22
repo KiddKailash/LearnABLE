@@ -3,6 +3,7 @@ from django.dispatch import receiver
 from .models import Classes
 from django.apps import apps
 
+
 @receiver(pre_delete, sender=Classes)
 def clean_up_class_relations(sender, instance, **kwargs):
     """
@@ -19,11 +20,12 @@ def clean_up_class_relations(sender, instance, **kwargs):
     try:
         # Get related models dynamically to avoid circular imports
         ClassStudents = apps.get_model('classstudents', 'ClassStudents')
-        LearningMaterials = apps.get_model('learningmaterial', 'LearningMaterials')
+        LearningMaterials = apps.get_model(
+            'learningmaterial', 'LearningMaterials')
 
         # Delete related records
         ClassStudents.objects.filter(class_obj=instance).delete()
         LearningMaterials.objects.filter(class_assigned=instance).delete()
-        
+
     except Exception as e:
-        print(f"Error cleaning up class relations: {e}") 
+        print(f"Error cleaning up class relations: {e}")

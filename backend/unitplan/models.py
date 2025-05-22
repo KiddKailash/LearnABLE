@@ -9,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 import os
 
+
 def unit_plan_file_path(instance, filename):
     """
     Generate the upload path for a unit plan file based on class ID.
@@ -22,15 +23,18 @@ def unit_plan_file_path(instance, filename):
     """
     return f'unitplans/{instance.class_instance.id}/{filename}'
 
+
 class UnitPlan(models.Model):
-    class_instance = models.OneToOneField('classes.Classes', on_delete=models.CASCADE, related_name='unit_plan')
+    class_instance = models.OneToOneField(
+        'classes.Classes', on_delete=models.CASCADE, related_name='unit_plan')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
     document = models.FileField(upload_to=unit_plan_file_path)
-    file_type = models.CharField(max_length=20, blank=True, null=True)  # e.g., 'pdf', 'docx', 'xlsx'
+    # e.g., 'pdf', 'docx', 'xlsx'
+    file_type = models.CharField(max_length=20, blank=True, null=True)
     uploaded_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         """
         Return a human-readable string representation of the UnitPlan instance.
@@ -39,7 +43,7 @@ class UnitPlan(models.Model):
             str: Description of the unit plan including the related class name.
         """
         return f"Unit Plan for {self.class_instance.class_name}"
-    
+
     def save(self, *args, **kwargs):
         """
         Override the save method to automatically set the file_type based on

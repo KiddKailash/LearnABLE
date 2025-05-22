@@ -1,6 +1,7 @@
 from django.db import models
 from students.models import Student
 
+
 class Classes(models.Model):
     """
     Model representing a school class.
@@ -17,7 +18,9 @@ class Classes(models.Model):
     class_name = models.CharField(max_length=100)
 
     # Many students can belong to many classes
-    students = models.ManyToManyField('students.Student', related_name='classes') #Many students can be in many classes
+    # Many students can be in many classes
+    students = models.ManyToManyField(
+        'students.Student', related_name='classes')
 
     def __str__(self):
         """

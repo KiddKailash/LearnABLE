@@ -20,31 +20,32 @@ from .views import (
 )
 
 urlpatterns = [
-    path('create/', 
-        create_class, 
-        name='create_class'
-    ), # Create a new class
+    path('create/',
+         create_class,
+         name='create_class'
+         ),  # Create a new class
 
     path(
-        '', 
-        get_all_classes, 
+        '',
+        get_all_classes,
         name='get_all_classes'
-    ), # Retrieve a list of all classes
+    ),  # Retrieve a list of all classes
 
     path(
-        'upload-csv/', 
-        upload_students_csv, 
+        'upload-csv/',
+        upload_students_csv,
         name='upload_students_csv'
-    ), # Bulk upload students to a class via CSV file
+    ),  # Bulk upload students to a class via CSV file
 
     path(
-        '<int:class_id>/add-student/', 
-        add_student_to_class, 
+        '<int:class_id>/add-student/',
+        add_student_to_class,
         name='add_student_to_class'
-    ), # Add a student (by ID or payload) to the specified class
-    
+    ),  # Add a student (by ID or payload) to the specified class
+
     path(
-        '<int:class_id>/', 
-        class_detail, 
-        name='class_detail'), # Retrieve (GET), update (PUT), or delete (DELETE) a specific class
+        '<int:class_id>/',
+        class_detail,
+        # Retrieve (GET), update (PUT), or delete (DELETE) a specific class
+        name='class_detail'),
 ]

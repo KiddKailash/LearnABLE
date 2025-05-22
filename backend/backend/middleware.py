@@ -26,11 +26,13 @@ from rest_framework.exceptions import APIException
 
 logger = logging.getLogger(__name__)
 
+
 class ErrorHandlingMiddleware:
     """
     Middleware to handle exceptions and return consistent error responses 
     in JSON format
     """
+
     def __init__(self, get_response):
         """
         Initialize the middleware with the next layer in the request/response cycle.
@@ -115,4 +117,4 @@ class ErrorHandlingMiddleware:
             'type': 'SERVER_ERROR',
             'message': 'An unexpected error occurred. Please try again later.',
             'details': str(exception) if settings.DEBUG else None
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

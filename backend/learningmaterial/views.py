@@ -8,9 +8,8 @@ from asgiref.sync import async_to_sync
 from .models import LearningMaterials
 from .serializers import LearningMaterialsSerializer
 from .services.file_extractors import extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx
-from .services.lesson_adapter import (generate_adapted_lessons, extract_text_from_pdf, 
-extract_text_from_docx, extract_text_from_pptx, alignment_prompt, alignment_parser, llm)
-
+from .services.lesson_adapter import (generate_adapted_lessons, extract_text_from_pdf,
+                                      extract_text_from_docx, extract_text_from_pptx, alignment_prompt, alignment_parser, llm)
 
 
 class LearningMaterialsViewSet(viewsets.ModelViewSet):
@@ -26,25 +25,24 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
     serializer_class = LearningMaterialsSerializer
     parser_classes = (MultiPartParser, FormParser)
 
-
     from .services.lesson_adapter import (
-    extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx,
-    alignment_prompt, alignment_parser, llm
-)
+        extract_text_from_pdf, extract_text_from_docx, extract_text_from_pptx,
+        alignment_prompt, alignment_parser, llm
+    )
 
     def by_class(self, request, class_id=None, *args, **kwargs):
         """
         Retrieve learning materials assigned to a specific class.
-        
+
         Args:
             class_id (int): ID of the class to filter materials by.
-            
+
         Returns:
             Response: A list of serialized learning materials assigned to the class.
         """
         if not class_id:
             return Response({"error": "Class ID is required"}, status=400)
-            
+
         materials = self.queryset.filter(class_assigned_id=class_id)
         serializer = self.get_serializer(materials, many=True)
         return Response(serializer.data)
@@ -107,8 +105,6 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
 
         return Response(response_data, status=201)
 
-
-
     @action(detail=True, methods=["post"])
     def adapt(self, request, pk=None):
         """
@@ -124,7 +120,8 @@ class LearningMaterialsViewSet(viewsets.ModelViewSet):
         """
         material = self.get_object()
         students = list(material.class_assigned.students.all())
-        adapted_outputs = async_to_sync(generate_adapted_lessons)(material, students, return_file=True)
+        adapted_outputs = async_to_sync(generate_adapted_lessons)(
+            material, students, return_file=True)
 
         if isinstance(adapted_outputs, dict) and "error" in adapted_outputs:
             return Response(adapted_outputs, status=200)

@@ -15,7 +15,7 @@ from rest_framework.decorators import permission_classes
 from teachers.models import Teacher
 
 
-#Get all students
+# Get all students
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_students(request):
@@ -29,19 +29,19 @@ def get_all_students(request):
     try:
         # Get the teacher linked to the current user
         teacher = Teacher.objects.get(user=request.user)
-        
+
         # Find all classes taught by this teacher
         classes = Classes.objects.filter(teacher=teacher)
-        
+
         # Get students from these classes (distinct to avoid duplicates)
         students = Student.objects.filter(classes__in=classes).distinct()
-        
+
         serializer = StudentSerializer(students, many=True)
         return Response(serializer.data)
-    
+
     except Teacher.DoesNotExist:
         return Response(
-            {"error": "No teacher profile found for this user"}, 
+            {"error": "No teacher profile found for this user"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -179,7 +179,7 @@ def get_students_by_class(request, class_id):
         return Response(serializer.data)
     except Classes.DoesNotExist:
         return Response({"error": "Class not found"}, status=404)
-    
+
 
 # Check if a student exists by email (for linking to another class)
 @api_view(['POST'])
@@ -205,8 +205,9 @@ def get_student_by_email(request):
         serializer = StudentSerializer(student)
         return Response(serializer.data)
     except Student.DoesNotExist:
-        return Response({}, status=200)  # Not found, return empty response (not an error)
-    
+        # Not found, return empty response (not an error)
+        return Response({}, status=200)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -270,6 +271,7 @@ def upload_csv_to_class(request):
         "duplicates": duplicates,
     }, status=200)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_students_with_disabilities(request):
@@ -289,7 +291,8 @@ def get_students_with_disabilities(request):
 
         eligible = []
         for student in students:
-            decrypted = decrypt(student._disability_info) if student._disability_info else ''
+            decrypted = decrypt(
+                student._disability_info) if student._disability_info else ''
             if decrypted.strip():
                 eligible.append(student)
 

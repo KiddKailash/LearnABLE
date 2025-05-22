@@ -7,6 +7,7 @@ such as importing signal handlers.
 
 from django.apps import AppConfig
 
+
 class TeachersConfig(AppConfig):
     """
     Configuration class for the 'teachers' app.

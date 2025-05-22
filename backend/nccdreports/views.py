@@ -33,6 +33,7 @@ from classes.models import Classes
 from .serializers import NCCDreportSerializer, LessonEffectivenessRecordSerializer
 from students.serializers import StudentSerializer
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_reports(request):
@@ -55,7 +56,7 @@ def get_all_reports(request):
             'evidence': request.build_absolute_uri(report.evidence.url) if report.evidence else None
         }
         data.append(report_data)
-    
+
     return Response(data)
 
 
@@ -79,7 +80,7 @@ def get_report_detail(request, report_id):
         or appropriate error status.
     """
     report = get_object_or_404(NCCDreport, id=report_id)
-    
+
     if request.method == 'GET':
         # Return the report details
         data = {
@@ -92,36 +93,36 @@ def get_report_detail(request, report_id):
             'evidence': request.build_absolute_uri(report.evidence.url) if report.evidence else None
         }
         return Response(data)
-    
+
     elif request.method == 'PUT':
         # Update the report
         parser_classes = (MultiPartParser, FormParser)
-        
+
         # Handle student field
         student_id = request.data.get('student')
         if student_id:
             student = get_object_or_404(Student, id=student_id)
             report.student = student
-        
+
         # Update other fields
         if 'status' in request.data:
             report.status = request.data['status']
-        
+
         if 'has_diagonsed_disability' in request.data:
             report.has_diagonsed_disability = request.data['has_diagonsed_disability'] == 'true'
-        
+
         if 'disability_category' in request.data:
             report.disability_category = request.data['disability_category']
-        
+
         if 'level_of_adjustment' in request.data:
             report.level_of_adjustment = request.data['level_of_adjustment']
-        
+
         # Handle file upload
         if 'evidence' in request.FILES:
             report.evidence = request.FILES['evidence']
-        
+
         report.save()
-        
+
         # Return updated report
         data = {
             'id': report.id,
@@ -133,7 +134,7 @@ def get_report_detail(request, report_id):
             'evidence': request.build_absolute_uri(report.evidence.url) if report.evidence else None
         }
         return Response(data)
-    
+
     elif request.method == 'DELETE':
         # Delete the report
         report.delete()
@@ -163,7 +164,7 @@ def create_report(request):
         student_id = request.data.get('student')
         if not student_id:
             return Response({'error': 'Student ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         student = get_object_or_404(Student, id=student_id)
 
         # future: a `term` field, you would filter by term too, or maybe semester
@@ -185,7 +186,7 @@ def create_report(request):
         report = NCCDreport(
             student=student,
             status=request.data.get('status', 'NotStart'),
-            #has_diagonsed_disability=request.data.get('has_diagonsed_disability', '').lower() == 'true',
+            # has_diagonsed_disability=request.data.get('has_diagonsed_disability', '').lower() == 'true',
             disability_category=request.data.get('disability_category', ''),
             level_of_adjustment=request.data.get('level_of_adjustment', ''),
         )
@@ -201,7 +202,7 @@ def create_report(request):
             'id': report.id,
             'student': report.student.id,
             'status': report.status,
-            #'has_diagonsed_disability': report.has_diagonsed_disability,
+            # 'has_diagonsed_disability': report.has_diagonsed_disability,
             'disability_category': report.disability_category,
             'level_of_adjustment': report.level_of_adjustment,
             'evidence': request.build_absolute_uri(report.evidence.url) if report.evidence else None
@@ -226,7 +227,7 @@ def get_reports_by_student(request, student_id):
     """
     student = get_object_or_404(Student, id=student_id)
     reports = NCCDreport.objects.filter(student=student)
-    
+
     data = []
     for report in reports:
         report_data = {
@@ -239,7 +240,7 @@ def get_reports_by_student(request, student_id):
             'evidence': request.build_absolute_uri(report.evidence.url) if report.evidence else None
         }
         data.append(report_data)
-    
+
     return Response(data)
 
 
@@ -262,10 +263,11 @@ def ensure_reports_for_class(request, class_id):
     valid_reports = []
 
     for student in class_list.students.all():
-        decrypted_info = decrypt(student._disability_info) if student._disability_info else ''
-        
+        decrypted_info = decrypt(
+            student._disability_info) if student._disability_info else ''
+
         if decrypted_info.strip():
-            #Only create/get report if decrypted disability info is non-empty
+            # Only create/get report if decrypted disability info is non-empty
             report, _ = NCCDreport.objects.get_or_create(
                 student=student,
                 defaults={'status': 'NotStart'}
@@ -274,10 +276,12 @@ def ensure_reports_for_class(request, class_id):
 
     # delete reports for students who no longer qualify
     NCCDreport.objects.filter(
-        student__in=class_list.students.exclude(id__in=[r.student.id for r in valid_reports])
+        student__in=class_list.students.exclude(
+            id__in=[r.student.id for r in valid_reports])
     ).delete()
 
-    serializer = NCCDreportSerializer(valid_reports, many=True, context={'request': request})
+    serializer = NCCDreportSerializer(
+        valid_reports, many=True, context={'request': request})
     return Response(serializer.data)
 
 
@@ -315,11 +319,11 @@ def create_lesson_effectiveness(request, report_id):
     )
 
     # Find the next report in the same class (if any)
-    students_in_same_classes = Student.objects.filter(classes__in=report.student.classes.all())
+    students_in_same_classes = Student.objects.filter(
+        classes__in=report.student.classes.all())
     class_reports = NCCDreport.objects.filter(
         student__in=students_in_same_classes
     ).exclude(id=report.id).order_by('id')
-
 
     next_report = class_reports.first()
     next_report_id = next_report.id if next_report else None
@@ -348,7 +352,8 @@ def get_effectiveness_trend(request, student_id):
     """
     student = Student.objects.get(id=student_id)
 
-    records = LessonEffectivenessRecord.objects.filter( report__student=student).order_by('lesson_date')
+    records = LessonEffectivenessRecord.objects.filter(
+        report__student=student).order_by('lesson_date')
 
     data = []
     score = 0
@@ -362,19 +367,24 @@ def get_effectiveness_trend(request, student_id):
 
     return Response(data)
 
+
 api_view(['GET'])
+
+
 def students_without_nccd_report(request):
     reported_ids = set(NCCDreport.objects.values_list('student_id', flat=True))
     print(f"[DEBUG] Reported student IDs: {reported_ids}")
 
     unreported_students = Student.objects.exclude(id__in=reported_ids)
-    print(f"[DEBUG] Found {unreported_students.count()} students without reports")
+    print(
+        f"[DEBUG] Found {unreported_students.count()} students without reports")
 
     eligible_students = []
     for s in unreported_students:
         raw = s._disability_info
         decrypted = s.disability_info.strip()
-        print(f"[DEBUG] Student {s.id} - Encrypted: {raw[:10]}..., Decrypted: '{decrypted}'")
+        print(
+            f"[DEBUG] Student {s.id} - Encrypted: {raw[:10]}..., Decrypted: '{decrypted}'")
 
         if decrypted:
             eligible_students.append(s)

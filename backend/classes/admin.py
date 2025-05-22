@@ -6,5 +6,4 @@ Admin configuration for the Classes model.
 This allows the Classes model to be managed via the Django admin interface.
 """
 
-admin.site.register(Classes) 
-
+admin.site.register(Classes)
