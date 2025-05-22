@@ -42,7 +42,7 @@ const navItems = [
 // Navigation items for settings section of the sidebar
 const settingsItems = [
   { text: "Account", icon: <AccountCircleIcon />, tutorialId: "account" },
-  { text: "Logout", icon: <LogoutIcon />, isLogout: true },
+  { text: "Logout", icon: <LogoutIcon color="error"/>, isLogout: true },
 ];
 
 /**
@@ -74,10 +74,10 @@ const Sidebar = () => {
    * @returns {boolean} True if the current location matches the given path.
    */
   const isActive = (path) =>
-    location.pathname === `/${path.toLowerCase().replace(" ", "-")}`;
+    location.pathname.includes(`/${path.toLowerCase().replace(" ", "-")}`);
 
   // Compute dynamic sidebar width based on collapsed state and device type
-  const SIDEBAR_WIDTH = isMobile ? 240 : collapsed ? 50 : 200;
+  const SIDEBAR_WIDTH = isMobile ? 240 : collapsed ? 58 : 200;
 
   return (
     <Box
@@ -88,7 +88,6 @@ const Sidebar = () => {
         flexDirection: "column",
         borderRadius: { xs: 0, sm: 5 },
         p: 1,
-        bgcolor: "background.paper",
       }}
     >
       {/* Top section with toggle button and logo */}
@@ -103,7 +102,6 @@ const Sidebar = () => {
         {!isMobile && (
           <IconButton
             onClick={() => setCollapsed(!collapsed)}
-            size="small"
             sx={{ mr: 1, borderRadius: 2 }}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -144,13 +142,24 @@ const Sidebar = () => {
                     window.dispatchEvent(new CustomEvent("closeMobileDrawer"));
                   }
                 }}
-                size="small"
                 sx={{
+                  py: 1.5,
                   mr: 1,
                   mb: 1,
                   borderRadius: 2,
-                  color: selected ? "primary.main" : "text.primary",
-                  bgcolor: selected ? "action.selected" : "transparent",
+                  color: "text.primary",
+                  position: "relative",
+                  backgroundColor: selected ? "action.selected" : "transparent",
+                  "&:before": {
+                    content: '""',
+                    position: "absolute",
+                    right: 0,
+                    top: "8px", // Adjust to match py spacing
+                    bottom: "8px",
+                    width: selected ? "2px" : 0,
+                    backgroundColor: "primary.main",
+                    borderRadius: 1,
+                  },
                   "&:hover": {
                     bgcolor: "action.hover",
                   },
@@ -214,12 +223,24 @@ const Sidebar = () => {
                     }
                   }
                 }}
-                size="small"
                 sx={{
+                  py: 1.5,
                   mr: 1,
                   mb: 1,
                   borderRadius: 2,
-                  color: isLogout ? "error.main" : "text.primary",
+                  color: "text.primary",
+                  position: "relative",
+                  backgroundColor: isActive(text) ? "action.selected" : "transparent",
+                  "&:before": {
+                    content: '""',
+                    position: "absolute",
+                    right: 0,
+                    top: "8px", // Adjust to match py spacing
+                    bottom: "8px",
+                    width: isActive(text) ? "2px" : 0,
+                    backgroundColor: "primary.main",
+                    borderRadius: 1,
+                  },
                   "&:hover": {
                     bgcolor: "action.hover",
                   },
