@@ -25,7 +25,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 
 // MUI Icons
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
 
 /**
  * DeleteAccountTab component that manages account deletion process
@@ -61,26 +61,16 @@ const DeleteAccountTab = ({
         </Typography>
 
         {/* Warning Alert */}
-        <Alert severity="warning" sx={{ mb: 3 }}>
+        <Alert severity="warning" sx={{ mb: 1 }}>
           <AlertTitle>Warning: This action is permanent</AlertTitle>
           Deleting your account will permanently remove all your data including
           classes, students, assessments, and personal information.
         </Alert>
 
         {/* Pre-deletion Suggestions */}
-        <Typography variant="body1">
-          Before you delete your account, you may want to:
+        <Typography variant="caption">
+          Before you delete your account, you may want to contact support.
         </Typography>
-
-        <Box component="ul" sx={{ mb: 2 }}>
-          <Typography component="li" variant="body2">
-            Export your data using the Data Export tab
-          </Typography>
-
-          <Typography component="li" variant="body2">
-            Contact support if you're experiencing issues with your account
-          </Typography>
-        </Box>
 
         <Divider sx={{ my: 3 }} />
 

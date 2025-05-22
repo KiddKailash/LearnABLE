@@ -7,9 +7,9 @@
 import React, { useState, useRef, useContext } from "react";
 
 // Context and Services
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
-import api from "../../../services/api";
-import { API_BASE_URL } from "../../../services/config";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
+import api from "../../../../services/api";
+import { API_BASE_URL } from "../../../../services/config";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -28,15 +28,15 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SchoolIcon from "@mui/icons-material/School";
-import ErrorIcon from "@mui/icons-material/Error";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import DescriptionIcon from "@mui/icons-material/Description";
+import GroupAddIcon from "@mui/icons-material/GroupAddRounded";
+import CloudUploadIcon from "@mui/icons-material/CloudUploadRounded";
+import SchoolIcon from "@mui/icons-material/SchoolRounded";
+import ErrorIcon from "@mui/icons-material/ErrorRounded";
+import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
+import DescriptionIcon from "@mui/icons-material/DescriptionRounded";
 
 // Custom Components
-import FileUploadZone from "../../../components/FileUploadZone";
+import FileUploadZone from "../../../../components/FileUploadZone";
 
 // Constants
 const STEPS = [

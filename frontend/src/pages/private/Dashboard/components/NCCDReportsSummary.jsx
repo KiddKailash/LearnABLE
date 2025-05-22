@@ -21,7 +21,7 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 
 // MUI Icons
-import DescriptionIcon from '@mui/icons-material/Description';
+import DescriptionIcon from '@mui/icons-material/DescriptionRounded';
 
 /**
  * NCCDReportsSummary component for displaying NCCD reports summary

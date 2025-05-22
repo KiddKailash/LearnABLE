@@ -34,7 +34,7 @@ const Root = () => {
   // Update color scheme when user preferences change
   useEffect(() => {
     if (user?.preferences?.theme) {
-      setMode(user.preferences.theme);
+      setMode(user?.preferences?.theme);
     }
   }, [user, setMode]);
 

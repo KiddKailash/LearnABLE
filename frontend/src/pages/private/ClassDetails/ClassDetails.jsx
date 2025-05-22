@@ -12,7 +12,9 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+
+// MUI Icons
+import NavigateNextIcon from "@mui/icons-material/NavigateNextRounded";
 
 // Local Components
 import StudentList from "./pages/StudentList";

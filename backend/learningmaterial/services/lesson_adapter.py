@@ -146,21 +146,23 @@ JSON format:
 
 
 
-# Utility to extract raw text
-def get_base_text(path: str) -> str:
+def get_base_text(path: str):
     """
-    Dispatch file to appropriate extractor based on extension and return extracted base text.
+    Dispatch file to appropriate extractor based on extension and return extracted base text and images.
     """
     ext = path.split('.')[-1].lower()
     if ext == 'pdf':
-        return extract_text_from_pdf(path)
+        text, images = extract_text_from_pdf(path)
+        return text, [{'images': images}]
     if ext == 'docx':
-        return extract_text_from_docx(path)
+        text, images = extract_text_from_docx(path)
+        return text, [{'images': images}]
     if ext == 'pptx':
         slides = extract_text_from_pptx(path)
-        return "\n\n".join(
+        text = "\n\n".join(
             f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in slides
         )
+        return text, slides
     raise ValueError(f"Unsupported file type: {ext}")
 
 
@@ -260,10 +262,12 @@ async def process_student(material, student, base_text, file_ext, original_slide
         content = parsed.get('adapted_content', '')
 
         if file_ext == 'pdf':
-            await asyncio.to_thread(create_pdf_from_text, content, output_path)
+            images = original_slides[0]['images'] if original_slides else []
+            await asyncio.to_thread(create_pdf_from_text, content, output_path, images=images)
 
         elif file_ext == 'docx':
-            await asyncio.to_thread(create_docx_from_text, content, output_path)
+            images = original_slides[0]['images'] if original_slides else []
+            await asyncio.to_thread(create_docx_from_text, content, output_path, images=images)
 
         elif file_ext == 'pptx':
             slides = re.findall(
@@ -321,8 +325,8 @@ async def generate_adapted_lessons(material, students, return_file=False):
             f"[Slide]\nTitle: {s['title']}\nContent: {s['content']}" for s in original_slides
         )
     else:
-        original_slides = None
-        base_text = get_base_text(material.file.path)
+        base_text, original_slides = get_base_text(material.file.path)
+
 
     # Run all student adaptations concurrently
     student_tasks = [

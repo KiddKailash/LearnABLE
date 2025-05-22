@@ -21,8 +21,8 @@ import Grid from "@mui/material/Grid";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
-import PeopleIcon from "@mui/icons-material/People";
-import SchoolIcon from "@mui/icons-material/School";
+import PeopleIcon from "@mui/icons-material/PeopleRounded";
+import SchoolIcon from "@mui/icons-material/SchoolRounded";
 
 // Context for snackbar notifications
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
@@ -138,8 +138,8 @@ const Dashboard = () => {
     <>
       {/* Header with greeting and teacher info */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
-          Welcome back {user?.first_name}
+        <Typography variant="h4" sx={{ fontWeight: "bold"}}>
+          Welcome {user?.user?.first_name}
         </Typography>
         <Typography variant="body1" color="text.secondary">
           Here's an overview of your teaching information and recent activity

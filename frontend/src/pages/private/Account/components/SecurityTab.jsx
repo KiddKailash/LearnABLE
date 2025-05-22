@@ -28,7 +28,7 @@ import TextField from "@mui/material/TextField";
 import CircularProgress from "@mui/material/CircularProgress";
 
 // MUI Icons
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CheckCircleIcon from "@mui/icons-material/CheckCircleRounded";
 
 // Contexts and Services
 import UserContext from "../../../../store/UserObject";
@@ -94,8 +94,8 @@ const SecurityTab = () => {
    * Synchronizes 2FA enabled status with user context
    */
   useEffect(() => {
-    if (user && typeof user.two_factor_enabled === "boolean") {
-      setTwoFactorEnabled(user.two_factor_enabled);
+    if (user && typeof user?.two_factor_enabled === "boolean") {
+      setTwoFactorEnabled(user?.two_factor_enabled);
     }
   }, [user]);
 
@@ -115,8 +115,7 @@ const SecurityTab = () => {
         current_password: currentPassword,
         new_password: newPassword,
       });
-
-      if (result.success) {
+      if (result.message === "Password changed successfully") {
         showSnackbar("Password changed successfully", "success");
         setCurrentPassword("");
         setNewPassword("");

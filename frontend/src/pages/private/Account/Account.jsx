@@ -19,8 +19,6 @@ import TabPanel from "./components/TabPanel";
 import ProfileTab from "./components/ProfileTab";
 import SecurityTab from "./components/SecurityTab";
 import AppearanceTab from "./components/AppearanceTab";
-// import SessionsTab from "./components/SessionsTab";
-import DataExportTab from "./components/DataExportTab";
 import DeleteAccountTab from "./components/DeleteAccountTab";
 
 // MUI Components
@@ -31,12 +29,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 
 // Icons
-import PersonIcon from "@mui/icons-material/Person";
-import SecurityIcon from "@mui/icons-material/Security";
-import PaletteIcon from "@mui/icons-material/Palette";
-// import DevicesIcon from "@mui/icons-material/Devices";
-import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
-import DeleteIcon from "@mui/icons-material/Delete";
+import PersonIcon from "@mui/icons-material/PersonRounded";
+import SecurityIcon from "@mui/icons-material/SecurityRounded";
+import PaletteIcon from "@mui/icons-material/PaletteRounded";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
 
 /**
  * Account component that manages user account settings and preferences
@@ -80,18 +76,6 @@ const Account = () => {
   const [themeMode, setThemeMode] = useState("system");
   const { setMode } = useColorScheme();
 
-  // Sessions state
-  const [sessions, setSessions] = useState([]);
-  const [sessionsLoading, setSessionsLoading] = useState(false);
-
-  // Data export state
-  const [exportOptions, setExportOptions] = useState({
-    classes: false,
-    students: false,
-    assessments: false,
-    reports: false,
-  });
-
   // Delete account state
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -133,20 +117,7 @@ const Account = () => {
       }
     };
 
-    const fetchSessions = async () => {
-      try {
-        setSessionsLoading(true);
-        const data = await accountApi.getActiveSessions();
-        setSessions(data || []);
-      } catch (error) {
-        console.error("Failed to load sessions:", error);
-      } finally {
-        setSessionsLoading(false);
-      }
-    };
-
     fetchProfile();
-    fetchSessions();
   }, [showSnackbar]);
 
   /**
@@ -390,74 +361,6 @@ const Account = () => {
     }
   };
 
-  // Data export handlers
-  const handleExportAccountData = async () => {
-    try {
-      setIsSaving(true);
-      const data = await accountApi.exportAccountData();
-
-      // Create a download link
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "learnable-account-data.json";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up the URL object
-      URL.revokeObjectURL(url);
-
-      showSnackbar("Account data exported successfully", "success");
-    } catch (error) {
-      showSnackbar("Failed to export account data", "error");
-      console.error("Export error:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleExportSelectedData = async () => {
-    try {
-      setIsSaving(true);
-
-      // Only include options that are selected (true)
-      const selectedOptions = Object.entries(exportOptions)
-        .filter(([key, value]) => value === true)
-        .reduce((obj, [key, value]) => {
-          obj[key] = value;
-          return obj;
-        }, {});
-
-      const data = await accountApi.exportAccountData(selectedOptions);
-
-      // Create a download link
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "learnable-full-data-export.json";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      // Clean up the URL object
-      URL.revokeObjectURL(url);
-
-      showSnackbar("Data exported successfully", "success");
-    } catch (error) {
-      showSnackbar("Failed to export data", "error");
-      console.error("Export error:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   // Delete account handlers
   const handleDeleteAccount = async () => {
     try {
@@ -502,11 +405,6 @@ const Account = () => {
         <Tab icon={<SecurityIcon />} label="Security" iconPosition="start" />
         <Tab icon={<PaletteIcon />} label="Appearance" iconPosition="start" />
         <Tab
-          icon={<CloudDownloadIcon />}
-          label="Data Export"
-          iconPosition="start"
-        />
-        <Tab
           icon={<DeleteIcon />}
           label="Delete Account"
           iconPosition="start"
@@ -522,7 +420,6 @@ const Account = () => {
           <TabPanel value={tabValue} index={0}>
             <ProfileTab
               profile={profile}
-              user={user}
               firstName={firstName}
               setFirstName={setFirstName}
               lastName={lastName}
@@ -574,26 +471,7 @@ const Account = () => {
               handleSaveTheme={handleSaveTheme}
             />
           </TabPanel>
-          {/* <TabPanel value={tabValue} index={3}>
-            <SessionsTab
-              sessions={sessions}
-              sessionsLoading={sessionsLoading}
-              isSaving={isSaving}
-              handleTerminateSession={handleTerminateSession}
-              handleTerminateAllSessions={handleTerminateAllSessions}
-              handleRefreshSessions={handleRefreshSessions}
-            />
-          </TabPanel> */}
           <TabPanel value={tabValue} index={3}>
-            <DataExportTab
-              exportOptions={exportOptions}
-              setExportOptions={setExportOptions}
-              isSaving={isSaving}
-              handleExportAccountData={handleExportAccountData}
-              handleExportSelectedData={handleExportSelectedData}
-            />
-          </TabPanel>
-          <TabPanel value={tabValue} index={4}>
             <DeleteAccountTab
               deleteDialogOpen={deleteDialogOpen}
               setDeleteDialogOpen={setDeleteDialogOpen}

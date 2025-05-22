@@ -19,8 +19,8 @@ import Stack from "@mui/material/Stack";
 import { alpha } from "@mui/material/styles";
 
 // MUI Icons
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import ArrowBackIcon from "@mui/icons-material/ArrowBackRounded";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForwardRounded";
 
 /**
  * Tutorial component for guided onboarding and feature discovery.

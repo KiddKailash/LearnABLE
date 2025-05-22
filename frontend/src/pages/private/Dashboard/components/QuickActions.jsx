@@ -16,9 +16,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
 // MUI Icons
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import SchoolIcon from '@mui/icons-material/School';
-import DescriptionIcon from '@mui/icons-material/Description';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForwardRounded';
+import SchoolIcon from '@mui/icons-material/SchoolRounded';
+import DescriptionIcon from '@mui/icons-material/DescriptionRounded';
 
 /**
  * QuickActions component for displaying dashboard quick actions

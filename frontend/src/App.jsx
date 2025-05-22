@@ -23,7 +23,7 @@ import PageNotFound from "./pages/public/PageNotFound";
 
 // Webpages - Private
 import Account from "./pages/private/Account/Account.jsx";
-import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
+import ResponsiveNCCDReporting from "./pages/private/NCCDReport/NCCDReportingRouter";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
 import ClassDetails from "./pages/private/ClassDetails/ClassDetails.jsx";
 import Classes from "./pages/private/Classes/Classes";

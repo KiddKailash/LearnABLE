@@ -21,7 +21,7 @@ import re, textwrap
 import requests
 from docx.oxml.ns import qn
 from docx import Document
-from docx.shared import Pt, RGBColor
+from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
@@ -30,12 +30,13 @@ from pptx.util import Emu, Inches, Pt
 from reportlab.platypus import BaseDocTemplate, Frame, PageTemplate, Paragraph, Spacer, ListFlowable, ListItem, HRFlowable
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib import colors
+from reportlab.platypus import Image as RLImage
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
-def create_docx_from_text(text, path, title=None):
+def create_docx_from_text(text, path, title=None, images=None):
     """
     Create a .docx file from plain text, inferring a title if not provided, stripping unwanted tips/reminders,
     and styling headings ending with a colon.
@@ -102,12 +103,26 @@ def create_docx_from_text(text, path, title=None):
             continue
 
         # Regular paragraph
+        img_match = re.match(r"\[IMAGE_(\d+)\]", stripped)
+        if img_match and images:
+            idx = int(img_match.group(1))
+            if idx < len(images) and os.path.exists(images[idx]['path']):
+                doc.add_picture(images[idx]['path'], width=Inches(5.5))
+            continue
+
         doc.add_paragraph(stripped)
 
+
+    if images:
+        doc.add_page_break()
+        doc.add_paragraph("Visual References", style='Heading 2')
+        for img in images:
+            if os.path.exists(img['path']):
+                doc.add_picture(img['path'], width=Inches(5.5))
     doc.save(path)
 
 
-def create_pdf_from_text(text, path, title=None):
+def create_pdf_from_text(text, path, title=None, images=None):
     """
     Generate a cleanly styled PDF with header line, title, sections, bullets & wrapped text.
     """
@@ -185,6 +200,16 @@ def create_pdf_from_text(text, path, title=None):
         for w in wrapped:
             elements.append(Paragraph(w, body_style))
         i += 1
+
+    if images:
+        elements.append(Spacer(1, 12))
+        elements.append(Paragraph("Visual References", section_style))
+        for img in images:
+            if os.path.exists(img['path']):
+                rl_img = RLImage(img['path'], width=4*inch, height=3*inch)
+                rl_img.hAlign = 'CENTER'
+                elements.append(Spacer(1, 12))
+                elements.append(rl_img)
 
     doc.build(elements)
     
