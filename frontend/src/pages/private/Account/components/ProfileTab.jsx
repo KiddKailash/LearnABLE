@@ -19,6 +19,9 @@ import Paper from "@mui/material/Paper";
 import ProfileAvatar from "./ProfileAvatar";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCameraRounded";
 
+// Local imports
+import { API_BASE_URL } from "../../../../services/config";
+
 /**
  * ProfileTab component that manages user profile information
  * @param {Object} props - Component props
@@ -60,6 +63,7 @@ const ProfileTab = ({
   handleUploadProfilePicture,
 }) => {
   return (
+    
     <>
       {/* Personal Information Section */}
       <Paper variant="outlined" sx={{ p: 3, mb: 2, borderRadius: 2 }}>
@@ -85,7 +89,7 @@ const ProfileTab = ({
         >
           <Box sx={{ mr: 3 }}>
             <ProfileAvatar
-              src={profile?.profile_picture || null}
+              src={`${API_BASE_URL}/${profile?.profile_picture}` || null}
               alt={firstName || "User"}
               sx={{ width: 100, height: 100 }}
             >
