@@ -187,16 +187,6 @@ const NCCDReports = () => {
   };
 
   /**
-   * Handles opening the create report form for a student
-   * @param {string} studentId - ID of the student
-   */
-  const handleCreateReport = (studentId) => {
-    setSelectedStudentId(studentId);
-    setSelectedReportId(null);
-    setFormDialogOpen(true);
-  };
-
-  /**
    * Handles opening the edit form for a report
    * @param {string} reportId - ID of the report to edit
    */
