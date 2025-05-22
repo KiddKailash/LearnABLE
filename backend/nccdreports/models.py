@@ -1,7 +1,20 @@
+"""
+Models for managing NCCD reports, lesson effectiveness records, and teacher questionnaires.
+
+This module defines:
+
+- NCCDreport: Stores information about a student's disability, adjustments, and supporting evidence.
+- LessonEffectivenessRecord: Tracks the effectiveness of lessons with adjustments for students.
+- Questionnaire: Captures teacher feedback on the effectiveness of adjustments for a student.
+
+These models support tracking and documenting student needs and educational outcomes
+in compliance with NCCD reporting requirements.
+"""
+
+
 from django.db import models
 from students.models import Student
 from teachers.models import Teacher
-
 
 class NCCDreport(models.Model):
     """

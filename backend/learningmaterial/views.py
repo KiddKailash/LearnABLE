@@ -1,3 +1,17 @@
+"""
+ViewSet and API endpoints for managing LearningMaterials.
+
+This module provides a Django REST Framework ViewSet for full CRUD operations on LearningMaterials,
+including specialized endpoints for:
+
+- Retrieving materials by assigned class.
+- Creating materials with automatic text extraction from uploaded files (PDF, DOCX, PPTX).
+- Performing content alignment validation between uploaded file text and provided learning objectives.
+- Adapting lessons for students using AI-generated personalized learning materials and optional audio.
+
+The ViewSet leverages external services for file text extraction and lesson adaptation using language models.
+"""
+
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status, viewsets

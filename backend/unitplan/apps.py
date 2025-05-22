@@ -10,6 +10,14 @@ from django.apps import AppConfig
 
 
 class UnitplanConfig(AppConfig):
+    """
+    Django AppConfig for the 'unitplan' app.
+
+    Sets up configuration options including:
+    - Default primary key field type as BigAutoField
+    - Application name as 'unitplan'
+    - Human-readable name as 'Unit Plans'
+    """
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'unitplan'
     verbose_name = 'Unit Plans'

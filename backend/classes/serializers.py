@@ -1,8 +1,14 @@
+"""
+Serializers for the 'classes' app.
+
+This module defines the ClassSerializer used to convert Classes model instances
+into JSON representations, including nested serialization of enrolled students.
+"""
+
 from rest_framework import serializers
 from .models import Classes
 from students.models import Student
 from students.serializers import StudentSerializer
-
 
 class ClassSerializer(serializers.ModelSerializer):
     """

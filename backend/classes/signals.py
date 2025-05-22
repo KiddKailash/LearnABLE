@@ -1,3 +1,11 @@
+"""
+Signal handlers for the 'classes' app.
+
+This module defines cleanup logic triggered before a Classes instance is deleted.
+It ensures related data in ClassStudents and LearningMaterials is also removed
+to maintain referential integrity and prevent orphaned records.
+"""
+
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from .models import Classes

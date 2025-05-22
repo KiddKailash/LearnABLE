@@ -1,3 +1,18 @@
+"""
+Views module providing API endpoints to manage Student entities.
+
+Includes functionality to:
+- Retrieve all students associated with the authenticated teacher.
+- Create, update (full and partial), retrieve, and delete individual students.
+- Retrieve students by class and check student existence by email.
+- Bulk upload students to a class via CSV file upload.
+- Retrieve students with decrypted disability information for the authenticated teacher.
+
+Permissions are enforced where necessary to ensure data security.
+
+Utilizes Django REST Framework decorators and serializers for request handling and response formatting.
+"""
+
 from django.shortcuts import render
 import csv
 import io

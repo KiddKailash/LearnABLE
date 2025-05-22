@@ -14,33 +14,36 @@ from django.conf.urls.static import static
 from django.urls import path
 from learningmaterial.views import LearningMaterialsViewSet
 
+# Define view mappings for LearningMaterialsViewSet actions
 learning_materials_list = LearningMaterialsViewSet.as_view(
-    {'get': 'list', 'post': 'create'})
+    {'get': 'list', 'post': 'create'}) # List all or create new
 learning_materials_detail = LearningMaterialsViewSet.as_view(
-    {'get': 'retrieve', 'put': 'update', 'delete': 'destroy'})
+    {'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}) # Retrieve, update, or delete by pk
 learning_materials_create = LearningMaterialsViewSet.as_view(
-    {'post': 'create'})
+    {'post': 'create'}) # Explicit create endpoint
 learning_materials_by_class = LearningMaterialsViewSet.as_view(
-    {'get': 'by_class'})
+    {'get': 'by_class'}) # Get materials filtered by class ID
 learning_materials_process = LearningMaterialsViewSet.as_view(
-    {'post': 'process'})
+    {'post': 'process'}) # Process material (e.g., AI processing)
 learning_materials_adapt = LearningMaterialsViewSet.as_view(
-    {'post': 'adapt'})
+    {'post': 'adapt'}) # Adapt material (e.g., generate adaptations)
 
 urlpatterns = [
-    path('', learning_materials_list, name='learning-materials-list'),
+    path('', learning_materials_list, 
+        name='learning-materials-list'), # GET list, POST create
     path('<int:pk>/', learning_materials_detail,
-         name='learning-materials-detail'),
+         name='learning-materials-detail'), # GET/PUT/DELETE a specific material
     path('create/', learning_materials_create,
-         name='learning-materials-create'),
+         name='learning-materials-create'), # Explicit POST create route
     path('class/<int:class_id>/', learning_materials_by_class,
-         name='learning-materials-by-class'),
+         name='learning-materials-by-class'), # GET materials by class ID
     path('<int:pk>/process/', learning_materials_process,
-         name='learning-materials-process'),
+         name='learning-materials-process'), # POST to process a specific material
     path('<int:pk>/adapt/', learning_materials_adapt,
-         name='learning-materials-adapt'),
+         name='learning-materials-adapt'), # POST to adapt a specific material
 ]
 
+# Serve media files during development only
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
                           document_root=settings.MEDIA_ROOT)

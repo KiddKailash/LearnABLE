@@ -1,5 +1,12 @@
-from django.apps import AppConfig
+"""
+App configuration for the 'classes' Django application.
 
+This module defines the configuration class used by Django to set up 
+and initialize the 'classes' app, including the registration of any 
+signal handlers upon application readiness.
+"""
+
+from django.apps import AppConfig
 
 class ClassesConfig(AppConfig):
     """
