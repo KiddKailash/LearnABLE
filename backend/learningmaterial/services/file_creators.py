@@ -1,6 +1,9 @@
 """
 Utility module for generating educational content in DOCX, PDF, PPTX, and audio formats.
 Provides functions to format plain text into styled documents and convert it to multimedia resources.
+https://python-docx.readthedocs.io/en/latest/
+https://python-pptx.readthedocs.io/en/latest/
+https://docs.reportlab.com/
 """
 
 import os

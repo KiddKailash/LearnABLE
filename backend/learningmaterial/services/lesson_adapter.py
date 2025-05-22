@@ -1,6 +1,9 @@
 """
 Main AI adaptation pipeline for processing uploaded lesson files and tailoring them to student learning needs.
 Uses LLMs to classify disabilities, generate adaptation strategies, and produce personalized content outputs.
+https://python.langchain.com/docs/introduction/
+https://python.langchain.com/docs/concepts/output_parsers/
+https://python.langchain.com/docs/concepts/prompt_templates/
 """
 
 import os
