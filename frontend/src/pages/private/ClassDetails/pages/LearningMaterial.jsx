@@ -141,7 +141,7 @@ const AIAssistantUpload = ({
   }, [file]);
 
   /* ---------------------------------- Steps --------------------------------- */
-  const steps = ["Select Class", "Upload Material", "Review & Adapt"];
+  const steps = ["Upload Material", "Review & Adapt"];
 
   const handleNext = () => setActiveStep((prev) => prev + 1);
   const handleBack = () => setActiveStep((prev) => Math.max(0, prev - 1));
