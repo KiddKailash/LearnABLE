@@ -115,8 +115,7 @@ const SecurityTab = () => {
         current_password: currentPassword,
         new_password: newPassword,
       });
-
-      if (result.success) {
+      if (result.message === "Password changed successfully") {
         showSnackbar("Password changed successfully", "success");
         setCurrentPassword("");
         setNewPassword("");
