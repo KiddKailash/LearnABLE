@@ -1,63 +1,38 @@
 /**
- * @file Reporting.jsx
+ * @file DesktopReporting.jsx
  * @description Main component for managing NCCD reports, providing a comprehensive interface
- * for viewing, creating, editing, and deleting reports. Includes filtering, search, and
- * detailed report management capabilities.
- *
+ * for viewing, creating, editing, and deleting reports.
  */
 
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-// Local Imports
+// Local Components
 import NCCDReportForm from "../components/NCCDReportForm";
+import NCCDReportsTable from "../components/NCCDReportsTable";
+import NCCDReportsFilters from "../components/NCCDReportsFilters";
+import ViewReportDialog from "../components/ViewReportDialog";
+import DeleteConfirmDialog from "../components/DeleteConfirmDialog";
+
+// Utils
+import { filterReports } from "../utils/reportHelpers";
 import api from "../../../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import Chip from "@mui/material/Chip";
-import Dialog from "@mui/material/Dialog";
-import CircularProgress from "@mui/material/CircularProgress";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
 import Alert from "@mui/material/Alert";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-
-// MUI Icons
-import SearchIcon from "@mui/icons-material/SearchRounded";
 import AddIcon from "@mui/icons-material/AddRounded";
-import EditIcon from "@mui/icons-material/EditRounded";
-import DownloadIcon from "@mui/icons-material/DownloadRounded";
-import InfoOutlinedIcon from "@mui/icons-material/InfoRounded";
-import DeleteIcon from "@mui/icons-material/DeleteRounded";
-import CloseIcon from "@mui/icons-material/CloseRounded";
 
-/**
- * Main component for managing NCCD reports
- *
- * @component
- * @returns {JSX.Element} The NCCD reports management interface
- */
 const NCCDReports = () => {
-  // State management
+  // Data state
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState([]);
   const [students, setStudents] = useState([]);
   const [error, setError] = useState("");
+  
+  // UI state
   const [reportStatus, setReportStatus] = useState({
     isSubmitting: false,
     isUpdating: false,
@@ -65,11 +40,13 @@ const NCCDReports = () => {
   });
 
   // Filter state
-  const [statusFilter, setStatusFilter] = useState("");
-  const [studentFilter, setStudentFilter] = useState("");
-  const [nameSearch, setNameSearch] = useState("");
+  const [filters, setFilters] = useState({
+    statusFilter: "",
+    studentFilter: "",
+    nameSearch: "",
+  });
 
-  // Selected report and student for actions
+  // Selected items state
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [selectedStudentId, setSelectedStudentId] = useState(null);
 
@@ -81,14 +58,13 @@ const NCCDReports = () => {
 
   const location = useLocation();
 
-  // Fetch reports and students data
+  // Fetch initial data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError("");
 
-        // Fetch reports and students in parallel
         const [reportsData, studentsData] = await Promise.all([
           api.nccdReports.getAll(),
           api.students.getAll(),
@@ -124,54 +100,39 @@ const NCCDReports = () => {
     }
   }, [location, students]);
 
-  /**
-   * Filters reports based on current filter criteria
-   * @returns {Array} Filtered reports array
-   */
-  const filteredReports = reports.filter((report) => {
-    // Find student for this report
-    const student = students.find((s) => s.id === report.student);
-    if (!student) return false;
+  // Filter handlers
+  const handleNameSearchChange = (value) => {
+    setFilters(prev => ({ ...prev, nameSearch: value }));
+  };
 
-    // Apply status filter
-    if (statusFilter && report.status !== statusFilter) {
-      return false;
-    }
+  const handleStatusFilterChange = (value) => {
+    setFilters(prev => ({ ...prev, statusFilter: value }));
+  };
 
-    // Apply student filter
-    if (studentFilter && report.student !== parseInt(studentFilter)) {
-      return false;
-    }
+  const handleStudentFilterChange = (value) => {
+    setFilters(prev => ({ ...prev, studentFilter: value }));
+  };
 
-    // Apply name search
-    if (nameSearch) {
-      const fullName =
-        `${student.first_name} ${student.last_name}`.toLowerCase();
-      if (!fullName.includes(nameSearch.toLowerCase())) {
-        return false;
-      }
-    }
+  const handleClearFilters = () => {
+    setFilters({
+      statusFilter: "",
+      studentFilter: "",
+      nameSearch: "",
+    });
+  };
 
-    return true;
-  });
-
-  /**
-   * Handles successful form submission
-   * @param {Object} result - The submitted report data
-   */
+  // Report action handlers
   const handleFormSuccess = async (result) => {
     try {
       setReportStatus((prev) => ({ ...prev, isSubmitting: true }));
 
       if (selectedReportId) {
-        // Update existing report in list
         setReports((prevReports) =>
           prevReports.map((r) =>
             r.id === selectedReportId ? { ...r, ...result } : r
           )
         );
       } else {
-        // Add new report to list
         setReports((prevReports) => [...prevReports, result]);
       }
 
@@ -186,10 +147,6 @@ const NCCDReports = () => {
     }
   };
 
-  /**
-   * Handles opening the edit form for a report
-   * @param {string} reportId - ID of the report to edit
-   */
   const handleEditReport = (reportId) => {
     const report = reports.find((r) => r.id === reportId);
     if (!report) return;
@@ -199,10 +156,6 @@ const NCCDReports = () => {
     setFormDialogOpen(true);
   };
 
-  /**
-   * Handles viewing a report's details
-   * @param {string} reportId - ID of the report to view
-   */
   const handleViewReport = (reportId) => {
     const report = reports.find((r) => r.id === reportId);
     if (!report) return;
@@ -211,24 +164,16 @@ const NCCDReports = () => {
     setViewDialogOpen(true);
   };
 
-  /**
-   * Handles initiating report deletion
-   * @param {string} reportId - ID of the report to delete
-   */
   const handleDeleteClick = (reportId) => {
     setSelectedReportId(reportId);
     setConfirmDeleteDialogOpen(true);
   };
 
-  /**
-   * Confirms and executes report deletion
-   */
   const handleConfirmDelete = async () => {
     try {
       setReportStatus((prev) => ({ ...prev, isDeleting: true }));
       await api.nccdReports.delete(selectedReportId);
 
-      // Remove deleted report from state
       setReports((prevReports) =>
         prevReports.filter((r) => r.id !== selectedReportId)
       );
@@ -240,72 +185,8 @@ const NCCDReports = () => {
     }
   };
 
-  /**
-   * Gets the appropriate chip color based on report status
-   * @param {string} status - The report status
-   * @returns {string} The chip color
-   */
-  const getStatusChipColor = (status) => {
-    switch (status) {
-      case "NotStart":
-        return "default";
-      case "InProgress":
-        return "primary";
-      case "Approved":
-        return "success";
-      default:
-        return "default";
-    }
-  };
-
-  /**
-   * Gets a human-readable status label
-   * @param {string} status - The report status
-   * @returns {string} The readable status label
-   */
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case "NotStart":
-        return "Not Started";
-      case "InProgress":
-        return "In Progress";
-      case "Approved":
-        return "Approved";
-      default:
-        return status;
-    }
-  };
-
-  /**
-   * Gets a human-readable disability category label
-   * @param {string} category - The disability category
-   * @returns {string} The readable category label
-   */
-  const getDisabilityCategoryLabel = (category) => {
-    if (!category || category === "None") return "None";
-    return category;
-  };
-
-  /**
-   * Gets a human-readable adjustment level label
-   * @param {string} level - The adjustment level
-   * @returns {string} The readable adjustment label
-   */
-  const getAdjustmentLabel = (level) => {
-    switch (level) {
-      case "QDTP":
-        return "Quality Differentiated Teaching Practice";
-      case "Supplementary":
-        return "Supplementary adjustments";
-      case "Substantial":
-        return "Substantial adjustments";
-      case "Extensive":
-        return "Extensive adjustments";
-      case "None":
-      default:
-        return level || "None";
-    }
-  };
+  // Get filtered reports
+  const filteredReports = filterReports(reports, students, filters);
 
   return (
     <>
@@ -340,369 +221,63 @@ const NCCDReports = () => {
         </Alert>
       )}
 
-      {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-            <TextField
-              fullWidth
-              label="Search by Student Name"
-              value={nameSearch}
-              onChange={(e) => setNameSearch(e.target.value)}
-              InputProps={{
-                endAdornment: <SearchIcon color="action" />,
-              }}
-            />
-          </Grid>
+      <NCCDReportsFilters
+        nameSearch={filters.nameSearch}
+        statusFilter={filters.statusFilter}
+        studentFilter={filters.studentFilter}
+        students={students}
+        onNameSearchChange={handleNameSearchChange}
+        onStatusFilterChange={handleStatusFilterChange}
+        onStudentFilterChange={handleStudentFilterChange}
+        onClearFilters={handleClearFilters}
+      />
 
-          <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-            {" "}
-            <FormControl fullWidth>
-              <InputLabel>Filter by Status</InputLabel>
-              <Select
-                value={statusFilter}
-                label="Filter by Status"
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <MenuItem value="">All Statuses</MenuItem>
-                <MenuItem value="NotStart">Not Started</MenuItem>
-                <MenuItem value="InProgress">In Progress</MenuItem>
-                <MenuItem value="Approved">Approved</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+      <NCCDReportsTable
+        loading={loading}
+        reports={filteredReports}
+        students={students}
+        onViewReport={handleViewReport}
+        onEditReport={handleEditReport}
+        onDeleteReport={handleDeleteClick}
+      />
 
-          <Grid size={{ xs: 12, sm: 4, md: 3 }}>
-            {" "}
-            <FormControl fullWidth>
-              <InputLabel>Filter by Student</InputLabel>
-              <Select
-                value={studentFilter}
-                label="Filter by Student"
-                onChange={(e) => setStudentFilter(e.target.value)}
-              >
-                <MenuItem value="">All Students</MenuItem>
-                {students.map((student) => (
-                  <MenuItem key={student.id} value={student.id}>
-                    {student.first_name} {student.last_name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          <Grid
-            size={{ xs: 12, sm: 12, md: 3 }}
-            sx={{ display: "flex", justifyContent: "flex-end" }}
-          >
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() => {
-                setNameSearch("");
-                setStatusFilter("");
-                setStudentFilter("");
-              }}
-            >
-              Clear Filters
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Reports Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Student</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Disability</TableCell>
-              <TableCell>Adjustment Level</TableCell>
-              <TableCell>Evidence</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
-                  <CircularProgress size={40} />
-                </TableCell>
-              </TableRow>
-            ) : filteredReports.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
-                  <Typography variant="body1">
-                    No NCCD reports found matching the criteria
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredReports.map((report) => {
-                const student = students.find((s) => s.id === report.student);
-                return (
-                  <TableRow key={report.id}>
-                    <TableCell>
-                      {student
-                        ? `${student.first_name} ${student.last_name}`
-                        : `Student #${report.student}`}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={getStatusLabel(report.status)}
-                        color={getStatusChipColor(report.status)}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {report.has_diagonsed_disability
-                        ? getDisabilityCategoryLabel(report.disability_category)
-                        : "No diagnosed disability"}
-                    </TableCell>
-                    <TableCell>
-                      {getAdjustmentLabel(report.level_of_adjustment)}
-                    </TableCell>
-                    <TableCell>
-                      {report.evidence_url ? (
-                        <Tooltip title="Download Evidence">
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              window.open(report.evidence_url, "_blank")
-                            }
-                          >
-                            <DownloadIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
-                        "None"
-                      )}
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="View Report">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleViewReport(report.id)}
-                        >
-                          <InfoOutlinedIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Edit Report">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleEditReport(report.id)}
-                        >
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete Report">
-                        <IconButton
-                          size="small"
-                          onClick={() => handleDeleteClick(report.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Create/Edit Report Dialog */}
-      <Dialog
+      {/* Dialogs */}
+      <NCCDReportForm
         open={formDialogOpen}
         onClose={() => {
           setFormDialogOpen(false);
           setSelectedReportId(null);
           setSelectedStudentId(null);
         }}
-        maxWidth="md"
-        fullWidth
-      >
-        <NCCDReportForm
-          open={formDialogOpen}
-          onClose={() => {
-            setFormDialogOpen(false);
-            setSelectedReportId(null);
-            setSelectedStudentId(null);
-          }}
-          studentId={selectedStudentId}
-          reportId={selectedReportId}
-          onSuccess={handleFormSuccess}
-          onCancel={() => {
-            setFormDialogOpen(false);
-            setSelectedReportId(null);
-            setSelectedStudentId(null);
-          }}
-          students={students}
-          isSubmitting={reportStatus.isSubmitting}
-        />
-      </Dialog>
+        studentId={selectedStudentId}
+        reportId={selectedReportId}
+        onSuccess={handleFormSuccess}
+        onCancel={() => {
+          setFormDialogOpen(false);
+          setSelectedReportId(null);
+          setSelectedStudentId(null);
+        }}
+        students={students}
+        isSubmitting={reportStatus.isSubmitting}
+      />
 
-      {/* View Report Dialog */}
-      <Dialog
+      <ViewReportDialog
         open={viewDialogOpen}
         onClose={() => setViewDialogOpen(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <Box sx={{ position: "relative", p: 3 }}>
-          <IconButton
-            sx={{ position: "absolute", top: 8, right: 8 }}
-            onClick={() => setViewDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
+        report={viewingReport}
+        students={students}
+        onEdit={(reportId) => {
+          setViewDialogOpen(false);
+          handleEditReport(reportId);
+        }}
+      />
 
-          {viewingReport && (
-            <>
-              <Typography variant="h5" gutterBottom>
-                NCCD Report Details
-              </Typography>
-
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="subtitle2">Student</Typography>
-                  <Typography variant="body1">
-                    {(() => {
-                      const student = students.find(
-                        (s) => s.id === viewingReport.student
-                      );
-                      return student
-                        ? `${student.first_name} ${student.last_name}`
-                        : `Student #${viewingReport.student}`;
-                    })()}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="subtitle2">Status</Typography>
-                  <Chip
-                    label={getStatusLabel(viewingReport.status)}
-                    color={getStatusChipColor(viewingReport.status)}
-                  />
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="subtitle2">
-                    Diagnosed Disability
-                  </Typography>
-                  <Typography variant="body1">
-                    {viewingReport.has_diagonsed_disability ? "Yes" : "No"}
-                  </Typography>
-                </Grid>
-
-                {viewingReport.has_diagonsed_disability && (
-                  <Grid size={{ xs: 12, sm: 6 }}>
-                    <Typography variant="subtitle2">
-                      Disability Category
-                    </Typography>
-                    <Typography variant="body1">
-                      {getDisabilityCategoryLabel(
-                        viewingReport.disability_category
-                      )}
-                    </Typography>
-                  </Grid>
-                )}
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="subtitle2">
-                    Level of Adjustment
-                  </Typography>
-                  <Typography variant="body1">
-                    {getAdjustmentLabel(viewingReport.level_of_adjustment)}
-                  </Typography>
-                </Grid>
-
-                {viewingReport.evidence_url && (
-                  <Grid size={12}>
-                    <Typography variant="subtitle2">
-                      Supporting Evidence
-                    </Typography>
-                    <Button
-                      variant="outlined"
-                      startIcon={<DownloadIcon />}
-                      onClick={() =>
-                        window.open(viewingReport.evidence_url, "_blank")
-                      }
-                      sx={{ mt: 1 }}
-                    >
-                      Download Evidence
-                    </Button>
-                  </Grid>
-                )}
-              </Grid>
-
-              <Box
-                sx={{
-                  mt: 3,
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: 2,
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  onClick={() => setViewDialogOpen(false)}
-                >
-                  Close
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<EditIcon />}
-                  onClick={() => {
-                    setViewDialogOpen(false);
-                    handleEditReport(viewingReport.id);
-                  }}
-                >
-                  Edit Report
-                </Button>
-              </Box>
-            </>
-          )}
-        </Box>
-      </Dialog>
-
-      {/* Confirm Delete Dialog */}
-      <Dialog
+      <DeleteConfirmDialog
         open={confirmDeleteDialogOpen}
         onClose={() => setConfirmDeleteDialogOpen(false)}
-      >
-        <Box sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Confirm Deletion
-          </Typography>
-          <Typography variant="body1">
-            Are you sure you want to delete this NCCD report? This action cannot
-            be undone.
-          </Typography>
-
-          <Box
-            sx={{ mt: 3, display: "flex", justifyContent: "flex-end", gap: 2 }}
-          >
-            <Button
-              variant="outlined"
-              onClick={() => setConfirmDeleteDialogOpen(false)}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleConfirmDelete}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} /> : "Delete"}
-            </Button>
-          </Box>
-        </Box>
-      </Dialog>
+        onConfirm={handleConfirmDelete}
+        loading={reportStatus.isDeleting}
+      />
     </>
   );
 };
