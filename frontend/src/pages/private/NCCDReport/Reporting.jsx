@@ -61,7 +61,7 @@ const NCCDReports = () => {
   const [reportStatus, setReportStatus] = useState({
     isSubmitting: false,
     isUpdating: false,
-    isDeleting: false
+    isDeleting: false,
   });
 
   // Filter state
@@ -161,16 +161,18 @@ const NCCDReports = () => {
    */
   const handleFormSuccess = async (result) => {
     try {
-      setReportStatus(prev => ({ ...prev, isSubmitting: true }));
-      
+      setReportStatus((prev) => ({ ...prev, isSubmitting: true }));
+
       if (selectedReportId) {
         // Update existing report in list
-        setReports(prevReports => 
-          prevReports.map(r => r.id === selectedReportId ? { ...r, ...result } : r)
+        setReports((prevReports) =>
+          prevReports.map((r) =>
+            r.id === selectedReportId ? { ...r, ...result } : r
+          )
         );
       } else {
         // Add new report to list
-        setReports(prevReports => [...prevReports, result]);
+        setReports((prevReports) => [...prevReports, result]);
       }
 
       // Reset form state
@@ -180,7 +182,7 @@ const NCCDReports = () => {
     } catch (error) {
       setError("Failed to save report: " + (error.message || ""));
     } finally {
-      setReportStatus(prev => ({ ...prev, isSubmitting: false }));
+      setReportStatus((prev) => ({ ...prev, isSubmitting: false }));
     }
   };
 
@@ -233,16 +235,18 @@ const NCCDReports = () => {
    */
   const handleConfirmDelete = async () => {
     try {
-      setReportStatus(prev => ({ ...prev, isDeleting: true }));
+      setReportStatus((prev) => ({ ...prev, isDeleting: true }));
       await api.nccdReports.delete(selectedReportId);
 
       // Remove deleted report from state
-      setReports(prevReports => prevReports.filter((r) => r.id !== selectedReportId));
+      setReports((prevReports) =>
+        prevReports.filter((r) => r.id !== selectedReportId)
+      );
       setConfirmDeleteDialogOpen(false);
     } catch (error) {
       setError("Failed to delete report: " + (error.message || ""));
     } finally {
-      setReportStatus(prev => ({ ...prev, isDeleting: false }));
+      setReportStatus((prev) => ({ ...prev, isDeleting: false }));
     }
   };
 
@@ -324,9 +328,7 @@ const NCCDReports = () => {
         }}
       >
         <Box>
-          <Typography variant="h4">
-            NCCD Reports
-          </Typography>
+          <Typography variant="h4">NCCD Reports</Typography>
           <Typography variant="caption" color="text.secondary">
             Manage Nationally Consistent Collection of Data on School Students
             with Disability reports
