@@ -62,12 +62,6 @@ const Tutorial = () => {
       position: "left",
     },
     {
-      title: "AI Assistant",
-      content: "Get help with planning and assessments.",
-      target: '[data-tutorial="ai-assistant"]',
-      position: "left",
-    },
-    {
       title: "Settings",
       content: "Customize your experience and manage your profile.",
       target: '[data-tutorial="account"]',
