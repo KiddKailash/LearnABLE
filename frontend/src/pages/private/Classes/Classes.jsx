@@ -286,11 +286,11 @@ const Classes = () => {
           mb={4}
         >
           <Box>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
+            <Typography variant="h4" fontWeight="bold">
               My Classes
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Manage classes and students for your school
+              Manage Classes, Students, and Adapt Learning Content for Learning Needs Students
             </Typography>
           </Box>
           <Button

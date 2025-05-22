@@ -319,7 +319,7 @@ const NCCDReports = () => {
       >
         <Box>
           <Typography variant="h4">NCCD Reports</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="body1" color="text.secondary">
             Manage Nationally Consistent Collection of Data on School Students
             with Disability reports
           </Typography>
