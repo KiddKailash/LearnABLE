@@ -25,7 +25,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 
 // MUI Icons
-import DeleteIcon from "@mui/icons-material/Delete";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
 
 /**
  * DeleteAccountTab component that manages account deletion process
