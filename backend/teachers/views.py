@@ -269,14 +269,14 @@ def upload_profile_pic(request):
     Uploads or updates the profile picture for a teacher identified by email.
     Accepts multipart/form-data with fields:
         - email (string)
-        - profile_pic (file)
+        - profile_picture (file)
 
     Returns:
         JSON response with success message and URL of uploaded picture,
         or error if teacher not found or missing inputs.
     """
     email = request.data.get("email")
-    file = request.FILES.get("profile_pic")
+    file = request.FILES.get("profile_picture")
 
     if not email or not file:
         return Response({"error": "Email and profile picture are required."}, status=400)
@@ -284,11 +284,11 @@ def upload_profile_pic(request):
     try:
         user = User.objects.get(email=email)
         teacher = user.teacher
-        teacher.profile_pic = file
+        teacher.profile_picture = file
         teacher.save()
         return Response({
             "message": "Profile picture updated successfully!",
-            "profile_pic": teacher.profile_pic.url
+            "profile_picture": teacher.profile_pic.url
         })
     except (User.DoesNotExist, Teacher.DoesNotExist):
         return Response({"error": "Teacher not found."}, status=404)
