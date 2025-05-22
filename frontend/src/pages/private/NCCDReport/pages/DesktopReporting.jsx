@@ -10,8 +10,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 // Local Imports
-import NCCDReportForm from "./NCCDReportForm";
-import api from "../../../services/api";
+import NCCDReportForm from "../components/NCCDReportForm";
+import api from "../../../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";

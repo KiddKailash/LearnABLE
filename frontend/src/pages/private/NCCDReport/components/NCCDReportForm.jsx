@@ -43,10 +43,10 @@ import GavelIcon from "@mui/icons-material/Gavel";
 import CommentIcon from "@mui/icons-material/Comment";
 
 // Context
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
 
 // Services
-import api from "../../../services/api";
+import api from "../../../../services/api";
 
 // Add styled components
 const StyledCard = styled(Card)(({ theme }) => ({

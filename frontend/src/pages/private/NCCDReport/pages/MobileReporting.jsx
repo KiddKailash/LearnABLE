@@ -7,8 +7,8 @@
  */
 
 import React, { useState, useEffect, useContext } from "react";
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
-import api from "../../../services/api";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
+import api from "../../../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";
