@@ -28,7 +28,7 @@ import Add from "@mui/icons-material/Add";
 import Save from "@mui/icons-material/Save";
 
 // Local Imports
-import StudentFormDialog from "../../Classes/StudentFormDialog";
+import StudentFormDialog from "../../Classes/components/StudentFormDialog";
 
 const StudentListPage = ({
   students,

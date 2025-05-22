@@ -35,8 +35,8 @@ import Menu from "@mui/icons-material/Menu";
 
 import { SnackbarContext } from "../../../contexts/SnackbarContext";
 import api from "../../../services/api";
-import StudentFormDialog from "./StudentFormDialog";
-import ClassCreationStepper from "./ClassCreationStepper";
+import StudentFormDialog from "./components/StudentFormDialog";
+import ClassCreationStepper from "./components/ClassCreationStepper";
 
 const Classes = () => {
   const navigate = useNavigate();
@@ -68,15 +68,15 @@ const Classes = () => {
 
   useEffect(() => {
     fetchClasses();
-    
+
     // Check for query parameter to open class creation dialog
     const queryParams = new URLSearchParams(location.search);
-    if (queryParams.get('create') === 'true') {
+    if (queryParams.get("create") === "true") {
       // Open the class creation dialog
       setClassCreationOpen(true);
-      
+
       // Remove the query parameter without refreshing the page
-      navigate('/classes', { replace: true });
+      navigate("/classes", { replace: true });
     }
     //eslint-disable-next-line
   }, [location]); // Add location dependency
@@ -251,7 +251,8 @@ const Classes = () => {
       "#880E4F40", // pink with opacity
     ];
 
-    const colors = theme.palette.mode === "dark" ? darkModeColors : lightModeColors;
+    const colors =
+      theme.palette.mode === "dark" ? darkModeColors : lightModeColors;
 
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -284,9 +285,14 @@ const Classes = () => {
           alignItems="center"
           mb={4}
         >
-          <Typography variant="h4" fontWeight="bold">
-            My Classes
-          </Typography>
+          <Box>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>
+              My Classes
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Manage classes and students for your school
+            </Typography>
+          </Box>
           <Button
             variant="contained"
             color="primary"
@@ -331,10 +337,17 @@ const Classes = () => {
                     flexDirection: "column",
                     borderRadius: 2,
                     transition: "transform 0.2s, box-shadow 0.2s",
-                    bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "background.paper",
-                    border: theme.palette.mode === "dark" 
-                      ? `1px solid ${getRandomColor(cls.class_name).replace(/40$/, "30")}` // slightly more subtle border
-                      : "none",
+                    bgcolor:
+                      theme.palette.mode === "dark"
+                        ? "rgba(255,255,255,0.05)"
+                        : "background.paper",
+                    border:
+                      theme.palette.mode === "dark"
+                        ? `1px solid ${getRandomColor(cls.class_name).replace(
+                            /40$/,
+                            "30"
+                          )}` // slightly more subtle border
+                        : "none",
                     "&:hover": {
                       transform: "translateY(-4px)",
                       boxShadow: 6,
@@ -395,27 +408,34 @@ const Classes = () => {
                           alignItems: "center",
                           gap: 2,
                           // Add a subtle gradient overlay for texture
-                          backgroundImage: theme.palette.mode === "dark" 
-                            ? 'linear-gradient(rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)'
-                            : 'linear-gradient(rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 100%)',
+                          backgroundImage:
+                            theme.palette.mode === "dark"
+                              ? "linear-gradient(rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%)"
+                              : "linear-gradient(rgba(0,0,0,0.02) 0%, rgba(0,0,0,0) 100%)",
                         }}
                       >
                         {/* Update Avatar to have a consistent color scheme */}
-                        <Avatar sx={{ 
-                          bgcolor: theme.palette.mode === "dark" 
-                            ? "rgba(255,255,255,0.15)" 
-                            : theme.palette.primary.main,
-                          color: theme.palette.mode === "dark" 
-                            ? "white" 
-                            : "white",
-                        }}>
+                        <Avatar
+                          sx={{
+                            bgcolor:
+                              theme.palette.mode === "dark"
+                                ? "rgba(255,255,255,0.15)"
+                                : theme.palette.primary.main,
+                            color:
+                              theme.palette.mode === "dark" ? "white" : "white",
+                          }}
+                        >
                           {getInitials(cls.class_name)}
                         </Avatar>
                         <Box>
                           <Typography
                             variant="h6"
                             // Update text color to be adaptive based on background
-                            color={theme.palette.mode === "dark" ? "white" : "text.primary"}
+                            color={
+                              theme.palette.mode === "dark"
+                                ? "white"
+                                : "text.primary"
+                            }
                             fontWeight="medium"
                           >
                             {cls.class_name}
@@ -424,12 +444,14 @@ const Classes = () => {
                             label={"Grade " + cls.year_level || "No grade"}
                             size="small"
                             sx={{
-                              bgcolor: theme.palette.mode === "dark" 
-                                ? "rgba(255,255,255,0.1)" 
-                                : "rgba(0,0,0,0.08)",
-                              color: theme.palette.mode === "dark" 
-                                ? "white" 
-                                : "text.primary",
+                              bgcolor:
+                                theme.palette.mode === "dark"
+                                  ? "rgba(255,255,255,0.1)"
+                                  : "rgba(0,0,0,0.08)",
+                              color:
+                                theme.palette.mode === "dark"
+                                  ? "white"
+                                  : "text.primary",
                               mt: 0.5,
                             }}
                           />
@@ -450,9 +472,7 @@ const Classes = () => {
                             variant="outlined"
                             fullWidth
                             size="medium"
-                            onClick={() =>
-                              handleViewStudents(cls)
-                            }
+                            onClick={() => handleViewStudents(cls)}
                             sx={{
                               justifyContent: "flex-start",
                               textTransform: "none",
@@ -465,9 +485,7 @@ const Classes = () => {
                             variant="outlined"
                             fullWidth
                             size="medium"
-                            onClick={() =>
-                              handleUploadMaterial(cls)
-                            }
+                            onClick={() => handleUploadMaterial(cls)}
                             sx={{
                               justifyContent: "flex-start",
                               textTransform: "none",

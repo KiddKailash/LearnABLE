@@ -7,9 +7,9 @@
 import React, { useState, useRef, useContext } from "react";
 
 // Context and Services
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
-import api from "../../../services/api";
-import { API_BASE_URL } from "../../../services/config";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
+import api from "../../../../services/api";
+import { API_BASE_URL } from "../../../../services/config";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -36,7 +36,7 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import DescriptionIcon from "@mui/icons-material/Description";
 
 // Custom Components
-import FileUploadZone from "../../../components/FileUploadZone";
+import FileUploadZone from "../../../../components/FileUploadZone";
 
 // Constants
 const STEPS = [
