@@ -270,7 +270,7 @@ const NCCDReports = () => {
    * @returns {string} The readable category label
    */
   const getDisabilityCategoryLabel = (category) => {
-    if (!category) return "None";
+    if (!category || category === "None") return "None";
     return category;
   };
 
@@ -283,6 +283,13 @@ const NCCDReports = () => {
     switch (level) {
       case "QDTP":
         return "Quality Differentiated Teaching Practice";
+      case "Supplementary":
+        return "Supplementary adjustments";
+      case "Substantial":
+        return "Substantial adjustments";
+      case "Extensive":
+        return "Extensive adjustments";
+      case "None":
       default:
         return level || "None";
     }
@@ -447,12 +454,12 @@ const NCCDReports = () => {
                       {getAdjustmentLabel(report.level_of_adjustment)}
                     </TableCell>
                     <TableCell>
-                      {report.evidence ? (
+                      {report.evidence_url ? (
                         <Tooltip title="Download Evidence">
                           <IconButton
                             size="small"
                             onClick={() =>
-                              window.open(report.evidence, "_blank")
+                              window.open(report.evidence_url, "_blank")
                             }
                           >
                             <DownloadIcon fontSize="small" />
@@ -589,7 +596,7 @@ const NCCDReports = () => {
                   </Typography>
                 </Grid>
 
-                {viewingReport.evidence && (
+                {viewingReport.evidence_url && (
                   <Grid size={12}>
                     <Typography variant="subtitle2">
                       Supporting Evidence
@@ -598,7 +605,7 @@ const NCCDReports = () => {
                       variant="outlined"
                       startIcon={<DownloadIcon />}
                       onClick={() =>
-                        window.open(viewingReport.evidence, "_blank")
+                        window.open(viewingReport.evidence_url, "_blank")
                       }
                       sx={{ mt: 1 }}
                     >

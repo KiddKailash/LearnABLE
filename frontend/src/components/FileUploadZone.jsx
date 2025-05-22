@@ -8,8 +8,8 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 
 // MUI Icons
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import DeleteIcon from "@mui/icons-material/Delete";
+import CheckCircleIcon from "@mui/icons-material/CheckCircleOutlineRounded";
+import DeleteIcon from "@mui/icons-material/DeleteOutlineRounded";
 
 /**
  * A reusable file upload zone component that supports drag & drop

@@ -45,6 +45,16 @@ const nccdReportsApi = {
   },
 
   /**
+   * Retrieves a single NCCD report by ID
+   * 
+   * @param {string|number} id - The report ID
+   * @returns {Promise<Object>} The NCCD report data
+   */
+  get: async (id) => {
+    return httpClient.get(`/api/nccdreports/${id}/`);
+  },
+
+  /**
    * Retrieves NCCD reports for a specific student
    * 
    * @param {string|number} studentId - The student ID

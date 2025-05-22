@@ -16,8 +16,8 @@ import Divider from "@mui/material/Divider";
 import Fade from "@mui/material/Fade";
 
 // MUI Icons
-import HomeIcon from "@mui/icons-material/Home";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import HomeIcon from "@mui/icons-material/HomeRounded";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutlineRounded";
 
 // Utils
 import { getErrorInfo } from "../utils/errorHandling";

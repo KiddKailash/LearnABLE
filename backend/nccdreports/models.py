@@ -25,6 +25,8 @@ class NCCDreport(models.Model):
         default='None'
     )
     evidence = models.FileField(upload_to='nccdreports/')
+    under_dda = models.BooleanField(default=False)
+    additional_comments = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.student.first_name} {self.student.last_name}"

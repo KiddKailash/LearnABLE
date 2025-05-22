@@ -13,7 +13,6 @@ import { Card, CardContent } from "@mui/material";
 //MUI imports
 import Box from "@mui/material/Box";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
@@ -191,10 +190,11 @@ const NCCDReportForm = ({
 
       try {
         setLoading(true);
-        const reportData = await api.nccdReports.get(reportId);
+        const response = await api.nccdReports.get(reportId);
+        const reportData = response.data || response; // Handle response format
 
         setFormValues({
-          evidence: reportData.has_evidence ? "Yes" : "No",
+          evidence: reportData.evidence_url ? "Yes" : "No", // Use evidence_url instead of evidence
           levelOfAdjustment: reportData.level_of_adjustment || "",
           disabilityCategory: reportData.disability_category || "",
           underDDA: reportData.under_dda ? "Yes" : "No",
