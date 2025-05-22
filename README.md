@@ -1,4 +1,5 @@
 # LearnABLE - Inclusive Learning Support Platform
+Visit the (Production Website)[https://learn-able.vercel.app/].
 
 LearnABLE is a comprehensive educational platform designed to support inclusive learning environments by providing personalized educational content and automated NCCD (Nationally Consistent Collection of Data) reporting tools for teachers and students.
 
@@ -57,18 +58,17 @@ cd LearnABLE
 
 2. Set up the frontend:
 ```bash
-cd frontend
-npm install
-npm start
+cd frontend                     # Navigate into Backend Directory
+npm install                     # Install Frontend Dependencies
+npm start                       # Begin the Server
 ```
 
 3. Set up the backend:
 ```bash
-cd ../backend               # Navigate into Backend Directory
-poetry install              # Install Backend Dependencies
-poetry shell                # Activate the Virtual Environment
-python manage.py migrate    # Apply database migrations
-python manage.py runserver  # Begin the Server
+cd /backend                     # Navigate into Backend Directory
+poetry install                  # Install Backend Dependencies
+eval "$(poetry env activate)"   # Activate Virtual Environment
+python manage.py runserver      # Begin the Server
 ```
 
 For detailed setup instructions, please refer to the README files in the respective directories:
@@ -81,7 +81,6 @@ The project follows a standard development workflow:
 
 1. Frontend development server runs on http://localhost:3000
 2. Backend development server runs on http://localhost:8000
-3. The backend API can be accessed at http://localhost:8000/api/
 
 ## Data Dependencies
 
@@ -92,15 +91,3 @@ This application requires:
 - NCCD reporting requirements (built into the system logic)
 
 All data is stored in PostgreSQL and managed through the Django ORM.
-
-## Contributing
-
-Please read our contributing guidelines before submitting pull requests.
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support, please open an issue in the GitHub repository.
