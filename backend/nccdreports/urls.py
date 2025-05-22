@@ -26,7 +26,8 @@ from .views import (
     get_reports_by_student,
     ensure_reports_for_class,
     create_lesson_effectiveness,
-    get_effectiveness_trend
+    get_effectiveness_trend,
+    students_without_nccd_report
 )
 
 # URL patterns for the NCCD Reports module
@@ -44,6 +45,7 @@ urlpatterns = [
     path('create-lesson-effectiveness/<int:report_id>/', create_lesson_effectiveness, name='create_lesson_effectiveness'),
     # Get the effectiveness trend data for a student
     path('effectiveness-trend/<int:student_id>/', get_effectiveness_trend, name='effectiveness-trend'),
+    path('students/no-nccd-report/', students_without_nccd_report, name="no_nccd_report"),
 ]
 
 # Serve media files (like uploaded evidence) during development

@@ -11,8 +11,8 @@ import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
 // Import both reporting components
-import NCCDReports from "./Reporting.jsx";
-import MobileReportingPage from "./MobileReporting.jsx";
+import NCCDReports from "./pages/DesktopReporting.jsx";
+import MobileReportingPage from "./pages/MobileReporting.jsx";
 
 /**
  * Responsive wrapper component that renders either the desktop or mobile version

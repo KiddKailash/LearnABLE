@@ -14,6 +14,7 @@
  */
 
 import React, { createContext, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import authApi from "../services/authApi";
@@ -48,7 +49,7 @@ export const UserProvider = ({ children }) => {
   
   const navigate = useNavigate();
   const tutorialContext = useTutorial();
-
+  const location = useLocation();
   /**
    * Updates user information in context
    * @param {Object} info - User information to update
@@ -294,10 +295,10 @@ export const UserProvider = ({ children }) => {
   const get2FAStatus = async () => {
     try {
       // If we already have 2FA status in the user object, return it
-      if (user && typeof user.two_factor_enabled === 'boolean') {
+      if (user && typeof user?.two_factor_enabled === 'boolean') {
         return { 
           success: true, 
-          two_factor_enabled: user.two_factor_enabled 
+          two_factor_enabled: user?.two_factor_enabled 
         };
       }
       
@@ -466,7 +467,7 @@ export const UserProvider = ({ children }) => {
     
     autoLogin();
     //eslint-disable-next-line
-  }, []);
+  }, [isLoggedIn, location.pathname]); // Reload whenever Logged In state changes
 
   return (
     <UserContext.Provider

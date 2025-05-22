@@ -12,8 +12,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 
 // MUI Icons
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import VisibilityIcon from "@mui/icons-material/VisibilityRounded";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOffRounded";
 
 /**
  * PasswordField component that provides a password input with visibility toggle

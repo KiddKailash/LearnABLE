@@ -21,56 +21,37 @@ import { UserProvider, default as UserContext } from "./store/UserObject";
 import { TutorialProvider } from "./contexts/TutorialContext";
 
 // MUI imports
-import { 
-  ThemeProvider, 
-  useColorScheme,
-  getInitColorSchemeScript
-} from "@mui/material/styles";
+import { ThemeProvider, useColorScheme } from "@mui/material/styles";
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import CssBaseline from "@mui/material/CssBaseline";
 import { getTheme } from "./styles/global-styling";
 
-const ThemeWrapper = () => {
+const Root = () => {
   const { user } = useContext(UserContext);
-  const { setMode, mode } = useColorScheme();
+  const { mode, setMode } = useColorScheme();
+  const theme = React.useMemo(() => getTheme(), []);
 
   // Update color scheme when user preferences change
   useEffect(() => {
-    if (user?.theme_preference) {
-      // Save the preference to localStorage for persistence between sessions
-      localStorage.setItem('theme_preference', user.theme_preference);
-      
-      // Update the theme mode
-      setMode(user.theme_preference);
+    if (user?.preferences?.theme) {
+      setMode(user?.preferences?.theme);
     }
   }, [user, setMode]);
 
   return (
-    <SnackbarProvider>
-      <App mode={mode} />
-    </SnackbarProvider>
-  );
-};
-
-const Root = () => {
-  const theme = getTheme();
-  
-  return (
-      <Router>
-        <ThemeProvider 
-          theme={theme}
-          defaultMode="system"
-          colorSchemeSelector=".mode-$mode" 
-          modeStorageKey="theme_preference"
-        >
-          <CssBaseline />
-          <TutorialProvider>
-            <UserProvider>
-              {getInitColorSchemeScript({ defaultMode: "system" })}
-              <ThemeWrapper />
-            </UserProvider>
-          </TutorialProvider>
-        </ThemeProvider>
-      </Router>
+    <Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <TutorialProvider>
+          <UserProvider>
+            <InitColorSchemeScript />
+            <SnackbarProvider>
+              <App />
+            </SnackbarProvider>
+          </UserProvider>
+        </TutorialProvider>
+      </ThemeProvider>
+    </Router>
   );
 };
 

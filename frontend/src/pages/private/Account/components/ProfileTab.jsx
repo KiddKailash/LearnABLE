@@ -17,7 +17,7 @@ import Paper from "@mui/material/Paper";
 
 // MUI Icons
 import ProfileAvatar from "./ProfileAvatar";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
+import PhotoCameraIcon from "@mui/icons-material/PhotoCameraRounded";
 
 /**
  * ProfileTab component that manages user profile information
@@ -43,7 +43,6 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
  */
 const ProfileTab = ({
   profile,
-  user,
   firstName,
   setFirstName,
   lastName,
@@ -87,11 +86,10 @@ const ProfileTab = ({
           <Box sx={{ mr: 3 }}>
             <ProfileAvatar
               src={profile?.profile_picture || null}
-              alt={user?.first_name || "User"}
+              alt={firstName || "User"}
               sx={{ width: 100, height: 100 }}
             >
-              {!profile?.profile_picture &&
-                (user?.first_name?.charAt(0) || "P")}
+              {!profile?.profile_picture && (firstName.charAt(0) || "P")}
             </ProfileAvatar>
           </Box>
 
@@ -135,7 +133,6 @@ const ProfileTab = ({
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               variant="outlined"
-              
             />
           </Grid>
 
@@ -147,7 +144,6 @@ const ProfileTab = ({
               onChange={(e) => setPhoneNumber(e.target.value)}
               variant="outlined"
               placeholder="Optional contact number"
-              
             />
           </Grid>
         </Grid>
@@ -176,7 +172,6 @@ const ProfileTab = ({
               onChange={(e) => setSchool(e.target.value)}
               variant="outlined"
               placeholder="Where do you teach?"
-              
             />
           </Grid>
 
@@ -188,7 +183,6 @@ const ProfileTab = ({
               onChange={(e) => setSpecialty(e.target.value)}
               variant="outlined"
               placeholder="Your main teaching subject"
-              
             />
           </Grid>
 
@@ -202,7 +196,6 @@ const ProfileTab = ({
               multiline
               rows={4}
               placeholder="Tell us a bit about yourself and your teaching experience"
-              
             />
           </Grid>
         </Grid>

@@ -3,15 +3,15 @@
  * @description Main component for managing NCCD reports, providing a comprehensive interface
  * for viewing, creating, editing, and deleting reports. Includes filtering, search, and
  * detailed report management capabilities.
- * 
+ *
  */
 
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 // Local Imports
-import NCCDReportForm from "./NCCDReportForm";
-import api from "../../../services/api";
+import NCCDReportForm from "../components/NCCDReportForm";
+import api from "../../../../services/api";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -38,17 +38,17 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
 // MUI Icons
-import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
-import EditIcon from "@mui/icons-material/Edit";
-import DownloadIcon from "@mui/icons-material/Download";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import DeleteIcon from "@mui/icons-material/Delete";
-import CloseIcon from "@mui/icons-material/Close";
+import SearchIcon from "@mui/icons-material/SearchRounded";
+import AddIcon from "@mui/icons-material/AddRounded";
+import EditIcon from "@mui/icons-material/EditRounded";
+import DownloadIcon from "@mui/icons-material/DownloadRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoRounded";
+import DeleteIcon from "@mui/icons-material/DeleteRounded";
+import CloseIcon from "@mui/icons-material/CloseRounded";
 
 /**
  * Main component for managing NCCD reports
- * 
+ *
  * @component
  * @returns {JSX.Element} The NCCD reports management interface
  */
@@ -58,6 +58,11 @@ const NCCDReports = () => {
   const [reports, setReports] = useState([]);
   const [students, setStudents] = useState([]);
   const [error, setError] = useState("");
+  const [reportStatus, setReportStatus] = useState({
+    isSubmitting: false,
+    isUpdating: false,
+    isDeleting: false,
+  });
 
   // Filter state
   const [statusFilter, setStatusFilter] = useState("");
@@ -81,6 +86,7 @@ const NCCDReports = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError("");
 
         // Fetch reports and students in parallel
         const [reportsData, studentsData] = await Promise.all([
@@ -103,14 +109,18 @@ const NCCDReports = () => {
   // Handle URL parameters for new report creation
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const shouldOpenForm = queryParams.get('newReport') === 'true';
-    
+    const shouldOpenForm = queryParams.get("newReport") === "true";
+    const studentId = queryParams.get("studentId");
+
     if (shouldOpenForm && students.length > 0) {
+      if (studentId) {
+        setSelectedStudentId(studentId);
+      }
       setFormDialogOpen(true);
-      
+
       // Clean up the URL without causing a page reload
-      const newUrl = window.location.pathname; 
-      window.history.replaceState({}, '', newUrl);
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
     }
   }, [location, students]);
 
@@ -135,7 +145,8 @@ const NCCDReports = () => {
 
     // Apply name search
     if (nameSearch) {
-      const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
+      const fullName =
+        `${student.first_name} ${student.last_name}`.toLowerCase();
       if (!fullName.includes(nameSearch.toLowerCase())) {
         return false;
       }
@@ -145,13 +156,34 @@ const NCCDReports = () => {
   });
 
   /**
-   * Handles opening the create report form for a student
-   * @param {string} studentId - ID of the student
+   * Handles successful form submission
+   * @param {Object} result - The submitted report data
    */
-  const handleCreateReport = (studentId) => {
-    setSelectedStudentId(studentId);
-    setSelectedReportId(null);
-    setFormDialogOpen(true);
+  const handleFormSuccess = async (result) => {
+    try {
+      setReportStatus((prev) => ({ ...prev, isSubmitting: true }));
+
+      if (selectedReportId) {
+        // Update existing report in list
+        setReports((prevReports) =>
+          prevReports.map((r) =>
+            r.id === selectedReportId ? { ...r, ...result } : r
+          )
+        );
+      } else {
+        // Add new report to list
+        setReports((prevReports) => [...prevReports, result]);
+      }
+
+      // Reset form state
+      setSelectedReportId(null);
+      setSelectedStudentId(null);
+      setFormDialogOpen(false);
+    } catch (error) {
+      setError("Failed to save report: " + (error.message || ""));
+    } finally {
+      setReportStatus((prev) => ({ ...prev, isSubmitting: false }));
+    }
   };
 
   /**
@@ -193,38 +225,19 @@ const NCCDReports = () => {
    */
   const handleConfirmDelete = async () => {
     try {
-      setLoading(true);
+      setReportStatus((prev) => ({ ...prev, isDeleting: true }));
       await api.nccdReports.delete(selectedReportId);
 
       // Remove deleted report from state
-      setReports(reports.filter((r) => r.id !== selectedReportId));
-
+      setReports((prevReports) =>
+        prevReports.filter((r) => r.id !== selectedReportId)
+      );
       setConfirmDeleteDialogOpen(false);
     } catch (error) {
       setError("Failed to delete report: " + (error.message || ""));
     } finally {
-      setLoading(false);
+      setReportStatus((prev) => ({ ...prev, isDeleting: false }));
     }
-  };
-
-  /**
-   * Handles successful form submission
-   * @param {Object} result - The submitted report data
-   */
-  const handleFormSuccess = (result) => {
-    if (selectedReportId) {
-      // Update existing report in list
-      setReports(
-        reports.map((r) =>
-          r.id === selectedReportId ? { ...r, ...result } : r
-        )
-      );
-    } else {
-      // Add new report to list
-      setReports([...reports, result]);
-    }
-
-    setFormDialogOpen(false);
   };
 
   /**
@@ -269,7 +282,7 @@ const NCCDReports = () => {
    * @returns {string} The readable category label
    */
   const getDisabilityCategoryLabel = (category) => {
-    if (!category) return "None";
+    if (!category || category === "None") return "None";
     return category;
   };
 
@@ -282,6 +295,13 @@ const NCCDReports = () => {
     switch (level) {
       case "QDTP":
         return "Quality Differentiated Teaching Practice";
+      case "Supplementary":
+        return "Supplementary adjustments";
+      case "Substantial":
+        return "Substantial adjustments";
+      case "Extensive":
+        return "Extensive adjustments";
+      case "None":
       default:
         return level || "None";
     }
@@ -289,11 +309,16 @@ const NCCDReports = () => {
 
   return (
     <>
-      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Box>
-          <Typography variant="h4" gutterBottom>
-            NCCD Reports
-          </Typography>
+          <Typography variant="h4">NCCD Reports</Typography>
           <Typography variant="body1" color="text.secondary">
             Manage Nationally Consistent Collection of Data on School Students
             with Disability reports
@@ -305,7 +330,7 @@ const NCCDReports = () => {
           onClick={() => setFormDialogOpen(true)}
           disabled={!students.length}
         >
-          New NCCD Report
+          New Report
         </Button>
       </Box>
 
@@ -366,14 +391,17 @@ const NCCDReports = () => {
             </FormControl>
           </Grid>
 
-          <Grid size={{ xs: 12, sm: 12, md: 3 }} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Grid
+            size={{ xs: 12, sm: 12, md: 3 }}
+            sx={{ display: "flex", justifyContent: "flex-end" }}
+          >
             <Button
               variant="outlined"
               color="error"
               onClick={() => {
-                setNameSearch('');
-                setStatusFilter('');
-                setStudentFilter('');
+                setNameSearch("");
+                setStatusFilter("");
+                setStudentFilter("");
               }}
             >
               Clear Filters
@@ -436,12 +464,12 @@ const NCCDReports = () => {
                       {getAdjustmentLabel(report.level_of_adjustment)}
                     </TableCell>
                     <TableCell>
-                      {report.evidence ? (
+                      {report.evidence_url ? (
                         <Tooltip title="Download Evidence">
                           <IconButton
                             size="small"
                             onClick={() =>
-                              window.open(report.evidence, "_blank")
+                              window.open(report.evidence_url, "_blank")
                             }
                           >
                             <DownloadIcon fontSize="small" />
@@ -488,26 +516,32 @@ const NCCDReports = () => {
       {/* Create/Edit Report Dialog */}
       <Dialog
         open={formDialogOpen}
-        onClose={() => setFormDialogOpen(false)}
+        onClose={() => {
+          setFormDialogOpen(false);
+          setSelectedReportId(null);
+          setSelectedStudentId(null);
+        }}
         maxWidth="md"
         fullWidth
       >
-        <Box sx={{ position: "relative" }}>
-          <IconButton
-            sx={{ position: "absolute", top: 8, right: 8, zIndex: 1 }}
-            onClick={() => setFormDialogOpen(false)}
-          >
-            <CloseIcon />
-          </IconButton>
-          <NCCDReportForm
-            studentId={
-              selectedStudentId || (students.length > 0 ? students[0].id : null)
-            }
-            reportId={selectedReportId}
-            onSuccess={handleFormSuccess}
-            onCancel={() => setFormDialogOpen(false)}
-          />
-        </Box>
+        <NCCDReportForm
+          open={formDialogOpen}
+          onClose={() => {
+            setFormDialogOpen(false);
+            setSelectedReportId(null);
+            setSelectedStudentId(null);
+          }}
+          studentId={selectedStudentId}
+          reportId={selectedReportId}
+          onSuccess={handleFormSuccess}
+          onCancel={() => {
+            setFormDialogOpen(false);
+            setSelectedReportId(null);
+            setSelectedStudentId(null);
+          }}
+          students={students}
+          isSubmitting={reportStatus.isSubmitting}
+        />
       </Dialog>
 
       {/* View Report Dialog */}
@@ -585,7 +619,7 @@ const NCCDReports = () => {
                   </Typography>
                 </Grid>
 
-                {viewingReport.evidence && (
+                {viewingReport.evidence_url && (
                   <Grid size={12}>
                     <Typography variant="subtitle2">
                       Supporting Evidence
@@ -594,7 +628,7 @@ const NCCDReports = () => {
                       variant="outlined"
                       startIcon={<DownloadIcon />}
                       onClick={() =>
-                        window.open(viewingReport.evidence, "_blank")
+                        window.open(viewingReport.evidence_url, "_blank")
                       }
                       sx={{ mt: 1 }}
                     >

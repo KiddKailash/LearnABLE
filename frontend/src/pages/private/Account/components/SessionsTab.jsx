@@ -22,8 +22,8 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
 // MUI Icons
-import DevicesIcon from "@mui/icons-material/Devices";
-import LogoutIcon from "@mui/icons-material/Devices";
+import DevicesIcon from "@mui/icons-material/DevicesRounded";
+import LogoutIcon from "@mui/icons-material/DevicesRounded";
 
 /**
  * SessionsTab component that manages active user sessions

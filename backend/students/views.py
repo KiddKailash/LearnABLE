@@ -269,3 +269,32 @@ def upload_csv_to_class(request):
         "added": added_count,
         "duplicates": duplicates,
     }, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_students_with_disabilities(request):
+    """
+    Retrieve all students with non-empty decrypted disability info
+    associated with the authenticated teacher.
+
+    Returns:
+        HTTP 200 with serialized list of students.
+    """
+    from utils.encryption import decrypt
+
+    try:
+        teacher = Teacher.objects.get(user=request.user)
+        classes = Classes.objects.filter(teacher=teacher)
+        students = Student.objects.filter(classes__in=classes).distinct()
+
+        eligible = []
+        for student in students:
+            decrypted = decrypt(student._disability_info) if student._disability_info else ''
+            if decrypted.strip():
+                eligible.append(student)
+
+        serializer = StudentSerializer(eligible, many=True)
+        return Response(serializer.data)
+
+    except Teacher.DoesNotExist:
+        return Response({"error": "No teacher profile found for this user"}, status=400)

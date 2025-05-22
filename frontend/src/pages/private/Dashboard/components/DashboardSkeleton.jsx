@@ -1,15 +1,15 @@
 /**
  * @fileoverview DashboardSkeleton component for displaying loading state
- * 
+ *
  * @module DashboardSkeleton
  */
 
-import React from 'react';
+import React from "react";
 
 // MUI Components
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Skeleton from '@mui/material/Skeleton';
+import Box from "@mui/material/Box";
+import Grid from "@mui/material/Grid";
+import Skeleton from "@mui/material/Skeleton";
 
 /**
  * DashboardSkeleton component for displaying loading state
@@ -26,7 +26,7 @@ const DashboardSkeleton = () => {
       {/* Stat cards skeleton */}
       <Grid container spacing={2} sx={{ mb: 2 }}>
         {[1, 2].map((i) => (
-          <Grid xs={12} sm={6} key={i}>
+          <Grid size={{ xs: 12, sm: 6 }} key={i}>
             <Skeleton variant="rounded" height={120} />
           </Grid>
         ))}
@@ -35,7 +35,7 @@ const DashboardSkeleton = () => {
       {/* Content area skeleton */}
       <Grid container spacing={2}>
         {[1, 2].map((i) => (
-          <Grid xs={12} md={6} key={i}>
+          <Grid size={{ xs: 12, md: 6 }} key={i}>
             <Skeleton variant="rounded" height={350} />
           </Grid>
         ))}
@@ -44,4 +44,4 @@ const DashboardSkeleton = () => {
   );
 };
 
-export default DashboardSkeleton; 
+export default DashboardSkeleton;

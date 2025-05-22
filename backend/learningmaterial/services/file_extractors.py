@@ -9,43 +9,78 @@ from pptx import Presentation
 import os
 import tempfile
 from pptx.enum.shapes import PP_PLACEHOLDER
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
+
 
 tmp_dir = os.path.join(tempfile.gettempdir(), "pptx_images")
 os.makedirs(tmp_dir, exist_ok=True)
 
 def extract_text_from_pdf(path):
     """
-    Extract all text from a PDF file, page by page, preserving reading order.
+    Extract text and images from a PDF file.
+    Returns a tuple: (text, images)
     """
+    lines = []
+    images = []
     with fitz.open(path) as doc:
-        lines = []
-        for page in doc:
+        for page_index in range(len(doc)):
+            page = doc[page_index]
+            # Get text
             blocks = page.get_text("dict")["blocks"]
             for block in blocks:
                 if "lines" in block:
                     for line in block["lines"]:
                         sentence = " ".join([span["text"] for span in line["spans"]])
                         lines.append(sentence)
-        return "\n".join(lines)
+
+            # Get images
+            for img_index, img in enumerate(page.get_images(full=True)):
+                xref = img[0]
+                base_image = doc.extract_image(xref)
+                image_bytes = base_image["image"]
+                image_ext = base_image["ext"]
+                image_path = os.path.join(tmp_dir, f"pdf_img_{page_index}_{img_index}.{image_ext}")
+                with open(image_path, "wb") as f:
+                    f.write(image_bytes)
+                images.append({'path': image_path})
+
+    return "\n".join(lines), images
+
 
 
 def extract_text_from_docx(path):
     """
-    Extract text from a DOCX file, including paragraph styles like headings.
+    Extract text and image paths from a DOCX file.
+    Returns a tuple: (text, images)
     """
     doc = Document(path)
     lines = []
+    images = []
+
+    # Text extraction
     for para in doc.paragraphs:
         style = para.style.name.lower()
         text = para.text.strip()
         if not text:
             continue
         if "heading" in style:
-            # Format headings with clear markup
             lines.append(f"[{para.style.name}] {text}")
         else:
             lines.append(text)
-    return "\n".join(lines)
+
+    # Image extraction
+    rels = doc.part._rels
+    for rel in rels.values():
+        if rel.reltype == RT.IMAGE:
+            image_part = rel.target_part
+            image_data = image_part.blob
+            image_ext = image_part.content_type.split("/")[-1]  # e.g., image/png
+            img_path = os.path.join(tmp_dir, f"docx_img_{len(images)}.{image_ext}")
+            with open(img_path, "wb") as f:
+                f.write(image_data)
+            images.append({'path': img_path})
+
+    return "\n".join(lines), images
 
 
 def extract_text_from_pptx(path):

@@ -23,7 +23,8 @@ from .views import (
     delete_student,
     get_students_by_class,
     get_student_by_email,
-    upload_csv_to_class
+    upload_csv_to_class,
+    get_students_with_disabilities
 )
 
 urlpatterns = [
@@ -50,5 +51,8 @@ urlpatterns = [
     
     # Upload a CSV file to bulk add students to a class
     path('classes/upload-csv/', upload_csv_to_class, name="upload_csv_to_class"),
+
+    # Get list of students with disabilities
+    path('with-disabilities/', get_students_with_disabilities, name="get_students_with_disabilities"),
 ]
 

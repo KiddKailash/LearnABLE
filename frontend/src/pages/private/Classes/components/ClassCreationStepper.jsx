@@ -5,12 +5,11 @@
  */
 
 import React, { useState, useRef, useContext } from "react";
-import { useTheme } from "@mui/material/styles";
 
 // Context and Services
-import { SnackbarContext } from "../../../contexts/SnackbarContext";
-import api from "../../../services/api";
-import { API_BASE_URL } from "../../../services/config";
+import { SnackbarContext } from "../../../../contexts/SnackbarContext";
+import api from "../../../../services/api";
+import { API_BASE_URL } from "../../../../services/config";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -19,7 +18,6 @@ import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
 import StepContent from "@mui/material/StepContent";
 import Button from "@mui/material/Button";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
@@ -30,13 +28,15 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Alert from "@mui/material/Alert";
 
 // MUI Icons
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import SchoolIcon from "@mui/icons-material/School";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import ErrorIcon from "@mui/icons-material/Error";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
-import DescriptionIcon from "@mui/icons-material/Description";
+import GroupAddIcon from "@mui/icons-material/GroupAddRounded";
+import CloudUploadIcon from "@mui/icons-material/CloudUploadRounded";
+import SchoolIcon from "@mui/icons-material/SchoolRounded";
+import ErrorIcon from "@mui/icons-material/ErrorRounded";
+import UploadFileIcon from "@mui/icons-material/UploadFileRounded";
+import DescriptionIcon from "@mui/icons-material/DescriptionRounded";
+
+// Custom Components
+import FileUploadZone from "../../../../components/FileUploadZone";
 
 // Constants
 const STEPS = [
@@ -156,59 +156,6 @@ const useFileUpload = () => {
     handleStudentFileChange,
     handleUnitPlanFileChange,
   };
-};
-
-// UI Components
-const FileUploadZone = ({ file, onClick, icon, title, subtitle }) => {
-  const theme = useTheme();
-  
-  return (
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 3,
-        textAlign: "center",
-        cursor: "pointer",
-        borderStyle: "dashed",
-        borderRadius: 2,
-        borderColor: file ? "success.main" : "divider",
-        bgcolor: file
-          ? theme.palette.mode === "dark"
-            ? "rgba(76, 175, 80, 0.1)"
-            : "rgba(76, 175, 80, 0.05)"
-          : "background.paper",
-        "&:hover": {
-          bgcolor:
-            theme.palette.mode === "dark"
-              ? "rgba(255, 255, 255, 0.05)"
-              : "rgba(0, 0, 0, 0.02)",
-        },
-      }}
-      onClick={onClick}
-    >
-      {file ? (
-        <Box sx={{ color: "success.main", py: 1 }}>
-          <CheckCircleIcon sx={{ fontSize: 48, mb: 1 }} />
-          <Typography variant="body1" gutterBottom>
-            {file.name}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {(file.size / 1024).toFixed(2)} KB - Click to change file
-          </Typography>
-        </Box>
-      ) : (
-        <Box sx={{ py: 1 }}>
-          {icon}
-          <Typography variant="body1" gutterBottom>
-            {title}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {subtitle}
-          </Typography>
-        </Box>
-      )}
-    </Paper>
-  );
 };
 
 // Main Component
@@ -473,13 +420,13 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                       A CSV file containing this information may be download
                       from OneSchool {'  >  '} Classes {'  >  '} Students.
                     </Alert>
-            <FileUploadZone
-              file={studentFile}
+                    <FileUploadZone
+                      file={studentFile}
                       onClick={() => studentFileInputRef.current.click()}
-              icon={<CloudUploadIcon sx={{ fontSize: 48, mb: 1, color: "action.active" }} />}
-              title="Click to upload student roster"
-              subtitle="CSV file containing student information"
-            />
+                      icon={<CloudUploadIcon sx={{ fontSize: 48, mb: 1, color: "action.active" }} />}
+                      title="Click to upload student roster"
+                      subtitle="CSV file containing student information"
+                    />
                     <input
                       type="file"
                       hidden
@@ -526,13 +473,13 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                         />
                       </Grid>
                       <Grid size={12}>
-                <FileUploadZone
-                  file={unitPlanFile}
+                        <FileUploadZone
+                          file={unitPlanFile}
                           onClick={() => unitPlanFileInputRef.current.click()}
-                  icon={<UploadFileIcon sx={{ fontSize: 48, mb: 1, color: "action.active" }} />}
-                  title="Click to upload unit plan document"
-                  subtitle="Word, PDF, or Excel document"
-                />
+                          icon={<UploadFileIcon sx={{ fontSize: 48, mb: 1, color: "action.active" }} />}
+                          title="Click to upload unit plan document"
+                          subtitle="Word, PDF, or Excel document"
+                        />
                         <input
                           type="file"
                           hidden

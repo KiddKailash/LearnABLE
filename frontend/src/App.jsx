@@ -8,12 +8,12 @@
 
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import { TutorialProvider } from './contexts/TutorialContext';
-import { UserProvider } from './store/UserObject';
+import { TutorialProvider } from "./contexts/TutorialContext";
+import { UserProvider } from "./store/UserObject";
 
 // Components
-import Tutorial from './components/Tutorial.jsx';
-import ErrorBoundary from './components/ErrorBoundary';
+import Tutorial from "./components/Tutorial.jsx";
+import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectRoute from "./components/ProtectRoutes";
 import Layout from "./layout/Layout.jsx";
 
@@ -23,13 +23,12 @@ import PageNotFound from "./pages/public/PageNotFound";
 
 // Webpages - Private
 import Account from "./pages/private/Account/Account.jsx";
-import ResponsiveNCCDReporting from "./pages/private/NCCDReport/ResponsiveNCCDReporting";
-import Classes from "./pages/private/Classes/Classes";
+import ResponsiveNCCDReporting from "./pages/private/NCCDReport/NCCDReportingRouter";
 import Dashboard from "./pages/private/Dashboard/Dashboard";
-import StudentListPage from "./pages/private/Classes/StudentList.jsx";
-import ClassContent from "./pages/private/Classes/ClassContent";
+import ClassDetails from "./pages/private/ClassDetails/ClassDetails.jsx";
+import Classes from "./pages/private/Classes/Classes";
 
-const App = ({ mode }) => {
+const App = () => {
   const pages = [
     { path: "/", component: <AuthPage /> },
     { path: "/login", component: <AuthPage /> },
@@ -38,8 +37,7 @@ const App = ({ mode }) => {
     { path: "/account", component: <Account /> },
     { path: "/reporting", component: <ResponsiveNCCDReporting /> },
     { path: "/classes", component: <Classes /> },
-    { path: "/classes/:classId/students", component: <StudentListPage /> }, 
-    { path: "/classes/:classId/content", component: <ClassContent /> },
+    { path: "/classes/:classId", component: <ClassDetails /> },
     { path: "*", component: <PageNotFound /> },
   ];
 
@@ -53,13 +51,11 @@ const App = ({ mode }) => {
           <Tutorial />
           <div className="app">
             <Routes>
-              <Route
-                path="/"
-                element={<Layout mode={mode} />}
-              >
+              <Route path="/" element={<Layout />}>
                 {pages.map((page, i) => {
                   // Determine if the route is public or protected
-                  const isPublic = publicPaths.includes(page.path) || page.path === "*";
+                  const isPublic =
+                    publicPaths.includes(page.path) || page.path === "*";
 
                   return (
                     <Route

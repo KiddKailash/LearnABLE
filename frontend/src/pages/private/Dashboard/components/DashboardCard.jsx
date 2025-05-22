@@ -35,7 +35,7 @@ const DashboardCard = ({
 }) => {
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
         borderRadius: 2,
         overflow: "hidden",

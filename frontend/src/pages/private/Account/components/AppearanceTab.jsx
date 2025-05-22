@@ -5,7 +5,7 @@
  * preview of each theme option and handles theme changes.
  */
 
-import React from "react";
+import React, { useEffect } from "react";
 
 // MUI Components
 import Box from "@mui/material/Box";
@@ -29,6 +29,15 @@ const AppearanceTab = ({
   isSaving,
   handleSaveTheme,
 }) => {
+  // Load theme from localStorage on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('themeMode');
+    if (savedTheme && savedTheme !== themeMode) {
+      setThemeMode(savedTheme);
+    }
+    //eslint-disable-next-line
+  }, []);
+
   return (
     <Paper variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
 

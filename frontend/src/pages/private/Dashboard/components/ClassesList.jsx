@@ -18,9 +18,9 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 
 // MUI Icons
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import AddIcon from '@mui/icons-material/Add';
-import ClassIcon from '@mui/icons-material/Class';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForwardRounded';
+import AddIcon from '@mui/icons-material/AddRounded';
+import ClassIcon from '@mui/icons-material/ClassRounded';
 
 /**
  * ClassesList component for displaying the list of classes
@@ -54,7 +54,7 @@ const ClassesList = ({ classes, onNavigate }) => {
           classes.map((classItem) => (
             <ListItemButton
               key={classItem.id}
-              onClick={() => onNavigate(`/classes/${classItem.id}/students`)}
+              onClick={() => onNavigate(`/classes/${classItem.id}?mode=students`)}
               sx={{
                 py: 2,
                 borderBottom: '1px solid',

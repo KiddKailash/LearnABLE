@@ -4,7 +4,7 @@
  * @module config
  */
 
-// Use environment variable for backend URL or fallback to localhost for development
+// Use environment variable for backend URL
 export const API_BASE_URL = process.env.REACT_APP_SERVER_URL;
 
 /**
@@ -35,8 +35,6 @@ export const getHeaders = (contentType = 'application/json') => {
  */
 export const handleResponse = async (response) => {
   const contentType = response.headers.get('content-type');
-  console.log(`Response: ${response.status} ${response.statusText}`, 
-              `Content-Type: ${contentType || 'none'}`);
   
   if (response.status === 204) {
     return { success: true };
@@ -58,8 +56,7 @@ export const handleResponse = async (response) => {
     else if (contentType?.includes('text/html')) {
       const text = await response.text();
       const shortText = text.substring(0, 500) + (text.length > 500 ? '...' : '');
-      console.log(`Received HTML response (shortened): ${shortText}`);
-      
+            
       let errorMessage = "Received HTML response instead of JSON";
       if (text.includes('<title>') && text.includes('</title>')) {
         const titleMatch = text.match(/<title>(.*?)<\/title>/);
