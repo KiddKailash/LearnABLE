@@ -183,7 +183,8 @@ const Account = () => {
     if (e.target.files?.[0]) {
       try {
         const formData = new FormData();
-        formData.append("profile_pic", e.target.files[0]);
+        formData.append("profile_picture", e.target.files[0]);
+        formData.append("email", user?.email);
 
         setIsSaving(true);
         await accountApi.uploadProfilePicture(formData);
