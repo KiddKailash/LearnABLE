@@ -12,6 +12,10 @@
 # testing
 /coverage
 
+# Migrations 
+backend/**/migrations/
+!backend/**/migrations/__init__.py
+
 # production
 /build
 
