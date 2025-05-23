@@ -215,14 +215,9 @@ def get_student_by_email(request):
     if not email:
         return Response({"error": "Email is required"}, status=400)
 
-    try:
-        student = Student.objects.get(student_email__iexact=email)
-        serializer = StudentSerializer(student)
-        return Response(serializer.data)
-    except Student.DoesNotExist:
-        # Not found, return empty response (not an error)
-        return Response({}, status=200)
-
+    students = Student.objects.filter(student_email__iexact=email)
+    serializer = StudentSerializer(students, many=True)
+    return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -238,7 +233,7 @@ def upload_csv_to_class(request):
     CSV must include columns: student_email, first_name, last_name, year_level, disability_info.
 
     Returns:
-        HTTP 200 with count of students added and list of duplicates,
+        HTTP 200 with count of students added,
         HTTP 400 if file or class_id missing,
         HTTP 404 if class not found.
     """
@@ -258,33 +253,32 @@ def upload_csv_to_class(request):
     reader = csv.DictReader(io_string)
 
     added_count = 0
-    duplicates = []
+    skipped_count = 0
 
     for row in reader:
         email = row.get("student_email", "").strip().lower()
-        if not email:
-            continue
+        first_name = row.get("first_name", "").strip()
+        last_name = row.get("last_name", "").strip()
+        year_level = row.get("year_level", "").strip()
+        disability_info = row.get("disability_info", "").strip()
 
-        # Check if student exists
-        student, created = Student.objects.get_or_create(student_email=email, defaults={
-            "first_name": row.get("first_name", ""),
-            "last_name": row.get("last_name", ""),
-            "year_level": row.get("year_level", ""),
-            "disability_info": row.get("disability_info", ""),
-        })
-
-        # Check if already in class
-        if class_obj.students.filter(id=student.id).exists():
-            duplicates.append(email)
-            continue
-
+        student = Student.objects.create(
+            student_email=email,
+            first_name=first_name,
+            last_name=last_name,
+            year_level=year_level,
+            disability_info=disability_info
+        )
         class_obj.students.add(student)
         added_count += 1
 
+
+
     return Response({
         "added": added_count,
-        "duplicates": duplicates,
-    }, status=200)
+        "skipped": skipped_count,
+        "message": "Students uploaded allowing duplicates."
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
