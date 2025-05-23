@@ -66,7 +66,7 @@ npm start                       # Begin the Server
 3. Set up the backend:
 ```bash
 cd /backend                     # Navigate into Backend Directory
-poetry install                  # Install Backend Dependencies
+poetry install --no-root        # Install Backend Dependencies
 eval "$(poetry env activate)"   # Activate Virtual Environment
 python manage.py runserver      # Begin the Server
 ```
