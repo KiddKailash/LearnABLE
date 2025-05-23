@@ -208,7 +208,11 @@ const NCCDReports = () => {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => setFormDialogOpen(true)}
+          onClick={() => {
+            setSelectedReportId(null);
+            setSelectedStudentId(null);
+            setFormDialogOpen(true);
+          }}
           disabled={!students.length}
         >
           New Report
@@ -259,6 +263,7 @@ const NCCDReports = () => {
         }}
         students={students}
         isSubmitting={reportStatus.isSubmitting}
+        key={selectedReportId || 'new'}
       />
 
       <ViewReportDialog

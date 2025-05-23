@@ -163,6 +163,23 @@ const NCCDReportForm = ({
   const isDialogMode = open !== undefined;
 
   useEffect(() => {
+    // Reset form when opening for a new report
+    if (open && !reportId) {
+      setActiveStep(0);
+      setFormValues({
+        studentSelection: "",
+        evidence: "",
+        evidenceFile: null,
+        levelOfAdjustment: "",
+        disabilityCategory: "",
+        underDDA: "",
+        additionalComments: "",
+      });
+      setErrors({});
+    }
+  }, [open, reportId]);
+
+  useEffect(() => {
     if (hasStudentId || passedStudents) {
       setStudents(passedStudents || []);
       setStudentLoading(false);
@@ -247,12 +264,6 @@ const NCCDReportForm = ({
     // Clear errors when moving back
     setErrors({});
     setActiveStep((prev) => prev - 1);
-  };
-
-  const handleSkip = () => {
-    // Clear errors when skipping
-    setErrors({});
-    setActiveStep((prev) => prev + 1);
   };
 
   /**
@@ -646,17 +657,6 @@ const NCCDReportForm = ({
                     >
                       Back
                     </Button>
-
-                    {step.optional && (
-                      <Button
-                        onClick={handleSkip}
-                        disabled={loading || isSubmitting}
-                        variant="text"
-                        size="medium"
-                      >
-                        Skip
-                      </Button>
-                    )}
 
                     <Button
                       variant="contained"
