@@ -1,10 +1,10 @@
 /**
  * @fileoverview A multi-step form component for creating and setting up a new class
- * 
+ *
  * @module ClassCreationStepper
  */
 
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useEffect } from "react";
 
 // Context and Services
 import { SnackbarContext } from "../../../../contexts/SnackbarContext";
@@ -64,7 +64,10 @@ const useClassCreation = (onSuccess, onClose) => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [classData, setClassData] = useState({ class_name: "", year_level: "" });
+  const [classData, setClassData] = useState({
+    class_name: "",
+    year_level: "",
+  });
   const [createdClassId, setCreatedClassId] = useState(null);
   const { showSnackbar } = useContext(SnackbarContext);
 
@@ -76,15 +79,6 @@ const useClassCreation = (onSuccess, onClose) => {
   const handleBack = () => {
     setActiveStep((prev) => Math.max(prev - 1, 0));
     setError(null);
-  };
-
-  const handleSkip = () => {
-    if (activeStep === 1) {
-      setActiveStep(2);
-    } else if (activeStep === 2) {
-      completeProcess();
-      onClose();
-    }
   };
 
   const completeProcess = () => {
@@ -116,7 +110,6 @@ const useClassCreation = (onSuccess, onClose) => {
     setCreatedClassId,
     handleClassDataChange,
     handleBack,
-    handleSkip,
     completeProcess,
     resetState,
   };
@@ -162,6 +155,18 @@ const useFileUpload = () => {
 const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
   const { showSnackbar } = useContext(SnackbarContext);
 
+  // Add useEffect to reset form data when dialog opens
+  useEffect(() => {
+    if (open) {
+      resetState();
+      setStudentFile(null);
+      setUnitPlanFile(null);
+      setUnitPlanTitle("");
+      setUnitPlanDescription("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
   const {
     activeStep,
     setActiveStep,
@@ -174,7 +179,6 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
     setCreatedClassId,
     handleClassDataChange,
     handleBack,
-    handleSkip,
     completeProcess,
     resetState,
   } = useClassCreation(onSuccess, onClose);
@@ -215,67 +219,69 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
   };
 
   const handleClassCreation = async () => {
-        if (!classData.class_name) {
-          setError("Class name is required");
-          setLoading(false);
-          return;
-        }
+    if (!classData.class_name || !classData.year_level) {
+      setError("Class name and grade are required");
+      setLoading(false);
+      return;
+    }
 
-        if (!createdClassId) {
-          try {
-            const result = await api.classes.create(classData);
+    if (!createdClassId) {
+      try {
+        const result = await api.classes.create(classData);
         const classId = extractClassId(result);
 
-            if (!classId) {
-              throw new Error("Failed to get class ID from server response");
-            }
-
-            setCreatedClassId(classId);
-            localStorage.setItem("temp_created_class_id", classId);
-            showSnackbar("Class created successfully", "success");
-          } catch (error) {
-            console.error("Error creating class:", error);
-            setError(error.message || "Failed to create class");
-            setLoading(false);
-            return;
-          }
+        if (!classId) {
+          throw new Error("Failed to get class ID from server response");
         }
 
-        setActiveStep(1);
+        setCreatedClassId(classId);
+        localStorage.setItem("temp_created_class_id", classId);
+        showSnackbar("Class created successfully", "success");
+      } catch (error) {
+        console.error("Error creating class:", error);
+        setError(error.message || "Failed to create class");
         setLoading(false);
+        return;
+      }
+    }
+
+    setActiveStep(1);
+    setLoading(false);
   };
 
   const handleStudentUpload = async () => {
     const classId = getClassId();
-        if (!classId) {
+    if (!classId) {
       setError("Missing class ID. Please go back and create a class first.");
-          setLoading(false);
-          return;
-        }
+      setLoading(false);
+      return;
+    }
 
-        if (studentFile) {
+    if (studentFile) {
       try {
-          const formData = new FormData();
-          formData.append("file", studentFile);
-          formData.append("class_id", classId);
-            await api.classes.uploadStudentCSV(formData);
-            showSnackbar("Students uploaded successfully", "success");
-          } catch (error) {
-            console.error("Error uploading students:", error);
-            setError(error.message || "Failed to upload students");
-            setLoading(false);
-            return;
-          }
-        }
+        const formData = new FormData();
+        formData.append("file", studentFile);
+        formData.append("class_id", classId);
+        await api.classes.uploadStudentCSV(formData);
+        showSnackbar("Students uploaded successfully", "success");
+      } catch (error) {
+        console.error("Error uploading students:", error);
+        setError(error.message || "Failed to upload students");
+        setLoading(false);
+        return;
+      }
+    }
 
-        setActiveStep(2);
+    setActiveStep(2);
     setLoading(false);
   };
 
   const handleUnitPlanUpload = async () => {
     const classId = getClassId();
     if (!classId) {
-      setError("Missing class ID. Class creation may have failed. Please restart the process.");
+      setError(
+        "Missing class ID. Class creation may have failed. Please restart the process."
+      );
       setLoading(false);
       return;
     }
@@ -295,49 +301,54 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
   };
 
   const getClassId = () => {
-        let classId = createdClassId;
-        if (!classId) {
-          classId = localStorage.getItem("temp_created_class_id");
-          if (classId) {
-            setCreatedClassId(parseInt(classId, 10));
-          }
-        }
+    let classId = createdClassId;
+    if (!classId) {
+      classId = localStorage.getItem("temp_created_class_id");
+      if (classId) {
+        setCreatedClassId(parseInt(classId, 10));
+      }
+    }
     return classId;
   };
 
   const uploadUnitPlan = async (classId) => {
-            const formData = new FormData();
-            formData.append("document", unitPlanFile);
+    const formData = new FormData();
+    formData.append("document", unitPlanFile);
     formData.append("class_instance", String(classId));
-            formData.append("title", unitPlanTitle || "Unit Plan");
-            formData.append("description", unitPlanDescription || "");
-            formData.append("from_creation_flow", "true");
+    formData.append("title", unitPlanTitle || "Unit Plan");
+    formData.append("description", unitPlanDescription || "");
+    formData.append("from_creation_flow", "true");
 
     try {
-              await api.unitPlans.create(formData);
-              showSnackbar("Unit plan uploaded successfully", "success");
-            } catch (apiError) {
+      await api.unitPlans.create(formData);
+      showSnackbar("Unit plan uploaded successfully", "success");
+    } catch (apiError) {
       await handleUnitPlanUploadFallback(formData, apiError);
     }
   };
 
   const handleUnitPlanUploadFallback = async (formData, apiError) => {
-              try {
-                const token = localStorage.getItem("access_token");
-      const response = await fetch(`${API_BASE_URL}/api/unit-plans/unitplans/`, {
-                    method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-                    body: formData,
-      });
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `${API_BASE_URL}/api/unit-plans/unitplans/`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        }
+      );
 
-                if (!response.ok) {
-                  const errorText = await response.text();
+      if (!response.ok) {
+        const errorText = await response.text();
         throw new Error(`HTTP error ${response.status}: ${errorText}`);
-                }
+      }
 
-                showSnackbar("Unit plan uploaded successfully", "success");
-              } catch (fetchError) {
-      throw new Error(`Failed to upload unit plan: ${fetchError.message || apiError.message}`);
+      showSnackbar("Unit plan uploaded successfully", "success");
+    } catch (fetchError) {
+      throw new Error(
+        `Failed to upload unit plan: ${fetchError.message || apiError.message}`
+      );
     }
   };
 
@@ -345,7 +356,11 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
     if (loading) return;
 
     if (createdClassId && activeStep < STEPS.length - 1) {
-      if (window.confirm("Are you sure you want to exit? Your class has been created but setup is incomplete.")) {
+      if (
+        window.confirm(
+          "Are you sure you want to exit? Your class has been created but setup is incomplete."
+        )
+      ) {
         resetAndClose();
       }
     } else {
@@ -367,128 +382,143 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
     if (result?.id) return result.id;
     if (result?.data?.id) return result.data.id;
     if (result?.class_data?.id) return result.class_data.id;
-    
+
     const possibleIds = ["id", "class_id", "classId", "pk"];
     for (const idField of possibleIds) {
       if (result?.[idField]) return result[idField];
     }
-    
+
     return null;
   };
 
   const renderStepContent = (index) => {
     switch (index) {
       case 0:
-  return (
-                  <Box>
-                    <Grid container spacing={2}>
-                      <Grid size={12}>
-                        <TextField
-                          name="class_name"
-                          label="Class Name"
-                          variant="outlined"
-                          fullWidth
-                          required
-                          value={classData.class_name}
-                          onChange={handleClassDataChange}
-                          error={error && !classData.class_name}
-                          helperText={
-                            error && !classData.class_name
-                              ? "Class name is required"
-                              : ""
-                          }
-                        />
-                      </Grid>
-                      <Grid size={12}>
-                        <TextField
-                          name="year_level"
-                          label="Grade"
-                          variant="outlined"
-                          fullWidth
-                          value={classData.year_level}
-                          onChange={handleClassDataChange}
-                          placeholder="e.g. 10"
-                        />
-                      </Grid>
-                    </Grid>
-                  </Box>
+        return (
+          <Box>
+            <Grid container spacing={2}>
+              <Grid size={12}>
+                <TextField
+                  name="class_name"
+                  label="Class Name"
+                  variant="outlined"
+                  fullWidth
+                  required
+                  value={classData.class_name}
+                  onChange={handleClassDataChange}
+                  error={error && !classData.class_name}
+                  helperText={
+                    error && !classData.class_name
+                      ? "Class name is required"
+                      : ""
+                  }
+                />
+              </Grid>
+              <Grid size={12}>
+                <TextField
+                  name="year_level"
+                  label="Grade"
+                  variant="outlined"
+                  fullWidth
+                  required
+                  value={classData.year_level}
+                  onChange={handleClassDataChange}
+                  error={error && !classData.year_level}
+                  helperText={
+                    error && !classData.year_level ? "Grade is required" : ""
+                  }
+                  placeholder="e.g. 10"
+                />
+              </Grid>
+            </Grid>
+          </Box>
         );
       case 1:
         return (
-                  <Box>
-                    <Alert severity="info" sx={{ mb: 2 }}>
-                      A CSV file containing this information may be download
-                      from OneSchool {'  >  '} Classes {'  >  '} Students.
-                    </Alert>
-                    <FileUploadZone
-                      file={studentFile}
-                      onClick={() => studentFileInputRef.current.click()}
-                      icon={<CloudUploadIcon sx={{ fontSize: 48, mb: 1, color: "action.active" }} />}
-                      title="Click to upload student roster"
-                      subtitle="CSV file containing student information"
-                    />
-                    <input
-                      type="file"
-                      hidden
-                      accept=".csv"
-                      ref={studentFileInputRef}
-                      onChange={handleStudentFileChange}
-                    />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ mt: 2, display: "block" }}
-                    >
-                      * CSV should have columns: first_name, last_name,
-                      year_level, student_email (optional), disability_info
-                      (optional)
-                    </Typography>
-                  </Box>
+          <Box>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              A CSV file containing this information may be downloaded from{" "}
+              <strong>
+                OneSchool {"  >  "} Classes {"  >  "} Students
+              </strong>
+              .
+            </Alert>
+            <FileUploadZone
+              file={studentFile}
+              onClick={() => studentFileInputRef.current.click()}
+              icon={
+                <CloudUploadIcon
+                  sx={{ fontSize: 48, mb: 1, color: "action.active" }}
+                />
+              }
+              title="Click to upload student roster"
+              subtitle="CSV file containing student information"
+            />
+            <input
+              type="file"
+              hidden
+              accept=".csv"
+              ref={studentFileInputRef}
+              onChange={handleStudentFileChange}
+            />
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ mt: 2, display: "block" }}
+            >
+              * CSV should have columns: first_name, last_name, year_level,
+              student_email (optional), disability_info (optional)
+            </Typography>
+          </Box>
         );
       case 2:
         return (
-                  <Box>
-                    <Grid container spacing={2}>
-                      <Grid size={12}>
-                        <TextField
-                          name="unit_plan_title"
-                          label="Unit Plan Title"
-                          variant="outlined"
-                          fullWidth
-                          value={unitPlanTitle}
-                          onChange={(e) => setUnitPlanTitle(e.target.value)}
-                          placeholder="e.g. Term 3 Science Curriculum"
-                        />
-                      </Grid>
-                      <Grid size={12}>
-                        <TextField
-                          name="unit_plan_description"
-                          label="Description (Optional)"
-                          variant="outlined"
-                          fullWidth
-                          multiline
-                          rows={2}
-                          value={unitPlanDescription}
+          <Box>
+            <Grid container spacing={2}>
+              <Grid size={12}>
+                <TextField
+                  name="unit_plan_title"
+                  label="Unit Plan Title"
+                  variant="outlined"
+                  fullWidth
+                  value={unitPlanTitle}
+                  onChange={(e) => setUnitPlanTitle(e.target.value)}
+                  placeholder="e.g. Term 3 Science Curriculum"
+                />
+              </Grid>
+              <Grid size={12}>
+                <TextField
+                  name="unit_plan_description"
+                  label="Description (Optional)"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  rows={2}
+                  value={unitPlanDescription}
                   onChange={(e) => setUnitPlanDescription(e.target.value)}
-                        />
-                      </Grid>
-                      <Grid size={12}>
-                        <FileUploadZone
-                          file={unitPlanFile}
-                          onClick={() => unitPlanFileInputRef.current.click()}
-                          icon={<UploadFileIcon sx={{ fontSize: 48, mb: 1, color: "action.active" }} />}
-                          title="Click to upload unit plan document"
-                          subtitle="Word, PDF, or Excel document"
-                        />
-                        <input
-                          type="file"
-                          hidden
-                          accept=".pdf,.docx,.doc,.xlsx,.xls"
-                          ref={unitPlanFileInputRef}
-                          onChange={handleUnitPlanFileChange}
-                        />
-                      </Grid>
-                    </Grid>
+                />
+              </Grid>
+              <Grid size={12}>
+                <FileUploadZone
+                  file={unitPlanFile}
+                  onClick={() => unitPlanFileInputRef.current.click()}
+                  icon={
+                    <UploadFileIcon
+                      sx={{ fontSize: 48, mb: 1, color: "action.active" }}
+                    />
+                  }
+                  title="Click to upload unit plan document"
+                  subtitle="Word, PDF, or Excel document"
+                />
+                <input
+                  type="file"
+                  hidden
+                  accept=".pdf,.docx,.doc,.xlsx,.xls"
+                  ref={unitPlanFileInputRef}
+                  onChange={handleUnitPlanFileChange}
+                />
+              </Grid>
+            </Grid>
           </Box>
         );
       default:
@@ -579,20 +609,14 @@ const ClassCreationStepper = ({ open, onClose, onSuccess }) => {
                       Back
                     </Button>
 
-                    {step.optional && (
-                      <Button
-                        onClick={handleSkip}
-                        disabled={loading}
-                        variant="text"
-                      >
-                        Skip
-                      </Button>
-                    )}
-
                     <Button
                       variant="contained"
                       onClick={handleNext}
-                      disabled={loading || (index === 0 && !classData.class_name)}
+                      disabled={
+                        loading ||
+                        (index === 0 &&
+                          (!classData.class_name || !classData.year_level))
+                      }
                     >
                       {index === STEPS.length - 1 ? "Finish" : "Continue"}
                     </Button>
