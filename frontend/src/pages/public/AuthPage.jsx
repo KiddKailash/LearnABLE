@@ -19,6 +19,7 @@ import Alert from "@mui/material/Alert";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
+import DialogTitle from "@mui/material/DialogTitle";
 import Button from "@mui/material/Button";
 
 // Custom components
@@ -139,6 +140,16 @@ const AuthPage = ({ initialTab = 0 }) => {
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
   const [twoFactorLoading, setTwoFactorLoading] = useState(false);
+
+  /* ---------- Teacher access-code state ---------- */
+  const [tempCredentials, setTempCredentials] = useState({
+    email: "",
+    password: "",
+  });
+  const [teacherCodeOpen, setTeacherCodeOpen] = useState(false);
+  const [teacherCode, setTeacherCode] = useState("");
+  const [teacherCodeError, setTeacherCodeError] = useState("");
+  const [teacherCodeLoading, setTeacherCodeLoading] = useState(false);
 
   // Refs for the 2FA input boxes
   const inputRefs = [
@@ -299,32 +310,21 @@ const AuthPage = ({ initialTab = 0 }) => {
       );
 
       if (result.success) {
-        showSnackbar("Registration successful!", "success");
-
-        // Automatically log in with the new credentials
-        const loginResult = await login(
-          registerForm.values.email,
-          registerForm.values.password
+        showSnackbar(
+          "Registration successful! Enter the access code to continue.",
+          "info"
         );
 
-        if (loginResult.success) {
-          if (loginResult.requiresTwoFactor) {
-            showSnackbar(
-              "Please enter your two-factor authentication code",
-              "info"
-            );
-            // 2FA dialog is shown automatically based on requires2FA state
-          } else {
-            navigate("/dashboard");
-          }
-        } else {
-          showSnackbar(
-            loginResult.message || "Auto-login failed after registration",
-            "error"
-          );
-          setActiveTab(0); // Switch to login tab
-          registerForm.resetForm(); // Clear the registration form
-        }
+        // Save credentials and open the teacher code dialog
+        setTempCredentials({
+          email: registerForm.values.email,
+          password: registerForm.values.password,
+        });
+        setTeacherCodeOpen(true);
+
+        // Reset form and switch to login tab
+        registerForm.resetForm();
+        setActiveTab(0);
       } else {
         // Convert object errors to string if needed
         const errorMessage =
@@ -402,6 +402,49 @@ const AuthPage = ({ initialTab = 0 }) => {
       }
     } finally {
       setRegisterLoading(false);
+    }
+  };
+
+  /* ---------- Verify teacher access code ---------- */
+  const handleTeacherCodeSubmit = async (e) => {
+    e.preventDefault();
+
+    if (teacherCode !== "191919") {
+      setTeacherCodeError("Invalid access code");
+      return;
+    }
+
+    setTeacherCodeError("");
+    setTeacherCodeLoading(true);
+
+    try {
+      const { email, password } = tempCredentials;
+      const loginResult = await login(email, password);
+
+      if (loginResult.success) {
+        if (loginResult.requiresTwoFactor) {
+          showSnackbar(
+            "Please enter your two-factor authentication code",
+            "info"
+          );
+          // 2FA dialog is shown automatically based on requires2FA state
+        } else {
+          showSnackbar("Login successful!", "success");
+          setTeacherCodeOpen(false);
+          navigate("/dashboard");
+        }
+      } else {
+        showSnackbar(
+          loginResult.message || "Auto-login failed after registration",
+          "error"
+        );
+        setTeacherCodeOpen(false);
+      }
+    } catch (err) {
+      showSnackbar("Error during login", "error");
+      setTeacherCodeOpen(false);
+    } finally {
+      setTeacherCodeLoading(false);
     }
   };
 
@@ -647,6 +690,44 @@ const AuthPage = ({ initialTab = 0 }) => {
           >
             Cancel
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Teacher Access Code Dialog */}
+      <Dialog open={teacherCodeOpen} fullWidth maxWidth="xs">
+        <DialogTitle>Enter Access Code</DialogTitle>
+        <DialogContent>
+          <Box component="form" noValidate onSubmit={handleTeacherCodeSubmit}>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="teacher-code"
+              label="Access Code"
+              type="text"
+              fullWidth
+              value={teacherCode}
+              onChange={(e) => setTeacherCode(e.target.value)}
+              error={Boolean(teacherCodeError)}
+              helperText={teacherCodeError}
+              inputProps={{ maxLength: 6 }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setTeacherCodeOpen(false);
+              navigate("/login");
+            }}
+          >
+            Cancel
+          </Button>
+          <LoadingButton
+            onClick={handleTeacherCodeSubmit}
+            loading={teacherCodeLoading}
+          >
+            Submit
+          </LoadingButton>
         </DialogActions>
       </Dialog>
     </Container>
