@@ -30,7 +30,7 @@ class Student(models.Model):
     _last_name = models.CharField(db_column='last_name', blank=True)
     year_level = models.IntegerField(choices=YEAR_LEVEL_CHOICES)
     student_email = models.EmailField(
-        max_length=100, default='missing')
+        max_length=100, default='missing', unique=True)
     _disability_info = models.TextField(
         db_column='disability_info', blank=True)
 
@@ -40,6 +40,16 @@ class Student(models.Model):
         """
         return f"{self.first_name} {self.last_name}"
 
+    def clean(self):
+        """
+        Validate the model before saving.
+
+        Enforces case-insensitive uniqueness on student_email.
+        Raises ValidationError if a student with the same email exists.
+        """
+        if Student.objects.exclude(pk=self.pk).filter(student_email__iexact=self.student_email).exists():
+            raise ValidationError(
+                {"student_email": "A student with this email already exists (case-insensitive)."})
 
     def save(self, *args, **kwargs):
         """
