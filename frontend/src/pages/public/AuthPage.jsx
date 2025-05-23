@@ -549,6 +549,9 @@ const AuthPage = ({ initialTab = 0 }) => {
                 required
                 autoComplete="email"
               />
+              <Alert severity="info" sx={{ mb: 1 }}>
+                Must be an @eq.edu.au email address.
+              </Alert>
 
               <TextField
                 fullWidth
@@ -697,6 +700,9 @@ const AuthPage = ({ initialTab = 0 }) => {
       <Dialog open={teacherCodeOpen} fullWidth maxWidth="xs">
         <DialogTitle>Enter Access Code</DialogTitle>
         <DialogContent>
+          <Alert severity="info" sx={{ mb: 1 }}>
+            Enter dummy access code: <strong>191919</strong>
+          </Alert>
           <Box component="form" noValidate onSubmit={handleTeacherCodeSubmit}>
             <TextField
               autoFocus
