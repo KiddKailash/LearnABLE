@@ -61,7 +61,7 @@ const NCCDReportsTable = ({
             reports.map((report) => {
               const student = students.find((s) => s.id === report.student);
               return (
-                <TableRow key={report.id}>
+                <TableRow key={`${report.id}-${Date.now()}`}>
                   <TableCell>
                     {student
                       ? `${student.first_name} ${student.last_name}`

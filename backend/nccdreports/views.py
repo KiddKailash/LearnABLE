@@ -112,7 +112,7 @@ def get_report_detail(request, report_id):
 @permission_classes([IsAuthenticated])
 def create_report(request):
     """
-    Create a new NCCD report for a student, or return existing one if found, scoped to this teacher.
+    Create a new NCCD report for a student, scoped to this teacher.
     """
     parser_classes = (MultiPartParser, FormParser)
     
@@ -128,11 +128,6 @@ def create_report(request):
         id=student_id,
         classes__teacher=request.user.teacher
     )
-
-    existing = NCCDreport.objects.filter(student=student).first()
-    if existing:
-        serializer = NCCDreportSerializer(existing, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     report = NCCDreport(
         student=student,
