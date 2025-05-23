@@ -239,7 +239,7 @@ const NCCDReportForm = ({
    */
   const handleNext = () => {
     // Skip validation for final step since it's optional
-    if (activeStep === 4) {
+    if (activeStep === steps.length - 1) {
       handleSubmit();
       return;
     }
