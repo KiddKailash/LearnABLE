@@ -80,6 +80,9 @@ class Teacher(models.Model):
         if self.user is None:
             raise ValidationError("Teacher must be associated with a user")
 
+        if self.user.email and not self.user.email.lower().endswith('@eq.edu.au'):
+            raise ValidationError("Teacher's email must be from the @eq.edu.au domain")
+
     def save(self, *args, **kwargs):
         """
         Ensures validation runs before saving the teacher instance.
