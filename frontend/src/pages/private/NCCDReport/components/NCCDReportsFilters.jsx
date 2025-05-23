@@ -1,7 +1,6 @@
 import React from "react";
 
 // MUI Components
-import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
 import FormControl from "@mui/material/FormControl";
