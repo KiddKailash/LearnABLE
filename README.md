@@ -58,17 +58,19 @@ cd LearnABLE
 
 2. Set up the frontend:
 ```bash
-cd frontend                     # Navigate into Backend Directory
-npm install                     # Install Frontend Dependencies
-npm start                       # Begin the Server
+cd frontend                         # Navigate into Backend Directory
+npm install                         # Install Frontend Dependencies
+npm start                           # Begin the Server
 ```
 
 3. Set up the backend:
 ```bash
-cd /backend                     # Navigate into Backend Directory
-poetry install --no-root        # Install Backend Dependencies
-eval "$(poetry env activate)"   # Activate Virtual Environment
-python manage.py runserver      # Begin the Server
+cd /backend                         # Navigate into Backend Directory
+poetry install --no-root            # Install Backend Dependencies
+eval "$(poetry env activate)"       # Activate Virtual Environment
+python manage.py makemigrations     # Make Migration Files
+python manage.py migrate            # Run Migrations
+python manage.py runserver          # Begin the Server
 ```
 
 For detailed setup instructions, please refer to the README files in the respective directories:
