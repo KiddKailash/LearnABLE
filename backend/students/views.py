@@ -262,13 +262,15 @@ def upload_csv_to_class(request):
         year_level = row.get("year_level", "").strip()
         disability_info = row.get("disability_info", "").strip()
 
-        student = Student.objects.create(
-            student_email=email,
-            first_name=first_name,
-            last_name=last_name,
-            year_level=year_level,
-            disability_info=disability_info
-        )
+        # Use the model directly so we can force a fresh object with no checks
+        student = Student()
+        student.student_email = email
+        student.first_name = first_name
+        student.last_name = last_name
+        student.year_level = year_level
+        student.disability_info = disability_info
+        student.save()  # This triggers encryption in your save()
+
         class_obj.students.add(student)
         added_count += 1
 
